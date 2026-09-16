@@ -17,6 +17,7 @@ import {
   StateComponent,
 } from '../../shared/components/ui.components';
 import { FlameGaugeComponent } from '../../shared/components/flame-gauge.component';
+import { VacationReturnsComponent } from './vacation-returns.component';
 import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/format.pipes';
 
 @Component({
@@ -33,6 +34,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
     StateComponent,
     ModalComponent,
     FlameGaugeComponent,
+    VacationReturnsComponent,
     FechaPipe,
     EtiquetaPipe,
     BadgeClasePipe,
@@ -55,6 +57,8 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
           <app-kpi label="En tramite" [value]="bal.pendingDays" hint="Aun sin aprobar" />
         </div>
       }
+
+      <app-vacation-returns />
 
       <app-card>
         <div class="filters">
@@ -357,10 +361,15 @@ export class VacationListComponent implements OnInit, OnDestroy {
     return false;
   }
 
+  /**
+   * Solo se cancela lo que sigue en tramite: una vez aprobada, la vacacion
+   * queda firme para todos (tambien para RRHH). El backend aplica la misma
+   * regla, esto es solo para no mostrar un boton que va a fallar.
+   */
   canCancel(request: VacationRequest): boolean {
-    const isOwn = request.employeeId === this.auth.employeeId();
     const inProgress = request.status === 'PENDING_SUPERVISOR' || request.status === 'PENDING_HR';
-    return (isOwn && inProgress) || (this.auth.isHr() && request.status !== 'CANCELLED');
+    if (!inProgress) return false;
+    return request.employeeId === this.auth.employeeId() || this.auth.isHr();
   }
 
   openForm(): void {

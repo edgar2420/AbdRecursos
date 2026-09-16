@@ -5,7 +5,7 @@ import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { DashboardData, HeadcountReport, LactationPermit } from '../../core/models/api.models';
 import { CardComponent, KpiComponent, PageHeaderComponent, StateComponent } from '../../shared/components/ui.components';
-import { DonutChartComponent, DonutSlice, MeterComponent } from '../../shared/components/charts.components';
+import { DonutChartComponent, DonutSlice } from '../../shared/components/charts.components';
 import { DateRange, DateRangePickerComponent } from '../../shared/components/date-range-picker.component';
 import { autoRefresh } from '../../shared/utils/auto-refresh';
 import { BolivianosPipe, FechaPipe } from '../../shared/pipes/format.pipes';
@@ -28,7 +28,6 @@ const ETIQUETA_CONTRATO: Record<string, string> = {
     KpiComponent,
     StateComponent,
     DonutChartComponent,
-    MeterComponent,
     DateRangePickerComponent,
     BolivianosPipe,
     FechaPipe,
@@ -115,27 +114,6 @@ const ETIQUETA_CONTRATO: Record<string, string> = {
             />
           </div>
 
-          <app-card heading="Indicadores de personal">
-            <div class="grid cols-2">
-              <app-meter
-                label="Rotacion"
-                [value]="kpi.turnoverRate"
-                [hint]="kpi.terminationsInPeriod + ' bajas en el periodo'"
-                [warningAt]="5"
-                [criticalAt]="10"
-                [scaleMax]="20"
-              />
-              <app-meter
-                label="Ausentismo"
-                [value]="kpi.absenteeismRate"
-                [hint]="kpi.attendanceAbsenceCount + ' ausencias sin justificar, ' + kpi.openJustifications + ' por revisar'"
-                [warningAt]="3"
-                [criticalAt]="6"
-                [scaleMax]="15"
-              />
-            </div>
-          </app-card>
-
           <div class="grid cols-2">
             <app-card heading="Distribucion por departamento">
               @if (headcount()?.byDepartment?.length) {
@@ -206,7 +184,6 @@ const ETIQUETA_CONTRATO: Record<string, string> = {
               @if (auth.isHr()) {
                 <a class="btn btn-secondary btn-sm" routerLink="/empleados">Gestionar empleados</a>
                 <a class="btn btn-secondary btn-sm" routerLink="/importaciones">Carga masiva</a>
-                <a class="btn btn-secondary btn-sm" routerLink="/parametros">Parametros legales</a>
               }
             </div>
           </app-card>

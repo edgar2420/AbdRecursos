@@ -13,12 +13,31 @@ export class BolivianosPipe implements PipeTransform {
   }
 }
 
+/**
+ * Una fecha SIN hora (ingreso, inicio de vacaciones, fecha de una papeleta):
+ * la API la manda como medianoche UTC. Si se deja que el navegador la
+ * convierta a hora local, en Bolivia (UTC-4) cae a las 20:00 del dia ANTERIOR
+ * y todo el sistema muestra un dia menos. Por eso estas se leen tal cual
+ * vienen en el texto, sin pasarlas por la zona horaria.
+ */
+const SOLO_FECHA = /^(\d{4})-(\d{2})-(\d{2})(?:T00:00:00(?:\.000)?Z?)?$/;
+
+export function aFechaLocal(value: string | Date): Date {
+  if (value instanceof Date) return value;
+  const soloFecha = SOLO_FECHA.exec(value);
+  if (soloFecha) {
+    return new Date(Number(soloFecha[1]), Number(soloFecha[2]) - 1, Number(soloFecha[3]));
+  }
+  // Con hora real (una firma, un marcaje) si corresponde convertir a hora local.
+  return new Date(value);
+}
+
 /** Fecha corta en formato boliviano (dd/mm/aaaa). */
 @Pipe({ name: 'fecha', standalone: true })
 export class FechaPipe implements PipeTransform {
   transform(value: string | Date | null | undefined, withTime = false): string {
     if (!value) return '-';
-    const date = value instanceof Date ? value : new Date(value);
+    const date = aFechaLocal(value);
     if (Number.isNaN(date.getTime())) return '-';
     const p = (n: number) => String(n).padStart(2, '0');
     const base = `${p(date.getDate())}/${p(date.getMonth() + 1)}/${date.getFullYear()}`;

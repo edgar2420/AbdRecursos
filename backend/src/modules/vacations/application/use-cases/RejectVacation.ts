@@ -53,7 +53,13 @@ export class RejectVacation {
   }
 }
 
-/** El propio empleado puede cancelar mientras la solicitud siga en tramite. */
+/**
+ * Cancelar solo mientras la solicitud siga EN TRAMITE. Una vez aprobada queda
+ * firme: ya se comprometio el saldo, se aviso al equipo y se planifico la
+ * ausencia, asi que nadie -ni RRHH- la cancela desde aca. Si hay que revertir
+ * unas vacaciones ya aprobadas, eso es una decision administrativa que debe
+ * quedar documentada aparte, no un boton que deshace el tramite en silencio.
+ */
 export class CancelVacation {
   constructor(
     private readonly vacations: VacationRepository,
@@ -68,8 +74,11 @@ export class CancelVacation {
       throw new ForbiddenError('Solo puede cancelar sus propias solicitudes');
     }
     if (request.status === 'CANCELLED') return request;
-    if (request.status === 'APPROVED' && !this.policy.isPrivileged(actor)) {
-      throw new BusinessRuleError('La solicitud ya fue aprobada; solicite el cambio a RRHH');
+    if (request.status === 'APPROVED') {
+      throw new BusinessRuleError('Las vacaciones ya aprobadas no se pueden cancelar');
+    }
+    if (request.status === 'REJECTED') {
+      throw new BusinessRuleError('La solicitud ya fue rechazada');
     }
 
     const updated = await this.vacations.updateStatus(requestId, { status: 'CANCELLED' });

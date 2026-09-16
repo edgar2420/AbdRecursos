@@ -93,6 +93,23 @@ const MONTHS = [
             [message]="auth.isHr() ? 'Genere las boletas del periodo para verlas aqui.' : 'Cuando RRHH emita su boleta aparecera en esta lista.'"
           ></app-state>
         } @else {
+          @if (auth.isHr()) {
+            <div class="bulk" [class.activa]="selected().size > 0">
+              @if (selected().size > 0) {
+                <span><strong>{{ selected().size }}</strong> boleta(s) en borrador seleccionadas</span>
+                <div class="row">
+                  <button class="btn btn-ghost btn-sm" (click)="clearSelection()">Quitar seleccion</button>
+                  <button class="btn btn-primary btn-sm" (click)="issue()">Emitir seleccionadas</button>
+                </div>
+              } @else {
+                <span class="muted">Marque las boletas en borrador que quiera emitir</span>
+                <button class="btn btn-primary btn-sm" [disabled]="draftCount() === 0" (click)="selectAllDrafts()">
+                  Emitir todos los borradores ({{ draftCount() }})
+                </button>
+              }
+            </div>
+          }
+
           <div class="table-wrap">
             <table class="data">
               <thead>
@@ -148,13 +165,6 @@ const MONTHS = [
               </tbody>
             </table>
           </div>
-
-          @if (auth.isHr() && selected().size > 0) {
-            <div class="bulk">
-              <span>{{ selected().size }} boleta(s) en borrador seleccionadas</span>
-              <button class="btn btn-primary btn-sm" (click)="issue()">Emitir seleccionadas</button>
-            </div>
-          }
 
           <app-paginator [meta]="meta()" (pageChange)="goToPage($event)" (limitChange)="setLimit($event)" />
         }
@@ -250,15 +260,24 @@ const MONTHS = [
       .filters .field {
         min-width: 150px;
       }
+      /* Barra de emision arriba de la tabla: es la accion principal de RRHH,
+         no algo que haya que ir a buscar despues de scrollear toda la planilla. */
       .bulk {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 12px;
         padding: 12px 16px;
-        background: var(--brand-50);
+        border-bottom: 1px solid var(--ink-200);
         font-size: 12.5px;
         font-weight: 500;
+      }
+      .bulk.activa {
+        background: var(--brand-50);
+      }
+      .bulk .row {
+        display: flex;
+        gap: 8px;
       }
       .pdf-frame {
         width: 100%;
@@ -346,6 +365,19 @@ export class PayslipListComponent implements OnInit, OnDestroy {
   allSelected(): boolean {
     const drafts = this.payslips().filter((p) => p.status === 'DRAFT');
     return drafts.length > 0 && drafts.every((p) => this.selected().has(p.id));
+  }
+
+  /** Borradores de la pagina actual: es lo que la barra de arriba puede emitir de una. */
+  draftCount(): number {
+    return this.payslips().filter((p) => p.status === 'DRAFT').length;
+  }
+
+  selectAllDrafts(): void {
+    this.toggleAll(true);
+  }
+
+  clearSelection(): void {
+    this.selected.set(new Set());
   }
 
   toggleAll(checked: boolean): void {

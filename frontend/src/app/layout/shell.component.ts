@@ -26,7 +26,8 @@ const NAV: NavItem[] = [
   { path: '/horarios', label: 'Horarios y turnos', icon: '◫', roles: ['HR', 'ADMIN'] },
   { path: '/lactancia', label: 'Lactancia', icon: '♡', roles: ['HR', 'ADMIN'] },
   { path: '/importaciones', label: 'Carga masiva', icon: '⇪', roles: ['HR', 'ADMIN'] },
-  { path: '/parametros', label: 'Parametros legales', icon: '§', roles: ['HR', 'ADMIN'] },
+  // Parametros legales queda fuera del menu por pedido del usuario: la ruta y la
+  // API siguen funcionando (/parametros) para quien la necesite puntualmente.
   { path: '/usuarios', label: 'Usuarios y roles', icon: '◎', roles: ['ADMIN'] },
 ];
 
