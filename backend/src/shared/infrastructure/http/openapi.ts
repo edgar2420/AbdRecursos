@@ -192,7 +192,7 @@ export const openApiDocument = {
     '/auth/logout': { post: { tags: ['Auth'], summary: 'Cerrar sesion', responses: { '204': { description: 'OK' } } } },
     '/auth/me': { get: { tags: ['Auth'], summary: 'Perfil del usuario autenticado', responses: { '200': { description: 'OK' } } } },
     '/auth/change-password': {
-      post: { tags: ['Auth'], summary: 'Cambiar contrasena propia', responses: { '204': { description: 'OK' } } },
+      post: { tags: ['Auth'], summary: 'Cambiar contraseña propia', responses: { '204': { description: 'OK' } } },
     },
     '/auth/users': crud('Auth', 'usuarios del sistema (solo ADMIN)', 'Error'),
     '/employees': crud('Empleados', 'empleados', 'Employee'),

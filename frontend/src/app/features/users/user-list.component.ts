@@ -154,7 +154,7 @@ const ROLES: Role[] = ['EMPLOYEE', 'SUPERVISOR', 'HR', 'ADMIN'];
             <input type="email" formControlName="email" />
           </div>
           <div class="field">
-            <label>Contrasena inicial *</label>
+            <label>Contraseña inicial *</label>
             <div class="password-field">
               <input [type]="verNueva() ? 'text' : 'password'" formControlName="password" />
               <app-eye-toggle [visible]="verNueva()" (toggled)="verNueva.set($event)" />
@@ -190,7 +190,7 @@ const ROLES: Role[] = ['EMPLOYEE', 'SUPERVISOR', 'HR', 'ADMIN'];
     @if (resetting(); as user) {
       <app-modal [title]="'Restablecer clave de ' + user.email" (closed)="resetting.set(null)">
         <div class="field">
-          <label>Nueva contrasena *</label>
+          <label>Nueva contraseña *</label>
           <div class="password-field">
             <input
               [type]="verReset() ? 'text' : 'password'"
@@ -336,7 +336,7 @@ export class UserListComponent implements OnInit {
   create(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.toast.warn('Revise el formulario', 'Verifique el correo y la contrasena');
+      this.toast.warn('Revise el formulario', 'Verifique el correo y la contraseña');
       return;
     }
     const raw = this.form.getRawValue();
@@ -388,13 +388,13 @@ export class UserListComponent implements OnInit {
 
   resetPassword(user: SystemUser): void {
     if (this.newPassword().length < 10) {
-      this.toast.warn('Contrasena muy corta', 'Debe tener al menos 10 caracteres');
+      this.toast.warn('Contraseña muy corta', 'Debe tener al menos 10 caracteres');
       return;
     }
     this.api.post(`/auth/users/${user.id}/reset-password`, { newPassword: this.newPassword() }).subscribe({
       next: () => {
         this.resetting.set(null);
-        this.toast.success('Contrasena restablecida');
+        this.toast.success('Contraseña restablecida');
       },
       error: (error) => this.toast.error('No se pudo restablecer', apiErrorMessage(error)),
     });

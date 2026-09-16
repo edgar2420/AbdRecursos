@@ -173,6 +173,8 @@ export interface Payslip {
   totalDeductions: number;
   netPay: number;
   issuedAt: string | null;
+  /** Quien de RRHH emitio la boleta: es la firma autorizada que se imprime en el PDF. */
+  issuedByName: string | null;
   details: PayslipLine[];
 }
 

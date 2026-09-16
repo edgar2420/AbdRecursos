@@ -17,13 +17,13 @@ export class ChangePassword {
     if (!user) throw new NotFoundError('Usuario');
 
     const valid = await this.hasher.compare(currentPassword, user.passwordHash);
-    if (!valid) throw new UnauthorizedError('La contrasena actual no es correcta');
+    if (!valid) throw new UnauthorizedError('La contraseña actual no es correcta');
     if (currentPassword === newPassword) {
-      throw new ValidationError('La nueva contrasena debe ser distinta de la actual');
+      throw new ValidationError('La nueva contraseña debe ser distinta de la actual');
     }
 
     await this.users.updatePassword(userId, await this.hasher.hash(newPassword));
-    // Al cambiar la contrasena se cierran las demas sesiones.
+    // Al cambiar la contraseña se cierran las demas sesiones.
     await this.refreshTokens.revokeAllForUser(userId);
     await this.audit.log({ userId, action: 'PASSWORD_CHANGED', entity: 'User', entityId: userId });
   }

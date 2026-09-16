@@ -25,6 +25,8 @@ export interface Payslip {
   totalDeductions: number;
   netPay: number;
   issuedAt: Date | null;
+  /** Quien confirmo/emitio la boleta: es la firma autorizada que se imprime en el PDF. */
+  issuedByName: string | null;
   createdAt: Date;
   details: PayslipLine[];
 }

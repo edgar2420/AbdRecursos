@@ -114,7 +114,7 @@ import { BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
           <app-card heading="Seguridad">
             <form [formGroup]="passwordForm" class="stack" (ngSubmit)="changePassword()">
               <div class="field">
-                <label>Contrasena actual</label>
+                <label>Contraseña actual</label>
                 <div class="password-field">
                   <input
                     [type]="verActual() ? 'text' : 'password'"
@@ -125,7 +125,7 @@ import { BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
                 </div>
               </div>
               <div class="field">
-                <label>Nueva contrasena</label>
+                <label>Nueva contraseña</label>
                 <div class="password-field">
                   <input
                     [type]="verNueva() ? 'text' : 'password'"
@@ -137,10 +137,10 @@ import { BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
                 <span class="hint">Minimo 10 caracteres, con mayuscula, minuscula y numero.</span>
               </div>
               <button class="btn btn-secondary" type="submit" [disabled]="changingPassword()">
-                Cambiar contrasena
+                Cambiar contraseña
               </button>
               <p class="muted" style="font-size:11.5px;margin:0">
-                Al cambiar la contrasena se cierran las demas sesiones abiertas.
+                Al cambiar la contraseña se cierran las demas sesiones abiertas.
               </p>
             </form>
           </app-card>
@@ -285,12 +285,12 @@ export class MyProfileComponent implements OnInit {
       next: () => {
         this.changingPassword.set(false);
         this.passwordForm.reset();
-        this.toast.success('Contrasena actualizada', 'Vuelva a iniciar sesion');
+        this.toast.success('Contraseña actualizada', 'Vuelva a iniciar sesion');
         setTimeout(() => this.auth.logout(), 1200);
       },
       error: (error) => {
         this.changingPassword.set(false);
-        this.toast.error('No se pudo cambiar la contrasena', apiErrorMessage(error));
+        this.toast.error('No se pudo cambiar la contraseña', apiErrorMessage(error));
       },
     });
   }

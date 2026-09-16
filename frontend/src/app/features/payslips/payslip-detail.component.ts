@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
-import { ApiService, saveBlob } from '../../core/services/api.service';
+import { ApiService } from '../../core/services/api.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Payslip } from '../../core/models/api.models';
-import { CardComponent, PageHeaderComponent, StateComponent } from '../../shared/components/ui.components';
+import { CardComponent, ModalComponent, PageHeaderComponent, StateComponent } from '../../shared/components/ui.components';
 import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/format.pipes';
 
 const MONTHS = [
@@ -21,6 +22,7 @@ const MONTHS = [
     PageHeaderComponent,
     CardComponent,
     StateComponent,
+    ModalComponent,
     BolivianosPipe,
     FechaPipe,
     EtiquetaPipe,
@@ -46,7 +48,7 @@ const MONTHS = [
           [subtitle]="p.employeeName + ' · ' + p.employeeCode"
         >
           <a class="btn btn-ghost btn-sm" routerLink="/boletas">Volver</a>
-          <button class="btn btn-primary btn-sm" (click)="download(p)">Descargar PDF</button>
+          <button class="btn btn-primary btn-sm" (click)="verPdf(p)">Ver PDF e imprimir</button>
         </app-page-header>
 
         <div class="grid cols-3">
@@ -56,6 +58,7 @@ const MONTHS = [
               <div><dt>Dias trabajados</dt><dd>{{ p.workedDays }}</dd></div>
               <div><dt>Haber basico</dt><dd>{{ p.baseSalary | bs }}</dd></div>
               <div><dt>Emitida</dt><dd>{{ p.issuedAt | fecha }}</dd></div>
+              <div><dt>Firma autorizada</dt><dd>{{ p.issuedByName ?? 'Pendiente de emision' }}</dd></div>
             </dl>
           </app-card>
 
@@ -112,6 +115,16 @@ const MONTHS = [
       }
       }
     </div>
+
+    @if (docPreview(); as doc) {
+      <app-modal [title]="doc.titulo" (closed)="cerrarDocPreview()">
+        <iframe #pdfFrame [src]="doc.url" class="pdf-frame" title="Vista previa de la boleta"></iframe>
+        <div footer>
+          <button class="btn btn-ghost" (click)="cerrarDocPreview()">Cerrar</button>
+          <button class="btn btn-primary" (click)="imprimir()">Imprimir</button>
+        </div>
+      </app-modal>
+    }
   `,
   styles: [
     `
@@ -157,12 +170,20 @@ const MONTHS = [
         font-size: 27px;
         color: #fff;
       }
+      .pdf-frame {
+        width: 100%;
+        height: 68vh;
+        border: 0;
+        border-radius: 8px;
+        background: var(--ink-100);
+      }
     `,
   ],
 })
-export class PayslipDetailComponent implements OnInit {
+export class PayslipDetailComponent implements OnInit, OnDestroy {
   private readonly api = inject(ApiService);
   private readonly toast = inject(ToastService);
+  private readonly sanitizer = inject(DomSanitizer);
 
   @Input() id = '';
 
@@ -171,6 +192,10 @@ export class PayslipDetailComponent implements OnInit {
 
   readonly earnings = computed(() => this.payslip()?.details.filter((d) => d.type === 'EARNING') ?? []);
   readonly deductions = computed(() => this.payslip()?.details.filter((d) => d.type === 'DEDUCTION') ?? []);
+
+  readonly docPreview = signal<{ titulo: string; url: SafeResourceUrl } | null>(null);
+  private docObjectUrl: string | null = null;
+  @ViewChild('pdfFrame') private pdfFrame?: ElementRef<HTMLIFrameElement>;
 
   ngOnInit(): void {
     this.api.get<Payslip>(`/payslips/${this.id}`).subscribe({
@@ -189,10 +214,38 @@ export class PayslipDetailComponent implements OnInit {
     return MONTHS[month - 1] ?? '';
   }
 
-  download(payslip: Payslip): void {
+  verPdf(payslip: Payslip): void {
     this.api.download(`/payslips/${payslip.id}/pdf`).subscribe({
-      next: (response) => saveBlob(response, `boleta-${payslip.employeeCode}.pdf`),
-      error: () => this.toast.error('No se pudo descargar el PDF'),
+      next: (response) => this.mostrarEnVisor(response.body as Blob, `Boleta de ${payslip.employeeName}`),
+      error: () => this.toast.error('No se pudo generar el PDF'),
     });
+  }
+
+  private mostrarEnVisor(blob: Blob, titulo: string): void {
+    this.cerrarDocPreview();
+    this.docObjectUrl = URL.createObjectURL(blob);
+    this.docPreview.set({ titulo, url: this.sanitizer.bypassSecurityTrustResourceUrl(this.docObjectUrl) });
+  }
+
+  cerrarDocPreview(): void {
+    if (this.docObjectUrl) {
+      URL.revokeObjectURL(this.docObjectUrl);
+      this.docObjectUrl = null;
+    }
+    this.docPreview.set(null);
+  }
+
+  imprimir(): void {
+    const ventana = this.pdfFrame?.nativeElement.contentWindow;
+    if (!ventana) {
+      this.toast.error('El documento todavia no termino de cargar');
+      return;
+    }
+    ventana.focus();
+    ventana.print();
+  }
+
+  ngOnDestroy(): void {
+    this.cerrarDocPreview();
   }
 }

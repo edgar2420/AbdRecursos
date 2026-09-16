@@ -27,7 +27,20 @@ const include = {
 
 type Row = Prisma.PayslipGetPayload<{ include: typeof include }>;
 
-function toDomain(row: Row): Payslip {
+/** Nombre de quien emitio cada boleta, resuelto en bloque (evita N+1). */
+async function resolverNombres(ids: (string | null)[]): Promise<Map<string, string>> {
+  const limpios = [...new Set(ids.filter((id): id is string => Boolean(id)))];
+  if (limpios.length === 0) return new Map();
+  const usuarios = await prisma.user.findMany({
+    where: { id: { in: limpios } },
+    select: { id: true, email: true, employee: { select: { firstName: true, lastName: true } } },
+  });
+  return new Map(
+    usuarios.map((u) => [u.id, u.employee ? `${u.employee.firstName} ${u.employee.lastName}` : u.email]),
+  );
+}
+
+function toDomain(row: Row, nombres: Map<string, string>): Payslip {
   return {
     id: row.id,
     employeeId: row.employeeId,
@@ -43,6 +56,7 @@ function toDomain(row: Row): Payslip {
     totalDeductions: Number(row.totalDeductions),
     netPay: Number(row.netPay),
     issuedAt: row.issuedAt,
+    issuedByName: row.issuedBy ? nombres.get(row.issuedBy) ?? null : null,
     createdAt: row.createdAt,
     details: row.details.map((d) => ({
       type: d.type as PayslipLine['type'],
@@ -53,6 +67,16 @@ function toDomain(row: Row): Payslip {
       orderIndex: d.orderIndex,
     })),
   };
+}
+
+async function unaFila(row: Row): Promise<Payslip> {
+  const nombres = await resolverNombres([row.issuedBy]);
+  return toDomain(row, nombres);
+}
+
+async function variasFilas(rows: Row[]): Promise<Payslip[]> {
+  const nombres = await resolverNombres(rows.map((r) => r.issuedBy));
+  return rows.map((r) => toDomain(r, nombres));
 }
 
 function detailData(details: PayslipLine[]) {
@@ -83,7 +107,7 @@ function payslipData(data: NewPayslip) {
 export class PrismaPayslipRepository implements PayslipRepository {
   async findById(id: string): Promise<Payslip | null> {
     const row = await prisma.payslip.findUnique({ where: { id }, include });
-    return row ? toDomain(row) : null;
+    return row ? unaFila(row) : null;
   }
 
   async findByPeriod(employeeId: string, year: number, month: number): Promise<Payslip | null> {
@@ -91,7 +115,7 @@ export class PrismaPayslipRepository implements PayslipRepository {
       where: { employeeId_periodYear_periodMonth: { employeeId, periodYear: year, periodMonth: month } },
       include,
     });
-    return row ? toDomain(row) : null;
+    return row ? unaFila(row) : null;
   }
 
   async list(filters: PayslipFilters): Promise<Paginated<Payslip>> {
@@ -100,7 +124,11 @@ export class PrismaPayslipRepository implements PayslipRepository {
       ...(filters.employeeIds ? { employeeId: { in: filters.employeeIds } } : {}),
       ...(filters.periodYear ? { periodYear: filters.periodYear } : {}),
       ...(filters.periodMonth ? { periodMonth: filters.periodMonth } : {}),
-      ...(filters.status ? { status: filters.status as PrismaPayslipStatus } : {}),
+      ...(filters.status
+        ? { status: filters.status as PrismaPayslipStatus }
+        : filters.excludeDraft
+          ? { status: { not: 'DRAFT' } }
+          : {}),
       ...(filters.departmentId ? { employee: { departmentId: filters.departmentId } } : {}),
       ...(filters.search
         ? {
@@ -124,7 +152,7 @@ export class PrismaPayslipRepository implements PayslipRepository {
       }),
       prisma.payslip.count({ where }),
     ]);
-    return { data: rows.map(toDomain), meta: buildMeta(total, filters.page, filters.limit) };
+    return { data: await variasFilas(rows), meta: buildMeta(total, filters.page, filters.limit) };
   }
 
   async listByPeriod(year: number, month: number, employeeIds?: string[]): Promise<Payslip[]> {
@@ -138,7 +166,7 @@ export class PrismaPayslipRepository implements PayslipRepository {
       include,
       orderBy: { employee: { lastName: 'asc' } },
     });
-    return rows.map(toDomain);
+    return variasFilas(rows);
   }
 
   async create(data: NewPayslip): Promise<Payslip> {
@@ -146,7 +174,7 @@ export class PrismaPayslipRepository implements PayslipRepository {
       data: { ...payslipData(data), details: { create: detailData(data.details) } },
       include,
     });
-    return toDomain(row);
+    return unaFila(row);
   }
 
   /** Regenerar un borrador reemplaza sus lineas dentro de una transaccion. */
@@ -159,7 +187,7 @@ export class PrismaPayslipRepository implements PayslipRepository {
         include,
       });
     });
-    return toDomain(row);
+    return unaFila(row);
   }
 
   async issue(ids: string[], issuedBy: string): Promise<number> {
@@ -176,7 +204,7 @@ export class PrismaPayslipRepository implements PayslipRepository {
       data: { status: 'CANCELLED' },
       include,
     });
-    return toDomain(row);
+    return unaFila(row);
   }
 
   async countByPeriod(year: number, month: number): Promise<number> {

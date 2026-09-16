@@ -25,6 +25,8 @@ export interface PayslipView {
   totalEarnings: number;
   totalDeductions: number;
   netPay: number;
+  /** Quien confirmo/emitio la boleta: firma autorizada de RRHH en el PDF. Null si sigue en borrador. */
+  authorizedByName?: string | null;
 }
 
 /** Puerto: el caso de uso pide "el PDF de esta boleta" sin saber que se usa pdfkit. */
@@ -53,7 +55,7 @@ export class PayslipPdfGenerator implements PayslipPdfPort {
 
       doc.y = Math.max(leftEnd, rightEnd) + 24;
       this.netBlock(doc, view);
-      this.footer(doc);
+      this.footer(doc, view);
       doc.end();
     });
   }
@@ -136,14 +138,28 @@ export class PayslipPdfGenerator implements PayslipPdfPort {
     doc.y = y + 50;
   }
 
-  private footer(doc: PDFKit.PDFDocument): void {
+  /**
+   * Dos firmas siempre presentes: la del empleado queda en blanco a proposito
+   * (la firma fisica va ahi, no hay nada que imprimir); la autorizada muestra
+   * quien de RRHH emitio la boleta, para que nunca sea una linea vacia sin
+   * responsable — salvo que la boleta siga en borrador y todavia no la emitio nadie.
+   */
+  private footer(doc: PDFKit.PDFDocument, view: PayslipView): void {
     const y = doc.y + 40;
     doc.strokeColor('#94a3b8');
     doc.moveTo(70, y).lineTo(230, y).stroke();
     doc.moveTo(330, y).lineTo(490, y).stroke();
-    doc.fontSize(8).fillColor(GRAY);
+
+    if (view.authorizedByName) {
+      doc.fontSize(9).fillColor(DARK).font('Helvetica-Bold').text(view.authorizedByName, 330, y - 13, {
+        width: 160,
+        align: 'center',
+      });
+    }
+
+    doc.fontSize(8).fillColor(GRAY).font('Helvetica');
     doc.text('Firma del empleado', 70, y + 6, { width: 160, align: 'center' });
-    doc.text('Firma autorizada', 330, y + 6, { width: 160, align: 'center' });
+    doc.text('Firma autorizada · RRHH', 330, y + 6, { width: 160, align: 'center' });
     doc.fontSize(7).text(
       'Documento generado por el sistema SGRH. Los importes estan expresados en bolivianos (Bs).',
       40,

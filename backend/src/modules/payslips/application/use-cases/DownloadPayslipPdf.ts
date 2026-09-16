@@ -58,6 +58,7 @@ export class DownloadPayslipPdf {
       totalEarnings: payslip.totalEarnings,
       totalDeductions: payslip.totalDeductions,
       netPay: payslip.netPay,
+      authorizedByName: payslip.issuedByName,
     };
   }
 }

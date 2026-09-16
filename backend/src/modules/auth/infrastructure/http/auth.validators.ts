@@ -11,7 +11,7 @@ const passwordRules = z
 
 export const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email('Correo invalido'),
-  password: z.string().min(1, 'La contrasena es obligatoria').max(128),
+  password: z.string().min(1, 'La contraseña es obligatoria').max(128),
 });
 
 export const changePasswordSchema = z.object({

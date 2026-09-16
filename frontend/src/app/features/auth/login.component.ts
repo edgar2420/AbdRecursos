@@ -41,7 +41,7 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
           </div>
 
           <div class="field">
-            <label for="password">Contrasena</label>
+            <label for="password">Contraseña</label>
             <div class="password-field">
               <input
                 id="password"
@@ -52,7 +52,7 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
               <app-eye-toggle [visible]="verClave()" (toggled)="verClave.set($event)" />
             </div>
             @if (form.controls.password.touched && form.controls.password.invalid) {
-              <span class="error-text">La contrasena es obligatoria</span>
+              <span class="error-text">La contraseña es obligatoria</span>
             }
           </div>
 
@@ -69,7 +69,7 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
         </form>
 
         <p class="foot muted">
-          Su sesion se cierra automaticamente por seguridad. Si olvido su contrasena, solicite el
+          Su sesion se cierra automaticamente por seguridad. Si olvido su contraseña, solicite el
           restablecimiento al administrador del sistema.
         </p>
       </section>

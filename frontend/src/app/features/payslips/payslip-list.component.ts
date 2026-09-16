@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { ApiService, saveBlob } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -140,7 +141,7 @@ const MONTHS = [
                     <td><span [class]="payslip.status | badgeClase">{{ payslip.status | etiqueta }}</span></td>
                     <td class="nowrap text-right">
                       <a class="btn btn-ghost btn-sm" [routerLink]="['/boletas', payslip.id]">Ver</a>
-                      <button class="btn btn-ghost btn-sm" (click)="downloadPdf(payslip)">PDF</button>
+                      <button class="btn btn-ghost btn-sm" (click)="verPdf(payslip)">Ver PDF</button>
                     </td>
                   </tr>
                 }
@@ -227,6 +228,16 @@ const MONTHS = [
         </div>
       </app-modal>
     }
+
+    @if (docPreview(); as doc) {
+      <app-modal [title]="doc.titulo" (closed)="cerrarDocPreview()">
+        <iframe #pdfFrame [src]="doc.url" class="pdf-frame" title="Vista previa de la boleta"></iframe>
+        <div footer>
+          <button class="btn btn-ghost" (click)="cerrarDocPreview()">Cerrar</button>
+          <button class="btn btn-primary" (click)="imprimir()">Imprimir</button>
+        </div>
+      </app-modal>
+    }
   `,
   styles: [
     `
@@ -249,13 +260,25 @@ const MONTHS = [
         font-size: 12.5px;
         font-weight: 500;
       }
+      .pdf-frame {
+        width: 100%;
+        height: 68vh;
+        border: 0;
+        border-radius: 8px;
+        background: var(--ink-100);
+      }
     `,
   ],
 })
-export class PayslipListComponent implements OnInit {
+export class PayslipListComponent implements OnInit, OnDestroy {
   private readonly api = inject(ApiService);
   private readonly toast = inject(ToastService);
+  private readonly sanitizer = inject(DomSanitizer);
   readonly auth = inject(AuthService);
+
+  readonly docPreview = signal<{ titulo: string; url: SafeResourceUrl } | null>(null);
+  private docObjectUrl: string | null = null;
+  @ViewChild('pdfFrame') private pdfFrame?: ElementRef<HTMLIFrameElement>;
 
   readonly months = MONTHS.map((label, index) => ({ value: index + 1, label }));
   readonly years = Array.from({ length: 6 }, (_, index) => new Date().getFullYear() - index);
@@ -374,11 +397,39 @@ export class PayslipListComponent implements OnInit {
     });
   }
 
-  downloadPdf(payslip: Payslip): void {
+  verPdf(payslip: Payslip): void {
     this.api.download(`/payslips/${payslip.id}/pdf`).subscribe({
-      next: (response) => saveBlob(response, `boleta-${payslip.employeeCode}.pdf`),
-      error: (error) => this.toast.error('No se pudo descargar', apiErrorMessage(error)),
+      next: (response) => this.mostrarEnVisor(response.body as Blob, `Boleta de ${payslip.employeeName}`),
+      error: (error) => this.toast.error('No se pudo generar el PDF', apiErrorMessage(error)),
     });
+  }
+
+  private mostrarEnVisor(blob: Blob, titulo: string): void {
+    this.cerrarDocPreview();
+    this.docObjectUrl = URL.createObjectURL(blob);
+    this.docPreview.set({ titulo, url: this.sanitizer.bypassSecurityTrustResourceUrl(this.docObjectUrl) });
+  }
+
+  cerrarDocPreview(): void {
+    if (this.docObjectUrl) {
+      URL.revokeObjectURL(this.docObjectUrl);
+      this.docObjectUrl = null;
+    }
+    this.docPreview.set(null);
+  }
+
+  imprimir(): void {
+    const ventana = this.pdfFrame?.nativeElement.contentWindow;
+    if (!ventana) {
+      this.toast.error('El documento todavia no termino de cargar');
+      return;
+    }
+    ventana.focus();
+    ventana.print();
+  }
+
+  ngOnDestroy(): void {
+    this.cerrarDocPreview();
   }
 
   downloadZip(): void {
