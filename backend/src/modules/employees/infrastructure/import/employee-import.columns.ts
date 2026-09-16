@@ -1,0 +1,31 @@
+import { ColumnSpec } from '../../../../shared/infrastructure/excel/ExcelService';
+
+/** Definicion de la plantilla Excel de empleados (2.1 y 2.8). */
+export const EMPLOYEE_IMPORT_COLUMNS: ColumnSpec[] = [
+  { key: 'firstName', header: 'Nombres', required: true, example: 'Maria Elena', note: 'Nombres del empleado' },
+  { key: 'lastName', header: 'Apellidos', required: true, example: 'Quispe Mamani', note: 'Apellidos completos' },
+  { key: 'ci', header: 'CI', required: true, example: '6543210', note: 'Solo numeros; la extension va en su columna' },
+  { key: 'ciExtension', header: 'Extension CI', example: 'LP', note: 'LP, CB, SC, OR, PT, CH, TJ, BE, PD' },
+  { key: 'birthDate', header: 'Fecha nacimiento', example: '1990-05-14', note: 'Formato AAAA-MM-DD' },
+  { key: 'gender', header: 'Genero', example: 'F', note: 'M, F u OTRO' },
+  { key: 'email', header: 'Correo', example: 'maria.quispe@empresa.bo' },
+  { key: 'phone', header: 'Telefono', example: '70012345' },
+  { key: 'address', header: 'Direccion', width: 34, example: 'Av. Arce 1234' },
+  { key: 'hireDate', header: 'Fecha ingreso', required: true, example: '2023-02-01', note: 'Formato AAAA-MM-DD' },
+  {
+    key: 'contractType',
+    header: 'Tipo contrato',
+    example: 'INDEFINIDO',
+    note: 'INDEFINIDO, PLAZO_FIJO, EVENTUAL o CONSULTORIA',
+  },
+  { key: 'baseSalary', header: 'Haber basico', required: true, example: 4500, note: 'Numero en bolivianos, sin separadores' },
+  { key: 'department', header: 'Departamento', example: 'Administracion', note: 'Debe existir en el catalogo' },
+  { key: 'position', header: 'Cargo', example: 'Analista', note: 'Debe existir en el catalogo' },
+  { key: 'supervisorCode', header: 'Codigo supervisor', example: 'EMP-0001', note: 'Codigo del empleado supervisor' },
+  { key: 'bankName', header: 'Banco', example: 'Banco Union' },
+  { key: 'bankAccount', header: 'Cuenta bancaria', example: '10000012345' },
+  { key: 'afpName', header: 'AFP', example: 'Futuro de Bolivia' },
+  { key: 'afpNumber', header: 'Numero AFP', example: 'AB1234567' },
+  { key: 'emergencyContactName', header: 'Contacto emergencia', example: 'Juan Quispe' },
+  { key: 'emergencyContactPhone', header: 'Telefono emergencia', example: '71234567' },
+];

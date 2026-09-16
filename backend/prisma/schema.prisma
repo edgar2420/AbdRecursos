@@ -1,0 +1,633 @@
+// Sistema de Gestion de Recursos Humanos (SGRH) - Bolivia
+// Modelo de datos (ver Prompt Maestro, seccion 7).
+// Nota: todos los identificadores publicos son UUID (seccion 8.2 - proteccion IDOR).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------- enums
+
+enum Role {
+  EMPLOYEE
+  SUPERVISOR
+  HR
+  ADMIN
+}
+
+enum ContractType {
+  INDEFINIDO
+  PLAZO_FIJO
+  EVENTUAL
+  CONSULTORIA
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  ON_LEAVE
+  TERMINATED
+}
+
+enum VacationStatus {
+  PENDING_SUPERVISOR
+  PENDING_HR
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum PayslipStatus {
+  DRAFT
+  ISSUED
+  CANCELLED
+}
+
+enum PayslipLineType {
+  EARNING
+  DEDUCTION
+}
+
+enum AttendanceType {
+  CHECK_IN
+  CHECK_OUT
+}
+
+enum AttendanceSource {
+  WEB
+  MOBILE
+  BIOMETRIC
+  IMPORT
+  MANUAL_HR
+}
+
+enum JustificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ImportType {
+  EMPLOYEES
+  ATTENDANCE
+  SCHEDULES
+}
+
+enum ImportStatus {
+  PENDING
+  VALIDATED
+  PROCESSED
+  FAILED
+}
+
+enum EmployeeChangeType {
+  HIRE
+  PROMOTION
+  SALARY_CHANGE
+  DEPARTMENT_CHANGE
+  POSITION_CHANGE
+  CONTRACT_CHANGE
+  TERMINATION
+  REACTIVATION
+}
+
+// ---------------------------------------------------------------- auth
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  role         Role      @default(EMPLOYEE)
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at")
+  employeeId   String?   @unique @map("employee_id") @db.Uuid
+  employee     Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+
+  refreshTokens RefreshToken[]
+  auditLogs     AuditLog[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([role])
+  @@map("users")
+}
+
+model RefreshToken {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique @map("token_hash")
+  expiresAt  DateTime  @map("expires_at")
+  revokedAt  DateTime? @map("revoked_at")
+  replacedBy String?   @map("replaced_by")
+  userAgent  String?   @map("user_agent")
+  ip         String?
+  /// Ultima vez que la sesion se uso: si pasa el limite de inactividad, se corta.
+  lastUsedAt DateTime  @default(now()) @map("last_used_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ---------------------------------------------------------------- organizacion
+
+model Department {
+  id          String  @id @default(uuid()) @db.Uuid
+  name        String  @unique
+  description String?
+  isActive    Boolean @default(true) @map("is_active")
+
+  employees Employee[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("departments")
+}
+
+model Position {
+  id          String  @id @default(uuid()) @db.Uuid
+  name        String  @unique
+  description String?
+  isActive    Boolean @default(true) @map("is_active")
+
+  employees Employee[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("positions")
+}
+
+// ---------------------------------------------------------------- empleados
+
+model Employee {
+  id              String         @id @default(uuid()) @db.Uuid
+  employeeCode    String         @unique @map("employee_code")
+  firstName       String         @map("first_name")
+  lastName        String         @map("last_name")
+  /// Cifrada en reposo (AES-256-GCM). Para buscarla se usa ciHuella.
+  ci              String
+  /// Huella HMAC de la C.I.: permite buscar y garantizar unicidad sin descifrar.
+  ciHuella        String?        @unique @map("ci_huella")
+  ciExtension     String?        @map("ci_extension")
+  birthDate       DateTime?      @map("birth_date")
+  gender          String?
+  email           String?
+  phone           String?
+  address         String?
+  photoUrl        String?        @map("photo_url")
+  hireDate        DateTime       @map("hire_date")
+  terminationDate DateTime?      @map("termination_date")
+  contractType    ContractType   @default(INDEFINIDO) @map("contract_type")
+  baseSalary      Decimal        @map("base_salary") @db.Decimal(14, 2)
+  bankName        String?        @map("bank_name")
+  /// Cifrada en reposo (AES-256-GCM).
+  bankAccount     String?        @map("bank_account")
+  afpName         String?        @map("afp_name")
+  afpNumber       String?        @map("afp_number")
+  status          EmployeeStatus @default(ACTIVE)
+  isActive        Boolean        @default(true) @map("is_active")
+
+  // Inamovilidad laboral: informativo, no bloquea acciones (seccion 6.2)
+  jobProtection      Boolean   @default(false) @map("job_protection")
+  jobProtectionUntil DateTime? @map("job_protection_until")
+
+  emergencyContactName     String? @map("emergency_contact_name")
+  emergencyContactPhone    String? @map("emergency_contact_phone")
+  emergencyContactRelation String? @map("emergency_contact_relation")
+
+  departmentId String?     @map("department_id") @db.Uuid
+  department   Department? @relation(fields: [departmentId], references: [id])
+  positionId   String?     @map("position_id") @db.Uuid
+  position     Position?   @relation(fields: [positionId], references: [id])
+
+  supervisorId String?    @map("supervisor_id") @db.Uuid
+  supervisor   Employee?  @relation("EmployeeSupervisor", fields: [supervisorId], references: [id])
+  subordinates Employee[] @relation("EmployeeSupervisor")
+
+  user                User?
+  history             EmployeeHistory[]
+  vacationRequests    VacationRequest[]
+  vacationBalances    VacationBalance[]
+  payslips            Payslip[]
+  lactationPermits    LactationPermit[]
+  attendance          AttendanceRecord[]
+  justifications      AttendanceJustification[]
+  scheduleAssignments ScheduleAssignment[]
+  bonuses             EmployeeBonus[]
+  papeletas           Papeleta[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([departmentId])
+  @@index([supervisorId])
+  @@index([lastName, firstName])
+  @@map("employees")
+}
+
+model EmployeeHistory {
+  id            String             @id @default(uuid()) @db.Uuid
+  employeeId    String             @map("employee_id") @db.Uuid
+  employee      Employee           @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  changeType    EmployeeChangeType @map("change_type")
+  field         String?
+  oldValue      String?            @map("old_value")
+  newValue      String?            @map("new_value")
+  effectiveDate DateTime           @map("effective_date")
+  notes         String?
+  changedBy     String?            @map("changed_by") @db.Uuid
+  createdAt     DateTime           @default(now()) @map("created_at")
+
+  @@index([employeeId])
+  @@map("employee_history")
+}
+
+// Bonos configurables por empleado (antiguedad, produccion, otros) - seccion 6.4
+model EmployeeBonus {
+  id         String    @id @default(uuid()) @db.Uuid
+  employeeId String    @map("employee_id") @db.Uuid
+  employee   Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  concept    String
+  amount     Decimal?  @db.Decimal(14, 2)
+  percentage Decimal?  @db.Decimal(7, 4)
+  isActive   Boolean   @default(true) @map("is_active")
+  validFrom  DateTime  @map("valid_from")
+  validUntil DateTime? @map("valid_until")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  @@index([employeeId])
+  @@map("employee_bonuses")
+}
+
+// ---------------------------------------------------------------- vacaciones
+
+model VacationBalance {
+  id           String    @id @default(uuid()) @db.Uuid
+  employeeId   String    @map("employee_id") @db.Uuid
+  employee     Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  periodYear   Int       @map("period_year")
+  entitledDays Decimal   @map("entitled_days") @db.Decimal(6, 2)
+  takenDays    Decimal   @default(0) @map("taken_days") @db.Decimal(6, 2)
+  expiresAt    DateTime? @map("expires_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@unique([employeeId, periodYear])
+  @@map("vacation_balances")
+}
+
+model VacationRequest {
+  id          String         @id @default(uuid()) @db.Uuid
+  employeeId  String         @map("employee_id") @db.Uuid
+  employee    Employee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  startDate   DateTime       @map("start_date")
+  endDate     DateTime       @map("end_date")
+  workingDays Decimal        @map("working_days") @db.Decimal(6, 2)
+  reason      String?
+  status      VacationStatus @default(PENDING_SUPERVISOR)
+
+  supervisorApprovedBy String?   @map("supervisor_approved_by") @db.Uuid
+  supervisorApprovedAt DateTime? @map("supervisor_approved_at")
+  // Motivo obligatorio cuando RRHH cierra el paso del supervisor en su ausencia (aprobacion de emergencia).
+  emergencyReason      String?   @map("emergency_reason")
+  hrApprovedBy         String?   @map("hr_approved_by") @db.Uuid
+  hrApprovedAt         DateTime? @map("hr_approved_at")
+  rejectedBy           String?   @map("rejected_by") @db.Uuid
+  rejectedAt           DateTime? @map("rejected_at")
+  rejectionReason      String?   @map("rejection_reason")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([employeeId])
+  @@index([status])
+  @@index([startDate, endDate])
+  @@map("vacation_requests")
+}
+
+// ---------------------------------------------------------------- boletas de pago
+
+model Payslip {
+  id          String        @id @default(uuid()) @db.Uuid
+  employeeId  String        @map("employee_id") @db.Uuid
+  employee    Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  periodYear  Int           @map("period_year")
+  periodMonth Int           @map("period_month")
+  status      PayslipStatus @default(DRAFT)
+
+  workedDays      Decimal @map("worked_days") @db.Decimal(6, 2)
+  baseSalary      Decimal @map("base_salary") @db.Decimal(14, 2)
+  totalEarnings   Decimal @map("total_earnings") @db.Decimal(14, 2)
+  totalDeductions Decimal @map("total_deductions") @db.Decimal(14, 2)
+  netPay          Decimal @map("net_pay") @db.Decimal(14, 2)
+
+  // Trazabilidad: parametros legales vigentes al momento de generar
+  parametersSnapshot Json? @map("parameters_snapshot")
+
+  issuedAt DateTime? @map("issued_at")
+  issuedBy String?   @map("issued_by") @db.Uuid
+
+  details PayslipDetail[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([employeeId, periodYear, periodMonth])
+  @@index([periodYear, periodMonth])
+  @@map("payslips")
+}
+
+model PayslipDetail {
+  id         String          @id @default(uuid()) @db.Uuid
+  payslipId  String          @map("payslip_id") @db.Uuid
+  payslip    Payslip         @relation(fields: [payslipId], references: [id], onDelete: Cascade)
+  type       PayslipLineType
+  code       String
+  concept    String
+  quantity   Decimal?        @db.Decimal(10, 2)
+  amount     Decimal         @db.Decimal(14, 2)
+  orderIndex Int             @default(0) @map("order_index")
+
+  @@index([payslipId])
+  @@map("payslip_details")
+}
+
+// ---------------------------------------------------------------- lactancia
+
+model LactationPermit {
+  id           String   @id @default(uuid()) @db.Uuid
+  employeeId   String   @map("employee_id") @db.Uuid
+  employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  birthDate    DateTime @map("birth_date")
+  childName    String?  @map("child_name")
+  startDate    DateTime @map("start_date")
+  endDate      DateTime @map("end_date")
+  dailyMinutes Int      @default(60) @map("daily_minutes")
+  slot1Start   String?  @map("slot1_start")
+  slot1End     String?  @map("slot1_end")
+  slot2Start   String?  @map("slot2_start")
+  slot2End     String?  @map("slot2_end")
+  documentUrl  String?  @map("document_url")
+  isActive     Boolean  @default(true) @map("is_active")
+  notes        String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([employeeId])
+  @@index([endDate])
+  @@map("lactation_permits")
+}
+
+// ---------------------------------------------------------------- asistencia
+
+model AttendanceRecord {
+  id          String           @id @default(uuid()) @db.Uuid
+  employeeId  String           @map("employee_id") @db.Uuid
+  employee    Employee         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  timestamp   DateTime
+  type        AttendanceType
+  source      AttendanceSource @default(WEB)
+  deviceId    String?          @map("device_id")
+  latitude    Decimal?         @db.Decimal(10, 6)
+  longitude   Decimal?         @db.Decimal(10, 6)
+  notes       String?
+  lateMinutes Int              @default(0) @map("late_minutes")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([employeeId, timestamp])
+  @@map("attendance_records")
+}
+
+model AttendanceJustification {
+  id            String              @id @default(uuid()) @db.Uuid
+  employeeId    String              @map("employee_id") @db.Uuid
+  employee      Employee            @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  date          DateTime
+  reason        String
+  attachmentUrl String?             @map("attachment_url")
+  status        JustificationStatus @default(PENDING)
+  reviewedBy    String?             @map("reviewed_by") @db.Uuid
+  reviewedAt    DateTime?           @map("reviewed_at")
+  reviewNotes   String?             @map("review_notes")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([employeeId, date])
+  @@map("attendance_justifications")
+}
+
+// ---------------------------------------------------------------- horarios y turnos
+
+model Schedule {
+  id               String  @id @default(uuid()) @db.Uuid
+  name             String  @unique
+  startTime        String  @map("start_time")
+  endTime          String  @map("end_time")
+  breakMinutes     Int     @default(0) @map("break_minutes")
+  toleranceMinutes Int     @default(5) @map("tolerance_minutes")
+  // Dias de la semana: 1=lunes ... 7=domingo
+  weekDays         Int[]   @map("week_days")
+  isNightShift     Boolean @default(false) @map("is_night_shift")
+  isActive         Boolean @default(true) @map("is_active")
+
+  assignments ScheduleAssignment[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("schedules")
+}
+
+model ScheduleAssignment {
+  id         String    @id @default(uuid()) @db.Uuid
+  scheduleId String    @map("schedule_id") @db.Uuid
+  schedule   Schedule  @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  employeeId String    @map("employee_id") @db.Uuid
+  employee   Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  validFrom  DateTime  @map("valid_from")
+  validUntil DateTime? @map("valid_until")
+  isActive   Boolean   @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([employeeId, validFrom])
+  @@map("schedule_assignments")
+}
+
+// ---------------------------------------------------------------- importaciones
+
+model ImportLog {
+  id            String       @id @default(uuid()) @db.Uuid
+  type          ImportType
+  fileName      String       @map("file_name")
+  status        ImportStatus @default(PENDING)
+  totalRows     Int          @default(0) @map("total_rows")
+  validRows     Int          @default(0) @map("valid_rows")
+  errorRows     Int          @default(0) @map("error_rows")
+  processedRows Int          @default(0) @map("processed_rows")
+  uploadedBy    String       @map("uploaded_by") @db.Uuid
+  processedAt   DateTime?    @map("processed_at")
+
+  rows ImportLogRow[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("import_logs")
+}
+
+model ImportLogRow {
+  id          String    @id @default(uuid()) @db.Uuid
+  importLogId String    @map("import_log_id") @db.Uuid
+  importLog   ImportLog @relation(fields: [importLogId], references: [id], onDelete: Cascade)
+  rowNumber   Int       @map("row_number")
+  isValid     Boolean   @map("is_valid")
+  errors      String[]
+  data        Json
+
+  @@index([importLogId])
+  @@map("import_log_rows")
+}
+
+// ---------------------------------------------------------------- auditoria y parametros
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String?  @map("entity_id")
+  changes   Json?
+  ip        String?
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// Parametros legales versionados por fecha de vigencia (seccion 6).
+// Nada de porcentajes ni montos hardcodeados en el codigo.
+model LegalParameter {
+  id          String    @id @default(uuid()) @db.Uuid
+  key         String
+  value       String
+  valueType   String    @default("number") @map("value_type")
+  description String?
+  unit        String?
+  validFrom   DateTime  @map("valid_from")
+  validUntil  DateTime? @map("valid_until")
+  createdBy   String?   @map("created_by") @db.Uuid
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([key, validFrom])
+  @@index([key])
+  @@map("legal_parameters")
+}
+
+model Holiday {
+  id         String   @id @default(uuid()) @db.Uuid
+  date       DateTime @unique
+  name       String
+  isNational Boolean  @default(true) @map("is_national")
+
+  @@map("holidays")
+}
+
+// ---------------------------------------------------------------- papeletas
+
+/// Las dos papeletas en papel del Departamento de RR.HH., ahora digitales.
+enum PapeletaTipo {
+  HORAS_EXTRAS
+  SALIDA
+}
+
+/// Recuadro de la papeleta de salida: particular, oficial o medica.
+enum SalidaMotivo {
+  PARTICULAR
+  OFICIAL
+  MEDICA
+}
+
+enum PapeletaEstado {
+  PENDIENTE_JEFE_AREA
+  PENDIENTE_RRHH
+  APROBADA
+  RECHAZADA
+  ANULADA
+}
+
+/// Recargo aplicable a las horas extra, para que la boleta las liquide bien.
+enum RecargoHoraExtra {
+  DIURNA
+  NOCTURNA
+  FERIADO
+}
+
+model Papeleta {
+  id     String         @id @default(uuid()) @db.Uuid
+  numero String         @unique
+  tipo   PapeletaTipo
+  estado PapeletaEstado @default(PENDIENTE_JEFE_AREA)
+
+  employeeId String   @map("employee_id") @db.Uuid
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  /// Area o dependencia declarada en la papeleta al momento de emitirla.
+  area       String
+
+  /// Fecha del documento ("Santa Cruz, ... de ... del 20..").
+  fecha DateTime
+
+  // --- papeleta de horas extras ---
+  trabajoRealizado String?           @map("trabajo_realizado")
+  desde            DateTime?
+  hasta            DateTime?
+  totalHoras       Decimal?          @map("total_horas") @db.Decimal(6, 2)
+  recargo          RecargoHoraExtra?
+
+  // --- papeleta de salida ---
+  salidaMotivo     SalidaMotivo? @map("salida_motivo")
+  motivo           String?
+  tiempoSolicitado String?       @map("tiempo_solicitado")
+  horaSalida       String?       @map("hora_salida")
+  horaRetorno      String?       @map("hora_retorno")
+  // Certificado o foto adjunta (tipico de la salida MEDICA): ruta servida por /api/v1/uploads/:archivo.
+  attachmentUrl    String?       @map("attachment_url")
+
+  // --- firmas: quien, cuando y el sello de integridad de lo firmado ---
+  firmaAreaBy   String?   @map("firma_area_by") @db.Uuid
+  firmaAreaAt   DateTime? @map("firma_area_at")
+  firmaAreaHash String?   @map("firma_area_hash")
+  firmaRrhhBy   String?   @map("firma_rrhh_by") @db.Uuid
+  firmaRrhhAt   DateTime? @map("firma_rrhh_at")
+  firmaRrhhHash String?   @map("firma_rrhh_hash")
+
+  rechazadaBy   String?   @map("rechazada_by") @db.Uuid
+  rechazadaAt   DateTime? @map("rechazada_at")
+  motivoRechazo String?   @map("motivo_rechazo")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([employeeId])
+  @@index([tipo, estado])
+  @@index([fecha])
+  @@map("papeletas")
+}

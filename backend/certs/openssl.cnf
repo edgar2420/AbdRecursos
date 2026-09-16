@@ -1,0 +1,28 @@
+# Certificado de desarrollo para el SGRH: cubre localhost y la IP de la maquina
+# en la red local, para poder abrir la aplicacion desde el celular por HTTPS.
+[req]
+default_bits       = 2048
+prompt             = no
+default_md         = sha256
+distinguished_name = dn
+x509_extensions    = v3_req
+
+[dn]
+C  = BO
+ST = Santa Cruz
+L  = Warnes
+O  = Laboratorios ABD LTDA
+OU = Departamento de RRHH
+CN = SGRH desarrollo
+
+[v3_req]
+basicConstraints = CA:FALSE
+keyUsage         = digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName   = @alt_names
+
+[alt_names]
+DNS.1 = localhost
+IP.1  = 127.0.0.1
+IP.2  = 192.168.0.37
+IP.3  = 192.168.2.150

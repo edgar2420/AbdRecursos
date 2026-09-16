@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.angular/
+.env
+*.log
+backend/storage/uploads/
+frontend/.angular/
+
+# Certificados TLS de desarrollo: autofirmados, se regeneran con backend/certs/generar.sh
+backend/certs/*.pem
+frontend/certs/*.pem

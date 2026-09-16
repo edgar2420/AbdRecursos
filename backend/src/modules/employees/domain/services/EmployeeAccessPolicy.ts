@@ -1,0 +1,62 @@
+import { ForbiddenError } from '../../../../shared/domain/errors';
+import { EmployeeRepository } from '../repositories/EmployeeRepository';
+
+export interface AccessActor {
+  userId: string;
+  role: 'EMPLOYEE' | 'SUPERVISOR' | 'HR' | 'ADMIN';
+  employeeId: string | null;
+}
+
+/**
+ * Politica de acceso a datos de un empleado. Vive en el dominio y la invocan los
+ * casos de uso: la verificacion de propiedad NO puede quedar solo en un
+ * middleware de rol (seccion 8.2 - proteccion contra IDOR).
+ */
+export class EmployeeAccessPolicy {
+  constructor(private readonly employees: EmployeeRepository) {}
+
+  isPrivileged(actor: AccessActor): boolean {
+    return actor.role === 'HR' || actor.role === 'ADMIN';
+  }
+
+  isSelf(actor: AccessActor, employeeId: string): boolean {
+    return actor.employeeId !== null && actor.employeeId === employeeId;
+  }
+
+  async canView(actor: AccessActor, employeeId: string): Promise<boolean> {
+    if (this.isPrivileged(actor)) return true;
+    if (this.isSelf(actor, employeeId)) return true;
+    if (actor.role === 'SUPERVISOR' && actor.employeeId) {
+      return this.employees.isSupervisorOf(actor.employeeId, employeeId);
+    }
+    return false;
+  }
+
+  async assertCanView(actor: AccessActor, employeeId: string): Promise<void> {
+    if (!(await this.canView(actor, employeeId))) {
+      throw new ForbiddenError('No tiene permisos sobre este empleado');
+    }
+  }
+
+  /** Editar datos de un empleado (fuera del propio perfil) es exclusivo de RRHH/Admin. */
+  assertCanManage(actor: AccessActor): void {
+    if (!this.isPrivileged(actor)) {
+      throw new ForbiddenError('Solo RRHH o Administracion pueden modificar empleados');
+    }
+  }
+
+  /**
+   * Alcance de un listado segun el rol:
+   * - RRHH/Admin: todos
+   * - Supervisor: su equipo (y el mismo)
+   * - Empleado: solo el mismo
+   */
+  async scopeFor(actor: AccessActor): Promise<{ all: boolean; employeeIds: string[] }> {
+    if (this.isPrivileged(actor)) return { all: true, employeeIds: [] };
+    if (actor.role === 'SUPERVISOR' && actor.employeeId) {
+      const team = await this.employees.listTeamIds(actor.employeeId);
+      return { all: false, employeeIds: [...new Set([...team, actor.employeeId])] };
+    }
+    return { all: false, employeeIds: actor.employeeId ? [actor.employeeId] : [] };
+  }
+}
