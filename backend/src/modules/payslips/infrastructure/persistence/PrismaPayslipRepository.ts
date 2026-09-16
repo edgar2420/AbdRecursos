@@ -1,6 +1,7 @@
 import { Prisma, PayslipStatus as PrismaPayslipStatus } from '@prisma/client';
 import { prisma } from '../../../../shared/infrastructure/database/prisma';
 import { buildMeta, Paginated } from '../../../../shared/domain/pagination';
+import { searchTokensWhere } from '../../../../shared/infrastructure/http/query';
 import {
   NewPayslip,
   Payslip,
@@ -131,15 +132,11 @@ export class PrismaPayslipRepository implements PayslipRepository {
           : {}),
       ...(filters.departmentId ? { employee: { departmentId: filters.departmentId } } : {}),
       ...(filters.search
-        ? {
-            employee: {
-              OR: [
-                { firstName: { contains: filters.search, mode: 'insensitive' } },
-                { lastName: { contains: filters.search, mode: 'insensitive' } },
-                { employeeCode: { contains: filters.search, mode: 'insensitive' } },
-              ],
-            },
-          }
+        ? searchTokensWhere(filters.search, (t) => [
+            { employee: { firstName: { contains: t, mode: 'insensitive' as const } } },
+            { employee: { lastName: { contains: t, mode: 'insensitive' as const } } },
+            { employee: { employeeCode: { contains: t, mode: 'insensitive' as const } } },
+          ])
         : {}),
     };
     const [rows, total] = await Promise.all([

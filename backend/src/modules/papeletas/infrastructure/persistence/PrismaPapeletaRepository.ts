@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../../../shared/infrastructure/database/prisma';
 import { buildMeta, Paginated } from '../../../../shared/domain/pagination';
+import { searchTokensWhere } from '../../../../shared/infrastructure/http/query';
 import {
   NuevaPapeletaHorasExtras,
   NuevaPapeletaSalida,
@@ -107,14 +108,12 @@ export class PrismaPapeletaRepository implements PapeletaRepository {
           }
         : {}),
       ...(filters.search
-        ? {
-            OR: [
-              { numero: { contains: filters.search, mode: 'insensitive' } },
-              { employee: { firstName: { contains: filters.search, mode: 'insensitive' } } },
-              { employee: { lastName: { contains: filters.search, mode: 'insensitive' } } },
-              { employee: { employeeCode: { contains: filters.search, mode: 'insensitive' } } },
-            ],
-          }
+        ? searchTokensWhere(filters.search, (t) => [
+            { numero: { contains: t, mode: 'insensitive' as const } },
+            { employee: { firstName: { contains: t, mode: 'insensitive' as const } } },
+            { employee: { lastName: { contains: t, mode: 'insensitive' as const } } },
+            { employee: { employeeCode: { contains: t, mode: 'insensitive' as const } } },
+          ])
         : {}),
     };
 

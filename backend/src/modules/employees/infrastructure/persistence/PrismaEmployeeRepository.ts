@@ -1,7 +1,7 @@
 import { ContractType as PrismaContractType, EmployeeStatus as PrismaStatus, Prisma } from '@prisma/client';
 import { prisma } from '../../../../shared/infrastructure/database/prisma';
 import { buildMeta, Paginated, PageQuery } from '../../../../shared/domain/pagination';
-import { safeSort } from '../../../../shared/infrastructure/http/query';
+import { safeSort, searchTokensWhere } from '../../../../shared/infrastructure/http/query';
 import {
   ContractType,
   Employee,
@@ -85,10 +85,17 @@ function buildWhere(filters: Partial<EmployeeFilters>): Prisma.EmployeeWhereInpu
     ...(filters.search
       ? {
           OR: [
-            { firstName: { contains: filters.search, mode: 'insensitive' } },
-            { lastName: { contains: filters.search, mode: 'insensitive' } },
-            { employeeCode: { contains: filters.search, mode: 'insensitive' } },
-            { email: { contains: filters.search, mode: 'insensitive' } },
+            // Nombre y apellido por separado ("Maria Quispe" exige ambas palabras,
+            // en cualquier orden, sin importar en que campo caiga cada una).
+            searchTokensWhere(filters.search, (t) => [
+              { firstName: { contains: t, mode: 'insensitive' } },
+              { lastName: { contains: t, mode: 'insensitive' } },
+              { employeeCode: { contains: t, mode: 'insensitive' } },
+              { email: { contains: t, mode: 'insensitive' } },
+            ]),
+            // La C.I. esta cifrada: solo se puede buscar por coincidencia exacta
+            // via su huella (HMAC), nunca por fragmento.
+            { ciHuella: cipher.huella(filters.search.trim()) },
           ],
         }
       : {}),

@@ -54,7 +54,7 @@ import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../s
             <input
               id="search"
               type="search"
-              placeholder="Nombre, C.I., codigo o correo"
+              placeholder="Nombre y apellido, C.I. completo, codigo o correo"
               [value]="filters().search"
               (input)="setFilter('search', $any($event.target).value)"
             />

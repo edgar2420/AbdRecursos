@@ -23,3 +23,21 @@ export function safeSort<T extends string>(
 ): T {
   return allowed.includes(sort as T) ? (sort as T) : fallback;
 }
+
+/**
+ * Busqueda por varias palabras a la vez (p.ej. "Maria Quispe": nombre y
+ * apellido en campos separados). Un `contains` simple sobre una sola palabra
+ * nunca la encuentra, porque ningun campo individual tiene el texto completo.
+ * Aca se exige que CADA palabra aparezca en ALGUNO de los campos dados
+ * (AND de palabras, OR de campos por palabra) - asi "Maria Quispe" matchea a
+ * quien tenga "Maria" en el nombre Y "Quispe" en el apellido, sin importar
+ * el orden ni que esten en campos distintos.
+ */
+export function searchTokensWhere<T extends object>(
+  search: string,
+  fieldsForToken: (token: string) => T[],
+): { AND: { OR: T[] }[] } | Record<string, never> {
+  const tokens = search.trim().split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return {};
+  return { AND: tokens.map((token) => ({ OR: fieldsForToken(token) })) };
+}
