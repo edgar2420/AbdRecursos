@@ -35,11 +35,27 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
   template: `
     <div class="page">
       <app-page-header title="Asistencia" subtitle="Tardanzas, horas trabajadas y justificaciones del equipo">
-        <button class="btn btn-ghost btn-sm" (click)="export('excel')">Exportar Excel</button>
-        <button class="btn btn-ghost btn-sm" (click)="export('pdf')">Exportar PDF</button>
+        <button class="btn btn-ghost btn-sm" (click)="export('excel')">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+            <path d="M14 2v6h6" />
+            <path d="m9.5 12.5 5 5M14.5 12.5l-5 5" />
+          </svg>
+          Exportar Excel
+        </button>
+        <button class="btn btn-ghost btn-sm" (click)="export('pdf')">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
+            <path d="M14 2v6h6" />
+            <path d="M9 13h1.5a1.5 1.5 0 0 1 0 3H9v-3Zm0 3v2" />
+            <path d="M13.5 18v-5h2M13.5 15.5h1.7" />
+            <path d="M18 13v5h1.2a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1H18Z" />
+          </svg>
+          Exportar PDF
+        </button>
       </app-page-header>
 
-      <app-card>
+      <app-card heading="Resumen por empleado" [padded]="false">
         <div class="filters">
           <div class="field">
             <label>Desde</label>
@@ -58,15 +74,17 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
               }
             </select>
           </div>
+          <div class="field flex-1">
+            <label>Buscar</label>
+            <input type="search" placeholder="Nombre y apellido, codigo o departamento" [value]="search()" (input)="setSearch($any($event.target).value)" />
+          </div>
           <button class="btn btn-primary btn-sm" (click)="load()">Aplicar</button>
         </div>
-      </app-card>
 
-      <app-card heading="Resumen por empleado" [padded]="false">
         @if (loading()) {
           <app-state mode="loading" title="Calculando asistencia"></app-state>
         } @else if (rows().length === 0) {
-          <app-state title="Sin datos en el rango" message="Seleccione otro rango de fechas o departamento."></app-state>
+          <app-state title="Sin datos en el rango" message="Ajuste los filtros o la busqueda."></app-state>
         } @else {
           <div class="table-wrap">
             <table class="data">
@@ -105,6 +123,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
               </tbody>
             </table>
           </div>
+          <app-paginator [meta]="meta()" (pageChange)="goToPage($event)" (limitChange)="setLimit($event)" />
         }
       </app-card>
 
@@ -161,6 +180,8 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
         flex-wrap: wrap;
         gap: 12px;
         align-items: flex-end;
+        padding: 16px 18px;
+        border-bottom: 1px solid var(--ink-200);
       }
       .filters .field {
         min-width: 160px;
@@ -183,6 +204,7 @@ export class AttendanceReportComponent implements OnInit {
 
   readonly loading = signal(true);
   readonly rows = signal<AttendanceReportRow[]>([]);
+  readonly meta = signal<PageMeta | null>(null);
   readonly departments = signal<CatalogItem[]>([]);
   readonly justifications = signal<AttendanceJustification[]>([]);
   readonly justificationsMeta = signal<PageMeta | null>(null);
@@ -190,7 +212,12 @@ export class AttendanceReportComponent implements OnInit {
   readonly from = signal(firstDayOfMonth());
   readonly to = signal(new Date().toISOString().slice(0, 10));
   readonly departmentId = signal('');
+  readonly search = signal('');
+  readonly page = signal(1);
+  readonly limit = signal(20);
   readonly justificationsPage = signal(1);
+
+  private searchTimer?: ReturnType<typeof setTimeout>;
 
   ngOnInit(): void {
     this.api.list<CatalogItem>('/employees/departments', { limit: 100 }).subscribe({
@@ -200,17 +227,39 @@ export class AttendanceReportComponent implements OnInit {
     this.loadJustifications();
   }
 
+  setSearch(value: string): void {
+    this.search.set(value);
+    this.page.set(1);
+    clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => this.load(), 320);
+  }
+
+  goToPage(page: number): void {
+    this.page.set(page);
+    this.load();
+  }
+
+  setLimit(limit: number): void {
+    this.limit.set(limit);
+    this.page.set(1);
+    this.load();
+  }
+
   load(): void {
     this.loading.set(true);
     this.api
-      .get<AttendanceReportRow[]>('/attendance/report', {
+      .list<AttendanceReportRow>('/attendance/report', {
         from: this.from(),
         to: this.to(),
         departmentId: this.departmentId() || undefined,
+        search: this.search() || undefined,
+        page: this.page(),
+        limit: this.limit(),
       })
       .subscribe({
         next: (response) => {
           this.rows.set(response.data);
+          this.meta.set(response.meta);
           this.loading.set(false);
         },
         error: (error) => {
@@ -258,6 +307,7 @@ export class AttendanceReportComponent implements OnInit {
         from: this.from(),
         to: this.to(),
         departmentId: this.departmentId() || undefined,
+        search: this.search() || undefined,
         format,
       })
       .subscribe({

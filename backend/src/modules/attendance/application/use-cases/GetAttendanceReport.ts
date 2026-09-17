@@ -37,23 +37,39 @@ export class GetAttendanceReport {
 
   async execute(
     actor: AccessActor,
-    input: { from: Date; to: Date; employeeId?: string; departmentId?: string; includeDays?: boolean },
-  ): Promise<AttendanceReportRow[]> {
+    input: {
+      from: Date;
+      to: Date;
+      employeeId?: string;
+      departmentId?: string;
+      search?: string;
+      page?: number;
+      limit?: number;
+      includeDays?: boolean;
+    },
+  ): Promise<{ rows: AttendanceReportRow[]; total: number }> {
     if (daysBetween(input.from, input.to) > MAX_RANGE_DAYS) {
       throw new ForbiddenError(`El rango maximo del reporte es de ${MAX_RANGE_DAYS} dias`);
     }
 
     const scope = await this.policy.scopeFor(actor);
-    const roster = await this.employees.listAll({
+    let roster = await this.employees.listAll({
       isActive: true,
       ...(input.departmentId ? { departmentId: input.departmentId } : {}),
+      ...(input.search ? { search: input.search } : {}),
       ...(input.employeeId ? { ids: [input.employeeId] } : {}),
       ...(scope.all ? {} : { ids: input.employeeId ? [input.employeeId] : scope.employeeIds }),
     });
     if (!scope.all && input.employeeId && !scope.employeeIds.includes(input.employeeId)) {
       throw new ForbiddenError('No tiene acceso a la asistencia de ese empleado');
     }
-    if (roster.length === 0) return [];
+    if (roster.length === 0) return { rows: [], total: 0 };
+
+    const total = roster.length;
+    if (input.page && input.limit) {
+      const start = (input.page - 1) * input.limit;
+      roster = roster.slice(start, start + input.limit);
+    }
 
     const employeeIds = roster.map((e) => e.id);
     const [records, assignments, justified, params] = await Promise.all([
@@ -66,7 +82,7 @@ export class GetAttendanceReport {
     const calculator = new AttendanceCalculator(params);
     const justifiedSet = new Set(justified.map((j) => `${j.employeeId}:${toDateOnlyString(j.date)}`));
 
-    return roster.map((employee) => {
+    const rows = roster.map((employee) => {
       const assignment = assignments.find((a) => a.employeeId === employee.id) ?? null;
       const schedule = assignment
         ? {
@@ -110,5 +126,7 @@ export class GetAttendanceReport {
         days: input.includeDays ? days : [],
       };
     });
+
+    return { rows, total };
   }
 }

@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { z } from 'zod';
 import { AuthenticatedRequest, requireActor } from '../../../../shared/infrastructure/http/types';
 import { validated } from '../../../../shared/infrastructure/http/middlewares/validate';
+import { buildMeta } from '../../../../shared/domain/pagination';
 import { ExcelService } from '../../../../shared/infrastructure/excel/ExcelService';
 import { ReportPdfGenerator } from '../../../../shared/infrastructure/pdf/ReportPdfGenerator';
 import { RegisterAttendance } from '../../application/use-cases/RegisterAttendance';
@@ -57,7 +58,12 @@ export class AttendanceController {
 
   report = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     const query = validated<z.infer<typeof reportQuerySchema>>(req, 'query');
-    const rows = await this.reportUseCase.execute(requireActor(req), query);
+    const isExport = query.format === 'excel' || query.format === 'pdf';
+    const { rows, total } = await this.reportUseCase.execute(requireActor(req), {
+      ...query,
+      page: isExport ? undefined : query.page,
+      limit: isExport ? undefined : query.limit,
+    });
     const period = `${query.from.toISOString().slice(0, 10)} a ${query.to.toISOString().slice(0, 10)}`;
 
     if (query.format === 'excel') {
@@ -74,7 +80,7 @@ export class AttendanceController {
       res.send(buffer);
       return;
     }
-    res.json({ data: rows, meta: { period, total: rows.length } });
+    res.json({ data: rows, meta: { ...buildMeta(total, query.page, query.limit), period } });
   };
 
   createJustification = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
