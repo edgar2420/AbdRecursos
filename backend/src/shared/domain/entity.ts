@@ -1,4 +1,3 @@
-/** Base de entidad de dominio: identidad por UUID, igualdad por id. */
 export abstract class Entity {
   protected constructor(public readonly id: string) {}
 

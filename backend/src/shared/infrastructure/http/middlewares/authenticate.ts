@@ -3,7 +3,6 @@ import { TokenServicePort } from '../../security/JwtService';
 import { UnauthorizedError } from '../../../domain/errors';
 import { AuthenticatedRequest } from '../types';
 
-/** Verifica el access token y publica el actor en el request. */
 export function authenticate(tokens: TokenServicePort) {
   return (req: AuthenticatedRequest, _res: Response, next: NextFunction): void => {
     const header = req.header('authorization');

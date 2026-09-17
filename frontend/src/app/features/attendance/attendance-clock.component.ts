@@ -13,11 +13,6 @@ import {
 } from '../../shared/components/ui.components';
 import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/format.pipes';
 
-/**
- * Marcaje de entrada/salida. Pensado para movil: el empleado marca desde el
- * celular (seccion 10). La geolocalizacion es opcional y solo se envia si el
- * navegador la concede.
- */
 @Component({
   selector: 'app-attendance-clock',
   standalone: true,

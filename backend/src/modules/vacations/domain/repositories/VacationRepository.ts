@@ -26,17 +26,8 @@ export interface VacationRepository {
       emergencyReason?: string | null;
     },
   ): Promise<VacationRequest>;
-  /** Dias ya tomados (aprobados) y en tramite, para el calculo del saldo. */
   sumDays(employeeId: string, year: number): Promise<{ approved: number; pending: number }>;
-  /**
-   * Solicitudes del empleado que consumen saldo (aprobadas o en tramite), para
-   * imputar cada una a la gestion que corresponde segun su fecha de inicio.
-   */
   listConsuming(employeeId: string): Promise<VacationRequest[]>;
-  /**
-   * Historico migrado del cuadro de RR.HH.: dias otorgados y tomados por
-   * gestion antes de que el sistema existiera.
-   */
   historicalGestiones(
     employeeId: string,
   ): Promise<{ periodYear: number; entitledDays: number; takenDays: number }[]>;

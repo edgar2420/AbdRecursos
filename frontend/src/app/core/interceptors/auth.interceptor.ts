@@ -8,11 +8,6 @@ import { ToastService } from '../services/toast.service';
 let refreshing = false;
 const refreshed$ = new BehaviorSubject<string | null>(null);
 
-/**
- * Adjunta el JWT, refresca el token cuando expira y centraliza el manejo de
- * 401/403 (seccion 4.3). Una sola peticion de refresco a la vez: el resto
- * espera y se reintenta con el token nuevo.
- */
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const auth = inject(AuthService);
   const toast = inject(ToastService);
@@ -72,7 +67,6 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
   );
 };
 
-/** Mensaje legible de un error de la API para mostrar en formularios. */
 export function apiErrorMessage(error: unknown, fallback = 'Ocurrio un error'): string {
   const httpError = error as HttpErrorResponse;
   const body = httpError?.error?.error;

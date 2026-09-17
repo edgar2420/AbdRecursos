@@ -1,21 +1,15 @@
 import { ChangeDetectionStrategy, Component, Input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-/**
- * Paleta categorica validada (orden fijo: nunca se reordena ni se genera un
- * noveno tono). Sirve para series que se distinguen entre si (tipo de
- * contrato, etc.). Para comparar magnitud de una sola metrica (dotacion por
- * departamento) se usa un solo tono secuencial: ver `--brand-*` en styles.scss.
- */
 export const PALETA_CATEGORICA = [
-  '#2a78d6', // 1 azul
-  '#eb6834', // 2 naranja
-  '#1baf7a', // 3 aqua
-  '#eda100', // 4 amarillo
-  '#e87ba4', // 5 magenta
-  '#008300', // 6 verde
-  '#4a3aa7', // 7 violeta
-  '#e34948', // 8 rojo
+  '#2a78d6',
+  '#eb6834',
+  '#1baf7a',
+  '#eda100',
+  '#e87ba4',
+  '#008300',
+  '#4a3aa7',
+  '#e34948',
 ] as const;
 
 export interface BarListRow {
@@ -23,12 +17,6 @@ export interface BarListRow {
   value: number;
 }
 
-/**
- * Comparacion de magnitud de una sola metrica entre categorias (p.ej.
- * dotacion por departamento): un solo tono secuencial, ordenado de mayor a
- * menor, con el valor como etiqueta directa. Sin leyenda: una sola serie no
- * la necesita.
- */
 @Component({
   selector: 'app-bar-list',
   standalone: true,
@@ -89,7 +77,6 @@ export interface BarListRow {
   ],
 })
 export class BarListComponent {
-  /** Filas ya ordenadas descendente; si hay mas de `limite`, el resto se pliega en "Otros". */
   @Input({ required: true }) set rows(value: BarListRow[]) {
     const ordenadas = [...value].sort((a, b) => b.value - a.value);
     const limite = 7;
@@ -115,12 +102,6 @@ export interface StackedSegment {
   value: number;
 }
 
-/**
- * Parte-todo entre categorias con nombre propio (p.ej. tipo de contrato):
- * una sola barra apilada al 100%, colores categoricos en orden fijo, y
- * leyenda con conteo y porcentaje (etiqueta directa obligatoria a partir de
- * 4 series).
- */
 @Component({
   selector: 'app-stacked-bar',
   standalone: true,
@@ -214,12 +195,6 @@ export interface DonutSlice {
   value: number;
 }
 
-/**
- * Parte-todo en forma de torta/dona: colores categoricos en orden fijo,
- * etiqueta directa en la leyenda (conteo + porcentaje) y total al centro.
- * Si hay mas de 8 categorias, las que sobran se pliegan en "Otros" para no
- * romper la seguridad del orden categorico.
- */
 @Component({
   selector: 'app-donut-chart',
   standalone: true,
@@ -379,9 +354,6 @@ export class DonutChartComponent {
         const largo = (s.value / totalValor) * circunferencia;
         const dash = `${largo} ${circunferencia - largo}`;
         const offset = -acumulado;
-        // Angulo medio de la porcion (en el espacio local, antes de que el
-        // grupo padre la rote -90): sirve para que al pasar el cursor la
-        // porcion se desplace hacia afuera, en su propia direccion.
         const anguloMedioRad = ((acumulado + largo / 2) / circunferencia) * 2 * Math.PI;
         acumulado += largo;
         return {
@@ -402,11 +374,6 @@ export class DonutChartComponent {
   slices = signal<(DonutSlice & { percent: number; dash: string; offset: number; tx: number; ty: number; color: string })[]>([]);
 }
 
-/**
- * Un ratio contra un umbral (rotacion, ausentismo): una sola barra tipo
- * medidor, color de estado segun el umbral (nunca solo color: siempre con
- * icono y etiqueta de texto).
- */
 @Component({
   selector: 'app-meter',
   standalone: true,
@@ -500,10 +467,8 @@ export class MeterComponent {
   @Input({ required: true }) value = 0;
   @Input() unit = '%';
   @Input() hint?: string;
-  /** Umbrales: por debajo de warningAt es "good", entre warningAt y criticalAt es "warning", por encima es "critical". */
   @Input() warningAt = 5;
   @Input() criticalAt = 10;
-  /** Referencia visual de la barra: a que valor corresponde el 100% del track. */
   @Input() scaleMax = 20;
 
   estado(): 'good' | 'warning' | 'critical' {

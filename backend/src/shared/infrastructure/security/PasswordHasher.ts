@@ -1,7 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { env } from '../config/env';
 
-/** Puerto de hashing (el dominio depende de la interfaz, no de bcrypt). */
 export interface PasswordHasherPort {
   hash(plain: string): Promise<string>;
   compare(plain: string, hash: string): Promise<boolean>;

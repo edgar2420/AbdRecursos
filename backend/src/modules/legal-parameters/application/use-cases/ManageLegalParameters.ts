@@ -13,10 +13,6 @@ export class ListLegalParameters {
   }
 }
 
-/**
- * Crear un parametro no pisa el historico: cierra la vigencia del valor anterior
- * y abre uno nuevo, para poder recalcular boletas pasadas con sus valores.
- */
 export class CreateLegalParameterVersion {
   constructor(
     private readonly repository: LegalParameterRepository,

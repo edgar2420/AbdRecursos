@@ -13,8 +13,6 @@ import {
 export function legalParameterRoutes(controller: LegalParameterController): Router {
   const router = Router();
 
-  // Cualquier usuario autenticado puede leer los valores vigentes (la UI los usa
-  // para mostrar reglas), pero solo RRHH/Admin puede modificarlos.
   router.get('/effective', asyncHandler(controller.effective));
   router.get(
     '/',

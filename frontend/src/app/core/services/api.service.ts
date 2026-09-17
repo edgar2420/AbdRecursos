@@ -6,7 +6,6 @@ import { Envelope, Paginated } from '../models/api.models';
 
 export type QueryParams = Record<string, string | number | boolean | undefined | null>;
 
-/** Cliente HTTP unico: centraliza la URL base y el armado de query params. */
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
@@ -42,7 +41,6 @@ export class ApiService {
     return this.http.request<T>('delete', `${this.baseUrl}${path}`, { body: body ?? {} });
   }
 
-  /** Descargas (PDF, Excel, ZIP): el navegador recibe el binario tal cual. */
   download(path: string, query?: QueryParams): Observable<HttpResponseBlob> {
     return this.http.get(`${this.baseUrl}${path}`, {
       params: this.toParams(query),
@@ -61,7 +59,6 @@ export interface HttpResponseBlob {
   headers: { get(name: string): string | null };
 }
 
-/** Dispara la descarga en el navegador respetando el nombre enviado por la API. */
 export function saveBlob(response: HttpResponseBlob, fallbackName: string): void {
   const disposition = response.headers.get('content-disposition') ?? '';
   const match = /filename="?([^"]+)"?/.exec(disposition);
@@ -73,14 +70,6 @@ export function saveBlob(response: HttpResponseBlob, fallbackName: string): void
   URL.revokeObjectURL(url);
 }
 
-/**
- * Abre el PDF en una pestana para verlo antes de imprimir, en vez de forzar
- * la descarga (el visor nativo del navegador ya trae "Imprimir" y "Guardar").
- *
- * `ventana` debe venir de un `window.open('', '_blank')` hecho en el mismo
- * clic del usuario (sincronico): si se abre recien aca, despues de esperar
- * la respuesta HTTP, la mayoria de navegadores lo bloquea como pop-up.
- */
 export function previewBlob(response: HttpResponseBlob, ventana: Window | null): void {
   const url = URL.createObjectURL(response.body as Blob);
   if (ventana) {
@@ -88,7 +77,5 @@ export function previewBlob(response: HttpResponseBlob, ventana: Window | null):
   } else {
     window.open(url, '_blank');
   }
-  // Se revoca despues, no al toque: si se revoca de inmediato algunos
-  // navegadores todavia no terminaron de cargar el blob en la pestana nueva.
   setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }

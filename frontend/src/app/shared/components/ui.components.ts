@@ -3,15 +3,6 @@ import { CommonModule } from '@angular/common';
 import { ToastService } from '../../core/services/toast.service';
 import { PageMeta } from '../../core/models/api.models';
 
-/**
- * Boton "ojo" para revelar u ocultar una contraseña. Va dentro de un
- * contenedor con clase `.password-field` (ver styles.scss), junto al input:
- *
- *   <div class="password-field">
- *     <input [type]="verClave() ? 'text' : 'password'" ... />
- *     <app-eye-toggle [visible]="verClave()" (toggled)="verClave.set($event)" />
- *   </div>
- */
 @Component({
   selector: 'app-eye-toggle',
   standalone: true,
@@ -26,13 +17,11 @@ import { PageMeta } from '../../core/models/api.models';
       (click)="toggled.emit(!visible)"
     >
       @if (visible) {
-        <!-- ojo tachado: la contraseña esta visible, un clic la oculta -->
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a19.4 19.4 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a19.5 19.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
           <line x1="1" y1="1" x2="23" y2="23" />
         </svg>
       } @else {
-        <!-- ojo abierto: la contraseña esta oculta, un clic la revela -->
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
           <circle cx="12" cy="12" r="3" />
@@ -46,7 +35,6 @@ export class EyeToggleComponent {
   @Output() toggled = new EventEmitter<boolean>();
 }
 
-/** Encabezado de pagina: titulo, descripcion y acciones. */
 @Component({
   selector: 'app-page-header',
   standalone: true,
@@ -67,7 +55,6 @@ export class PageHeaderComponent {
   @Input() subtitle?: string;
 }
 
-/** Tarjeta contenedora con encabezado opcional. */
 @Component({
   selector: 'app-card',
   standalone: true,
@@ -90,7 +77,6 @@ export class CardComponent {
   @Input() padded = true;
 }
 
-/** Tarjeta de KPI para el dashboard. */
 @Component({
   selector: 'app-kpi',
   standalone: true,
@@ -142,7 +128,6 @@ export class KpiComponent {
   @Input() hint?: string;
 }
 
-/** Estados vacio / carga / error, cuidados como pide la seccion 10. */
 @Component({
   selector: 'app-state',
   standalone: true,
@@ -168,7 +153,6 @@ export class StateComponent {
   }
 }
 
-/** Paginacion estandar: page, limit y total (seccion 9). */
 @Component({
   selector: 'app-paginator',
   standalone: true,
@@ -241,7 +225,6 @@ export class PaginatorComponent {
   }
 }
 
-/** Modal de formulario / confirmacion. */
 @Component({
   selector: 'app-modal',
   standalone: true,
@@ -267,7 +250,6 @@ export class ModalComponent {
   @Output() closed = new EventEmitter<void>();
 }
 
-/** Pila de notificaciones. */
 @Component({
   selector: 'app-toasts',
   standalone: true,

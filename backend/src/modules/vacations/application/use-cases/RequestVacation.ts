@@ -29,7 +29,6 @@ export class RequestVacation {
   ) {}
 
   async execute(actor: AccessActor, input: RequestVacationInput): Promise<VacationRequest> {
-    // Por defecto uno solicita para si mismo; RRHH puede registrar por un tercero.
     const employeeId = input.employeeId ?? actor.employeeId;
     if (!employeeId) throw new ForbiddenError('Su usuario no esta vinculado a un empleado');
     if (employeeId !== actor.employeeId && !this.policy.isPrivileged(actor)) {
@@ -51,12 +50,6 @@ export class RequestVacation {
     const current = await this.balance.execute(actor, employeeId, input.startDate.getFullYear());
     calculator.assertEnoughBalance(workingDays, current.availableDays);
 
-    // Siempre arranca en el paso del supervisor, tenga o no uno asignado: si
-    // no tiene, nadie puede cerrar ese paso como "el supervisor real" (ver
-    // ApproveVacation.esAprobacionDeEmergencia), y RRHH lo cierra como
-    // aprobacion de emergencia, con motivo obligatorio. Saltarselo directo a
-    // RRHH perderia esa auditoria justo en el caso mas expuesto: el empleado
-    // que ni siquiera tiene quien lo apruebe normalmente.
     const created = await this.vacations.create({
       employeeId,
       startDate: input.startDate,

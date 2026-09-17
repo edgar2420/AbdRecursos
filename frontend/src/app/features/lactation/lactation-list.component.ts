@@ -15,7 +15,6 @@ import {
 } from '../../shared/components/ui.components';
 import { FechaPipe } from '../../shared/pipes/format.pipes';
 
-/** Permisos de lactancia (Ley 3460): registro, tramos horarios y alertas. */
 @Component({
   selector: 'app-lactation-list',
   standalone: true,

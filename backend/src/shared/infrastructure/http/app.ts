@@ -23,11 +23,8 @@ export function createApp(apiRouter: Router): Express {
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'same-site' } }));
   app.use(
     cors({
-      // Nunca "*": en produccion solo los dominios declarados; en desarrollo se
-      // suman los origenes de la red local (ver cors-origin.ts).
       origin: (origin, callback) => {
         if (!origin || isOriginAllowed(origin)) return callback(null, true);
-        // Error de dominio: se traduce a 403, no a un 500 de error interno.
         callback(new ForbiddenError('Origen no permitido por CORS'));
       },
       credentials: true,

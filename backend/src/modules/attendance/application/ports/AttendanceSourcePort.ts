@@ -1,10 +1,5 @@
 import { NewAttendanceRecord } from '../../domain/entities/AttendanceRecord';
 
-/**
- * Puerto de origen de marcaciones (5.5). El primer adaptador es manual/web;
- * conectar un reloj biometrico real solo requiere implementar esta interfaz,
- * sin tocar el dominio.
- */
 export interface RawPunch {
   employeeCode: string;
   timestamp: Date;

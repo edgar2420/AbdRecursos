@@ -12,14 +12,8 @@ const CONTENT_TYPE: Record<string, string> = {
   pdf: 'application/pdf',
 };
 
-/** Solo el nombre que nosotros mismos generamos: bloquea path traversal y nombres inventados. */
 const NOMBRE_ARCHIVO = /^[a-f0-9-]+\.\w+$/;
 
-/**
- * Adjuntos genericos (certificado medico de una salida, foto de una
- * justificacion, etc.). Requiere sesion valida para subir y para leer: no son
- * archivos publicos, pueden contener datos de salud del empleado.
- */
 export class UploadController {
   constructor(private readonly storage: LocalFileStorage) {}
 

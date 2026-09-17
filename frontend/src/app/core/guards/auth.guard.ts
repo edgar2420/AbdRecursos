@@ -4,7 +4,6 @@ import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
 import { Role } from '../models/api.models';
 
-/** Guard de autenticacion: solo UX, el backend siempre revalida (8.2). */
 export const authGuard: CanActivateFn = (_route, state) => {
   const auth = inject(AuthService);
   const router = inject(Router);
@@ -12,7 +11,6 @@ export const authGuard: CanActivateFn = (_route, state) => {
   return router.createUrlTree(['/login'], { queryParams: { redirect: state.url } });
 };
 
-/** Guard de rol por feature (seccion 4.3). */
 export function roleGuard(...roles: Role[]): CanActivateFn {
   return () => {
     const auth = inject(AuthService);

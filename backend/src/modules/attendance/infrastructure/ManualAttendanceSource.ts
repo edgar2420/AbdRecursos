@@ -1,11 +1,6 @@
 import { NewAttendanceRecord } from '../domain/entities/AttendanceRecord';
 import { AttendanceSourcePort, RawPunch } from '../application/ports/AttendanceSourcePort';
 
-/**
- * Adaptador manual/web: las marcaciones llegan por la API, no se consultan a un
- * dispositivo. Sirve tambien como referencia para implementar el adaptador
- * biometrico (mismo puerto).
- */
 export class ManualAttendanceSource implements AttendanceSourcePort {
   readonly name = 'manual-web';
 
@@ -18,7 +13,6 @@ export class ManualAttendanceSource implements AttendanceSourcePort {
     resolveEmployeeId: (code: string) => string | undefined,
   ): NewAttendanceRecord[] {
     const records: NewAttendanceRecord[] = [];
-    // Sin tipo explicito se alterna entrada/salida por empleado y dia.
     const seen = new Map<string, number>();
     for (const punch of [...punches].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())) {
       const employeeId = resolveEmployeeId(punch.employeeCode);

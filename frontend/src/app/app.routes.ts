@@ -1,10 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard, loginGuard, roleGuard } from './core/guards/auth.guard';
 
-/**
- * Rutas con lazy loading por feature (seccion 4.3). Los guards son defensa en
- * profundidad para la UX: la autorizacion real la aplica el backend.
- */
 export const routes: Routes = [
   {
     path: 'login',

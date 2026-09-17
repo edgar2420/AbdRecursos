@@ -18,20 +18,17 @@ export interface PapeletaView {
   codigo: string;
   area: string;
   fechaTexto: string;
-  // horas extras
   trabajoRealizado?: string | null;
   desde?: string | null;
   hasta?: string | null;
   totalHoras?: string | null;
   recargo?: string | null;
-  // salida
   salidaMotivo?: 'PARTICULAR' | 'OFICIAL' | 'MEDICA' | null;
   motivo?: string | null;
   tiempoSolicitado?: string | null;
   horaSalida?: string | null;
   horaRetorno?: string | null;
   firmas: PapeletaFirmaView[];
-  /** Certificado adjunto (salida MEDICA): solo se pasa cuando es una imagen que se puede incrustar. */
   attachmentImage?: Buffer | null;
   attachmentUrl?: string | null;
 }
@@ -41,11 +38,6 @@ const TINTA = '#1f2933';
 const GRIS = '#6b7280';
 const RESALTE = '#e8e7c8';
 
-/**
- * Reproduce la papeleta impresa del Departamento de RR.HH. de Laboratorios ABD,
- * con el mismo orden de campos, para que quien la recibe reconozca el documento.
- * Media carta apaisada: entra una papeleta por hoja.
- */
 export class PapeletaPdfGenerator {
   render(view: PapeletaView): Promise<Buffer> {
     return new Promise((resolve, reject) => {
@@ -58,14 +50,11 @@ export class PapeletaPdfGenerator {
       const x = 28;
       const ancho = 539;
 
-      // marco exterior, como el recuadro impreso
       doc.rect(x, 24, ancho, 372).lineWidth(1.4).strokeColor(TINTA).stroke();
 
-      // --- cabecera ---
       try {
         doc.image(LOGO_PATH, x + 14, 34, { height: 30 });
       } catch {
-        // si el archivo no esta disponible (entorno sin el asset), no se rompe el PDF por eso.
         doc.fillColor(GRIS).fontSize(6.5).font('Helvetica').text('LABORATORIOS', x + 14, 36);
         doc.fillColor(AZUL).fontSize(22).font('Helvetica-Bold').text('ABD', x + 14, 44);
       }
@@ -76,7 +65,6 @@ export class PapeletaPdfGenerator {
         .font('Helvetica-Bold')
         .text('Departamento de RRHH', x + 150, 44, { width: ancho - 170, align: 'center' });
 
-      // banda amarilla con el titulo
       doc.rect(x + 90, 66, ancho - 104, 22).fill(RESALTE);
       doc
         .fillColor(TINTA)
@@ -91,7 +79,6 @@ export class PapeletaPdfGenerator {
 
       doc.moveTo(x, 96).lineTo(x + ancho, 96).lineWidth(1.2).strokeColor(TINTA).stroke();
 
-      // numero de papeleta, en el recuadro donde iba el codigo
       doc.rect(x + ancho - 150, 104, 136, 30).lineWidth(1).strokeColor(TINTA).stroke();
       doc.fillColor(GRIS).fontSize(6.5).font('Helvetica').text('N.o DE PAPELETA', x + ancho - 146, 108);
       doc.fillColor(AZUL).fontSize(11).font('Helvetica-Bold').text(view.numero, x + ancho - 146, 118);
@@ -123,7 +110,6 @@ export class PapeletaPdfGenerator {
           .text(`${view.totalHoras ?? '-'}  (${view.recargo ?? ''})`, x + 110, y - 1);
         y += 26;
       } else {
-        // recuadros PARTICULAR / OFICIAL / MEDICA, con una X en el que aplica
         const casillas: ('PARTICULAR' | 'OFICIAL' | 'MEDICA')[] = ['PARTICULAR', 'OFICIAL', 'MEDICA'];
         casillas.forEach((casilla, i) => {
           const cx = x + 14 + i * 120;
@@ -149,7 +135,6 @@ export class PapeletaPdfGenerator {
         doc.text('HORA DE RETORNO', x + 124, y + 14);
         y += 34;
 
-        // Certificado adjunto (salida MEDICA): se ve la ficha, no solo el nombre del archivo.
         if (view.salidaMotivo === 'MEDICA' && (view.attachmentImage || view.attachmentUrl)) {
           const cajaX = x + ancho - 168;
           const cajaY = 150;
@@ -168,7 +153,6 @@ export class PapeletaPdfGenerator {
         }
       }
 
-      // --- firmas ---
       const yFirmas = 320;
       doc.fillColor(TINTA).fontSize(8.5).font('Helvetica-Oblique').text('Autorizado por:', x + 14, yFirmas + 14);
 
@@ -207,9 +191,6 @@ export class PapeletaPdfGenerator {
           .text('Sin firmas todavia', x + 150, yFirmas + 14, { width: 370, align: 'center' });
       }
 
-      // --- pie ---
-      // Sin ciudad fija: la empresa tiene sucursales en varias ciudades y no
-      // hay todavia un dato por empleado para saber cual poner ahi.
       doc
         .fillColor(TINTA)
         .fontSize(9)

@@ -25,7 +25,6 @@ function parseDay(value: unknown): Date | null {
   return match ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])) : null;
 }
 
-/** Importacion masiva de asignaciones de horario (2.6 / 2.8). */
 export class ScheduleImportProcessor implements ImportProcessor {
   readonly type: ImportType = 'SCHEDULES';
   readonly sheetName = 'Horarios';

@@ -3,7 +3,6 @@ import { Employee } from '../../domain/entities/Employee';
 import { EmployeeFilters, EmployeeRepository } from '../../domain/repositories/EmployeeRepository';
 import { AccessActor, EmployeeAccessPolicy } from '../../domain/services/EmployeeAccessPolicy';
 
-/** El alcance del listado lo decide la politica, no el frontend. */
 export class ListEmployees {
   constructor(
     private readonly employees: EmployeeRepository,

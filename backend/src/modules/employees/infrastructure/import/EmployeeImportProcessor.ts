@@ -10,7 +10,6 @@ import { EMPLOYEE_IMPORT_COLUMNS } from './employee-import.columns';
 
 const CONTRACT_TYPES = ['INDEFINIDO', 'PLAZO_FIJO', 'EVENTUAL', 'CONSULTORIA'];
 
-/** Convierte celdas de Excel (Date o texto) a fecha, o null si no aplica. */
 export function parseSheetDate(value: unknown): Date | null {
   if (!value) return null;
   if (value instanceof Date) return value;
@@ -28,10 +27,6 @@ export function text(value: unknown): string | null {
   return trimmed === '' ? null : trimmed;
 }
 
-/**
- * Procesador de la carga masiva de empleados (2.1).
- * Los datos del Excel se sanitizan y validan antes de tocar la base (8.3).
- */
 export class EmployeeImportProcessor implements ImportProcessor {
   readonly type: ImportType = 'EMPLOYEES';
   readonly sheetName = 'Empleados';

@@ -18,7 +18,6 @@ const MONTHS = [
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
 ];
 
-/** Calendario del equipo para detectar solapamientos (2.2). */
 @Component({
   selector: 'app-vacation-calendar',
   standalone: true,

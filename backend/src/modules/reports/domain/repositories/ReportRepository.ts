@@ -23,11 +23,9 @@ export interface ReportFilters {
   from: Date;
   to: Date;
   departmentId?: string;
-  /** Restringe los datos al equipo del supervisor. */
   employeeIds?: string[];
 }
 
-/** Puerto de agregaciones para dashboard y reportes (2.7). */
 export interface ReportRepository {
   counters(filters: ReportFilters): Promise<DashboardCounters>;
   headcountByDepartment(employeeIds?: string[]): Promise<HeadcountByGroup[]>;

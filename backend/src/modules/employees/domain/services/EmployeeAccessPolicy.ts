@@ -7,11 +7,6 @@ export interface AccessActor {
   employeeId: string | null;
 }
 
-/**
- * Politica de acceso a datos de un empleado. Vive en el dominio y la invocan los
- * casos de uso: la verificacion de propiedad NO puede quedar solo en un
- * middleware de rol (seccion 8.2 - proteccion contra IDOR).
- */
 export class EmployeeAccessPolicy {
   constructor(private readonly employees: EmployeeRepository) {}
 
@@ -38,19 +33,12 @@ export class EmployeeAccessPolicy {
     }
   }
 
-  /** Editar datos de un empleado (fuera del propio perfil) es exclusivo de RRHH/Admin. */
   assertCanManage(actor: AccessActor): void {
     if (!this.isPrivileged(actor)) {
       throw new ForbiddenError('Solo RRHH o Administracion pueden modificar empleados');
     }
   }
 
-  /**
-   * Alcance de un listado segun el rol:
-   * - RRHH/Admin: todos
-   * - Supervisor: su equipo (y el mismo)
-   * - Empleado: solo el mismo
-   */
   async scopeFor(actor: AccessActor): Promise<{ all: boolean; employeeIds: string[] }> {
     if (this.isPrivileged(actor)) return { all: true, employeeIds: [] };
     if (actor.role === 'SUPERVISOR' && actor.employeeId) {

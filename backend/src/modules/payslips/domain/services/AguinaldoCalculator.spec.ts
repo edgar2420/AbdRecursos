@@ -32,7 +32,6 @@ describe('AguinaldoCalculator (6.3)', () => {
   });
 
   it('paga proporcional a los meses trabajados', () => {
-    // Ingreso el 1 de julio: julio a diciembre = 6 meses de la gestion.
     const result = new AguinaldoCalculator(params()).calculate(6000, new Date(2026, 6, 1), 2026);
 
     expect(result.monthsWorked).toBe(6);

@@ -18,9 +18,7 @@ export interface VacationRequest {
   status: VacationStatus;
   supervisorApprovedAt: Date | null;
   supervisorApprovedByName: string | null;
-  /** true si quien cerro el paso del supervisor fue RRHH (aprobacion de emergencia). */
   supervisorApprovalIsEmergency: boolean;
-  /** Motivo que dio RRHH al aprobar de emergencia en ausencia del supervisor. */
   emergencyReason: string | null;
   hrApprovedAt: Date | null;
   hrApprovedByName: string | null;
@@ -39,16 +37,13 @@ export interface NewVacationRequest {
   status: VacationStatus;
 }
 
-/** Una fila del cuadro de vacaciones: lo que otorgo y lo que quedo de una gestion. */
 export interface GestionBalance {
   numero: number;
   etiqueta: string;
   inicio: Date;
   fin: Date;
   cumplida: boolean;
-  /** Dias del tramo que corresponde a esa gestion. */
   diasOtorgados: number;
-  /** Acreditados de verdad: una gestion en curso todavia no acredita nada. */
   diasAcreditados: number;
   takenDays: number;
   pendingDays: number;
@@ -61,7 +56,6 @@ export interface VacationBalance {
   entitledDays: number;
   takenDays: number;
   pendingDays: number;
-  /** Saldo acumulado: suma de lo pendiente de todas las gestiones cumplidas. */
   availableDays: number;
   yearsOfService: number;
   gestiones: GestionBalance[];

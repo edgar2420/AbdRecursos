@@ -11,11 +11,6 @@ export interface AguinaldoResult {
   detail: string;
 }
 
-/**
- * Aguinaldo (seccion 6.3): un sueldo adicional pagadero hasta el 20 de diciembre,
- * proporcional a los meses trabajados y con un minimo de meses para tener derecho.
- * El doble aguinaldo es una bandera que RRHH activa cuando el gobierno lo declara.
- */
 export class AguinaldoCalculator {
   constructor(private readonly params: LegalParameterSet) {}
 
@@ -50,12 +45,6 @@ export class AguinaldoCalculator {
     };
   }
 
-  /**
-   * Meses trabajados en la gestion (1 de enero al 31 de diciembre), medidos en
-   * dias sobre la misma base de 30 dias/mes que usa la boleta. Se toma la
-   * gestion completa porque el aguinaldo corresponde al anio trabajado, no al
-   * dia en que se calcula.
-   */
   private monthsWorked(hireDate: Date, year: number): number {
     const yearStart = new Date(year, 0, 1);
     const yearEnd = new Date(year, 11, 31);

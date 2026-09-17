@@ -8,7 +8,6 @@ export interface CatalogItem {
   employeeCount?: number;
 }
 
-/** Catalogos de apoyo: departamentos y cargos. */
 export interface CatalogRepository {
   listDepartments(query: PageQuery & { isActive?: boolean }): Promise<Paginated<CatalogItem>>;
   createDepartment(data: { name: string; description?: string | null }): Promise<CatalogItem>;

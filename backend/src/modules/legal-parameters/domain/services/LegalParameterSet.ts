@@ -1,10 +1,6 @@
 import { BusinessRuleError } from '../../../../shared/domain/errors';
 import { LegalParameter } from '../entities/LegalParameter';
 
-/**
- * Vista inmutable de los parametros vigentes en una fecha.
- * El dominio (vacaciones, boletas, lactancia) consume ESTO, no constantes.
- */
 export class LegalParameterSet {
   private readonly values: Map<string, LegalParameter>;
 
@@ -47,7 +43,6 @@ export class LegalParameterSet {
     return raw.value;
   }
 
-  /** Snapshot guardado junto a cada boleta para poder reconstruir el calculo. */
   snapshot(): Record<string, string> {
     const out: Record<string, string> = {};
     this.values.forEach((p, key) => (out[key] = p.value));

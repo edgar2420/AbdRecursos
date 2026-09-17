@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { EmployeeRepository } from '../repositories/EmployeeRepository';
 import { AccessActor, EmployeeAccessPolicy } from './EmployeeAccessPolicy';
 
-/** Repositorio mockeado: el dominio se prueba sin base de datos (seccion 11). */
 function repositoryStub(team: Record<string, string[]>): EmployeeRepository {
   return {
     isSupervisorOf: async (supervisorId: string, employeeId: string) =>

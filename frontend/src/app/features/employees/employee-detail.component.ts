@@ -205,7 +205,6 @@ export class EmployeeDetailComponent implements OnInit {
   private readonly toast = inject(ToastService);
   readonly auth = inject(AuthService);
 
-  /** Enlazado desde la ruta con withComponentInputBinding(). */
   @Input() id = '';
 
   readonly loading = signal(true);

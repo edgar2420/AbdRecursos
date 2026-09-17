@@ -15,7 +15,6 @@ export interface EmployeeFilters extends PageQuery {
   isActive?: boolean;
   hiredFrom?: Date;
   hiredTo?: Date;
-  /** Restringe el listado al alcance del rol (equipo del supervisor, o el mismo). */
   ids?: string[];
 }
 
@@ -28,7 +27,6 @@ export interface EmployeeRepository {
   create(data: NewEmployee): Promise<Employee>;
   update(id: string, data: UpdateEmployeeData): Promise<Employee>;
   setActive(id: string, isActive: boolean): Promise<Employee>;
-  /** Soporte del ownership check de supervisores (8.2). */
   isSupervisorOf(supervisorEmployeeId: string, employeeId: string): Promise<boolean>;
   listTeamIds(supervisorEmployeeId: string): Promise<string[]>;
   addHistory(entry: {

@@ -32,8 +32,6 @@ export class Login {
   async execute(input: LoginInput): Promise<LoginResult> {
     const user = await this.users.findByEmail(input.email.toLowerCase());
 
-    // Mismo mensaje y mismo costo aproximado exista o no el usuario: no se filtra
-    // que correos estan registrados.
     if (!user) {
       await this.hasher.compare(input.password, '$2a$12$invalidinvalidinvalidinvalidinvalidinvalidinvalidinv');
       throw new UnauthorizedError('Credenciales invalidas');

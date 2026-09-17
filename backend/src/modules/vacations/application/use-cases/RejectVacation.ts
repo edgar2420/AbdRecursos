@@ -53,13 +53,6 @@ export class RejectVacation {
   }
 }
 
-/**
- * Cancelar solo mientras la solicitud siga EN TRAMITE. Una vez aprobada queda
- * firme: ya se comprometio el saldo, se aviso al equipo y se planifico la
- * ausencia, asi que nadie -ni RRHH- la cancela desde aca. Si hay que revertir
- * unas vacaciones ya aprobadas, eso es una decision administrativa que debe
- * quedar documentada aparte, no un boton que deshace el tramite en silencio.
- */
 export class CancelVacation {
   constructor(
     private readonly vacations: VacationRepository,

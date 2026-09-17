@@ -9,7 +9,6 @@ export const globalRateLimit = rateLimit({
   message: { error: { code: 'RATE_LIMITED', message: 'Demasiadas solicitudes, intente mas tarde' } },
 });
 
-/** Rate limit agresivo contra fuerza bruta en el login (8.1). */
 export const loginRateLimit = rateLimit({
   windowMs: env.RATE_LIMIT_WINDOW_MS,
   max: env.LOGIN_RATE_LIMIT_MAX,

@@ -11,11 +11,6 @@ import {
   rechazarSchema,
 } from './papeleta.validators';
 
-/**
- * Papeletas digitales. Cualquier empleado emite las suyas; la firma la habilita
- * el rol, y ademas el caso de uso comprueba que el jefe de area solo firme las
- * de su propio equipo.
- */
 export function papeletaRoutes(controller: PapeletaController): Router {
   const router = Router();
 

@@ -18,7 +18,6 @@ export interface RegisterAttendanceInput {
   notes?: string;
 }
 
-/** Marcar entrada/salida propia (2.5). RRHH puede registrar por un tercero. */
 export class RegisterAttendance {
   constructor(
     private readonly attendance: AttendanceRepository,
@@ -35,7 +34,6 @@ export class RegisterAttendance {
     const isThirdParty = employeeId !== actor.employeeId;
     if (isThirdParty) this.policy.assertCanManage(actor);
 
-    // Solo RRHH puede fechar una marcacion en el pasado.
     const timestamp = input.timestamp && this.policy.isPrivileged(actor) ? input.timestamp : new Date();
 
     const last = await this.attendance.lastRecordOfDay(employeeId, startOfDay(timestamp));

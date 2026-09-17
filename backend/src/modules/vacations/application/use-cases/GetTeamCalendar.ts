@@ -12,7 +12,6 @@ export interface CalendarEntry {
   status: string;
 }
 
-/** Calendario de equipo para que el supervisor detecte solapamientos (2.2). */
 export class GetTeamCalendar {
   constructor(
     private readonly vacations: VacationRepository,

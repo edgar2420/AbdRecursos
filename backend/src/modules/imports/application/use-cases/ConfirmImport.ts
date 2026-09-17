@@ -5,7 +5,6 @@ import { ImportLog, ImportType } from '../../domain/entities/ImportLog';
 import { ImportProcessor } from '../../domain/ports/ImportProcessor';
 import { ImportRepository } from '../../domain/repositories/ImportRepository';
 
-/** Paso 2: se procesan unicamente las filas validas de la vista previa. */
 export class ConfirmImport {
   constructor(
     private readonly imports: ImportRepository,

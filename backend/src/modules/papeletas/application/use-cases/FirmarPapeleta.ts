@@ -9,13 +9,6 @@ import { PapeletaRepository } from '../../domain/repositories/PapeletaRepository
 import { Firmante, PapeletaRules } from '../../domain/services/PapeletaRules';
 import { SelloDeFirmaPort } from '../../domain/services/SelloDeFirma';
 
-/**
- * Firma digital de una papeleta. Reemplaza las dos firmas manuscritas del
- * formulario: la del jefe de area y la de Recursos Humanos.
- *
- * Quien firma no se elige: se deduce del rol y del vinculo con el empleado.
- * El jefe de area solo puede firmar papeletas de su propio equipo.
- */
 export class FirmarPapeleta {
   constructor(
     private readonly papeletas: PapeletaRepository,
@@ -70,10 +63,6 @@ export class FirmarPapeleta {
     return actualizada;
   }
 
-  /**
-   * El rol determina en que casilla firma. Un ADMIN puede cubrir cualquiera de
-   * las dos, porque es quien destraba el circuito cuando falta alguien.
-   */
   private async resolverFirmante(actor: AccessActor, papeleta: Papeleta): Promise<Firmante> {
     if (actor.role === 'HR') return 'RRHH';
 
@@ -98,7 +87,6 @@ export class FirmarPapeleta {
   }
 }
 
-/** Rechazo: corta el circuito y deja constancia del motivo. */
 export class RechazarPapeleta {
   constructor(
     private readonly papeletas: PapeletaRepository,

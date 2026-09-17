@@ -74,7 +74,6 @@ export class EmployeeController {
     res.json(await this.historyUseCase.execute(requireActor(req), req.params.id, query as never));
   };
 
-  /** Plantilla de carga masiva (2.1 / 2.8). */
   template = async (_req: AuthenticatedRequest, res: Response): Promise<void> => {
     const buffer = await this.excel.buildTemplate('Empleados', EMPLOYEE_IMPORT_COLUMNS);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -106,7 +105,6 @@ export class EmployeeController {
     res.send(buffer);
   };
 
-  // --- catalogos ---
   listDepartments = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     res.json(await this.catalogs.listDepartments(validated(req, 'query')));
   };
@@ -131,7 +129,6 @@ export class EmployeeController {
     res.json({ data: await this.catalogs.updatePosition(req.params.id, req.body) });
   };
 
-  /** Lista compacta para selects (supervisores, asignaciones). */
   options = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     const all = await this.employees.listAll({ isActive: true });
     res.json({

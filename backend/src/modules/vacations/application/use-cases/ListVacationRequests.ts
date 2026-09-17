@@ -16,7 +16,6 @@ export class ListVacationRequests {
     if (scope.employeeIds.length === 0) {
       return { data: [], meta: { total: 0, page: filters.page, limit: filters.limit, totalPages: 1 } };
     }
-    // Un supervisor solo ve su equipo aunque pida otro employeeId por query.
     const requested = filters.employeeId;
     if (requested && !scope.employeeIds.includes(requested)) {
       throw new ForbiddenError('No tiene acceso a las solicitudes de ese empleado');
@@ -34,7 +33,6 @@ export class GetVacationRequest {
   async execute(actor: AccessActor, id: string): Promise<VacationRequest> {
     const request = await this.vacations.findById(id);
     if (!request) throw new NotFoundError('Solicitud de vacaciones');
-    // Ownership check explicito en el caso de uso (8.2).
     await this.policy.assertCanView(actor, request.employeeId);
     return request;
   }

@@ -8,14 +8,6 @@ import { Envelope, Role, SessionUser } from '../models/api.models';
 const ACCESS_TOKEN_KEY = 'sgrh.access';
 const USER_KEY = 'sgrh.user';
 
-/**
- * Sesion del usuario.
- *
- * El access token vive en memoria/localStorage y el refresh token viaja en una
- * cookie httpOnly que el navegador envia solo a /auth (el JS nunca la lee).
- * Los permisos que se calculan aqui son solo para la UI: la fuente de verdad
- * es el backend (seccion 8.2).
- */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);

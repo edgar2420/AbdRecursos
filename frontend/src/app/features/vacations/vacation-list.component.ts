@@ -277,8 +277,6 @@ export class VacationListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.load();
     this.loadBalance();
-    // Una solicitud nueva o una aprobacion la puede generar otra persona: sin
-    // esto, el usuario ve la lista desactualizada hasta que recarga a mano.
     this.detenerRefresco = autoRefresh(() => this.load(true));
   }
 
@@ -312,11 +310,6 @@ export class VacationListComponent implements OnInit, OnDestroy {
     this.load();
   }
 
-  /**
-   * `silent`: refresco en segundo plano (autoRefresh) - no muestra el
-   * spinner de carga ni borra la tabla si la peticion falla, para no hacer
-   * parpadear la pantalla mientras el usuario esta mirando la lista.
-   */
   load(silent = false): void {
     if (!silent) this.loading.set(true);
     this.api.list<VacationRequest>('/vacations/requests', { ...this.filters() }).subscribe({
@@ -339,11 +332,6 @@ export class VacationListComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Referencia del 100% de la llama: lo acreditado en gestiones ya cumplidas
-   * (lo que de verdad se puede tomar), no solo lo que otorga la gestion en
-   * curso. Si por algun motivo no llega el desglose, cae a entitledDays.
-   */
   maxFlame(bal: VacationBalance): number {
     const total = bal.gestiones?.reduce((sum, g) => sum + g.diasAcreditados, 0) ?? 0;
     return total > 0 ? total : bal.entitledDays;
@@ -352,20 +340,12 @@ export class VacationListComponent implements OnInit, OnDestroy {
   canApprove(request: VacationRequest): boolean {
     if (request.employeeId === this.auth.employeeId()) return false;
     if (request.status === 'PENDING_SUPERVISOR') {
-      // El paso del supervisor lo cierra el supervisor del equipo o, en su
-      // ausencia, Recursos Humanos con una aprobacion de emergencia. Un
-      // Administrador puro no la ve: esa decision es de RRHH, no de sistemas.
       return this.auth.hasRole('SUPERVISOR', 'HR');
     }
     if (request.status === 'PENDING_HR') return this.auth.isHr();
     return false;
   }
 
-  /**
-   * Solo se cancela lo que sigue en tramite: una vez aprobada, la vacacion
-   * queda firme para todos (tambien para RRHH). El backend aplica la misma
-   * regla, esto es solo para no mostrar un boton que va a fallar.
-   */
   canCancel(request: VacationRequest): boolean {
     const inProgress = request.status === 'PENDING_SUPERVISOR' || request.status === 'PENDING_HR';
     if (!inProgress) return false;
@@ -398,12 +378,6 @@ export class VacationListComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Si es RRHH cerrando el paso del supervisor, es siempre una aprobacion de
-   * emergencia (el backend asi lo trata): pide el motivo antes de aprobar.
-   * En cualquier otro caso (el supervisor real, o RRHH en su paso final) no
-   * hace falta motivo y se aprueba directo.
-   */
   onApproveClick(request: VacationRequest): void {
     if (request.status === 'PENDING_SUPERVISOR' && this.auth.role() === 'HR') {
       this.emergencyReason.set('');

@@ -1,7 +1,6 @@
 import { ValidationError } from '../../../../shared/domain/errors';
 import { round2 } from '../../../../shared/domain/money';
 
-/** Salario en bolivianos: no negativo, dos decimales. */
 export class Salary {
   private constructor(public readonly amount: number) {}
 
@@ -13,7 +12,6 @@ export class Salary {
     return new Salary(round2(value));
   }
 
-  /** Valor diario tomando la base de dias/mes de los parametros legales. */
   perDay(workDaysPerMonth: number): number {
     return round2(this.amount / workDaysPerMonth);
   }

@@ -23,7 +23,6 @@ function statusFor(error: unknown): number {
   return 500;
 }
 
-/** Manejo centralizado: en produccion nunca se exponen stack traces ni detalles internos (8.4). */
 export function errorHandler(
   error: unknown,
   req: Request,

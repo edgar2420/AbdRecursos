@@ -35,7 +35,6 @@ export class GetImportPreview {
   }
 }
 
-/** Log de resultado descargable en Excel, con el detalle de errores por fila (2.8). */
 export class DownloadImportLog {
   constructor(
     private readonly imports: ImportRepository,
@@ -72,7 +71,6 @@ export class DownloadImportLog {
   }
 }
 
-/** Descarga de la plantilla del tipo de importacion solicitado. */
 export class DownloadImportTemplate {
   constructor(
     private readonly processors: Map<ImportType, ImportProcessor>,

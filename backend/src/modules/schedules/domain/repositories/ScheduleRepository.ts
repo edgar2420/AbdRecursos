@@ -17,7 +17,6 @@ export interface ScheduleRepository {
   ): Promise<Paginated<ScheduleAssignment>>;
   assign(data: NewScheduleAssignment): Promise<ScheduleAssignment>;
   endAssignment(id: string, validUntil: Date): Promise<ScheduleAssignment>;
-  /** Horario vigente de un empleado en una fecha (lo usa el calculo de asistencia). */
   findActiveForEmployee(employeeId: string, at: Date): Promise<ScheduleAssignment | null>;
   findActiveForEmployees(employeeIds: string[], at: Date): Promise<ScheduleAssignment[]>;
   hasOverlappingAssignment(employeeId: string, from: Date, to: Date | null): Promise<boolean>;

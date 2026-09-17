@@ -1,6 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-/** Montos en bolivianos con separador de miles y dos decimales. */
 @Pipe({ name: 'bs', standalone: true })
 export class BolivianosPipe implements PipeTransform {
   transform(value: number | string | null | undefined, withSymbol = true): string {
@@ -13,13 +12,6 @@ export class BolivianosPipe implements PipeTransform {
   }
 }
 
-/**
- * Una fecha SIN hora (ingreso, inicio de vacaciones, fecha de una papeleta):
- * la API la manda como medianoche UTC. Si se deja que el navegador la
- * convierta a hora local, en Bolivia (UTC-4) cae a las 20:00 del dia ANTERIOR
- * y todo el sistema muestra un dia menos. Por eso estas se leen tal cual
- * vienen en el texto, sin pasarlas por la zona horaria.
- */
 const SOLO_FECHA = /^(\d{4})-(\d{2})-(\d{2})(?:T00:00:00(?:\.000)?Z?)?$/;
 
 export function aFechaLocal(value: string | Date): Date {
@@ -28,11 +20,9 @@ export function aFechaLocal(value: string | Date): Date {
   if (soloFecha) {
     return new Date(Number(soloFecha[1]), Number(soloFecha[2]) - 1, Number(soloFecha[3]));
   }
-  // Con hora real (una firma, un marcaje) si corresponde convertir a hora local.
   return new Date(value);
 }
 
-/** Fecha corta en formato boliviano (dd/mm/aaaa). */
 @Pipe({ name: 'fecha', standalone: true })
 export class FechaPipe implements PipeTransform {
   transform(value: string | Date | null | undefined, withTime = false): string {
@@ -46,12 +36,10 @@ export class FechaPipe implements PipeTransform {
 }
 
 const LABELS: Record<string, string> = {
-  // Roles
   EMPLOYEE: 'Empleado',
   SUPERVISOR: 'Supervisor',
   HR: 'Recursos Humanos',
   ADMIN: 'Administrador',
-  // Empleado
   ACTIVE: 'Activo',
   ON_LEAVE: 'Con licencia',
   TERMINATED: 'Desvinculado',
@@ -59,16 +47,13 @@ const LABELS: Record<string, string> = {
   PLAZO_FIJO: 'Plazo fijo',
   EVENTUAL: 'Eventual',
   CONSULTORIA: 'Consultoria',
-  // Vacaciones
   PENDING_SUPERVISOR: 'Pendiente supervisor',
   PENDING_HR: 'Pendiente RRHH',
   APPROVED: 'Aprobada',
   REJECTED: 'Rechazada',
   CANCELLED: 'Cancelada',
-  // Boletas
   DRAFT: 'Borrador',
   ISSUED: 'Emitida',
-  // Asistencia
   CHECK_IN: 'Entrada',
   CHECK_OUT: 'Salida',
   PRESENT: 'Presente',
@@ -78,14 +63,12 @@ const LABELS: Record<string, string> = {
   REST: 'Descanso',
   JUSTIFIED: 'Justificada',
   PENDING: 'Pendiente',
-  // Importaciones
   VALIDATED: 'Validada',
   PROCESSED: 'Procesada',
   FAILED: 'Fallida',
   EMPLOYEES: 'Empleados',
   ATTENDANCE: 'Asistencia',
   SCHEDULES: 'Horarios',
-  // Papeletas
   PENDIENTE_JEFE_AREA: 'Pendiente jefe de area',
   PENDIENTE_RRHH: 'Pendiente RRHH',
   APROBADA: 'Aprobada',
@@ -99,7 +82,6 @@ const LABELS: Record<string, string> = {
   DIURNA: 'Diurna',
   NOCTURNA: 'Nocturna',
   FERIADO: 'Feriado',
-  // Historial
   HIRE: 'Alta',
   PROMOTION: 'Ascenso',
   SALARY_CHANGE: 'Cambio de salario',
@@ -110,7 +92,6 @@ const LABELS: Record<string, string> = {
   REACTIVATION: 'Reactivacion',
 };
 
-/** Traduce los enums de la API a etiquetas legibles. */
 @Pipe({ name: 'etiqueta', standalone: true })
 export class EtiquetaPipe implements PipeTransform {
   transform(value: string | null | undefined): string {
@@ -147,7 +128,6 @@ const BADGE_CLASSES: Record<string, string> = {
   REST: 'badge-neutral',
 };
 
-/** Clase de color del badge segun el estado. */
 @Pipe({ name: 'badgeClase', standalone: true })
 export class BadgeClasePipe implements PipeTransform {
   transform(value: string | null | undefined): string {

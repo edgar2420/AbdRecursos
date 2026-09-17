@@ -16,7 +16,6 @@ describe('FieldCipher - cifrado de campos sensibles en reposo', () => {
   });
 
   it('el mismo valor cifrado dos veces da resultados distintos', () => {
-    // IV aleatorio por valor: dos cedulas iguales no se ven iguales en la base.
     expect(cipher.cifrar('1234567')).not.toBe(cipher.cifrar('1234567'));
   });
 

@@ -1,6 +1,5 @@
 import { ColumnSpec } from '../../../../shared/infrastructure/excel/ExcelService';
 
-/** Definicion de la plantilla Excel de empleados (2.1 y 2.8). */
 export const EMPLOYEE_IMPORT_COLUMNS: ColumnSpec[] = [
   { key: 'firstName', header: 'Nombres', required: true, example: 'Maria Elena', note: 'Nombres del empleado' },
   { key: 'lastName', header: 'Apellidos', required: true, example: 'Quispe Mamani', note: 'Apellidos completos' },

@@ -7,37 +7,27 @@ import { CardComponent } from '../../shared/components/ui.components';
 import { FechaPipe, aFechaLocal } from '../../shared/pipes/format.pipes';
 import { autoRefresh } from '../../shared/utils/auto-refresh';
 
-/** Una ausencia con las cuentas ya hechas: cuando vuelve y cuanto falta. */
 interface Ausencia {
   requestId: string;
   nombre: string;
   area: string | null;
   inicio: Date;
   fin: Date;
-  /** Primer dia que vuelve a trabajar: el dia habil siguiente al ultimo de vacaciones. */
   reincorporacion: Date;
-  /** Dias que faltan para que se reincorpore (0 = vuelve hoy mismo). */
   diasParaVolver: number;
-  /** Dias que faltan para que empiece la ausencia. */
   diasParaSalir: number;
   enCurso: boolean;
 }
 
 const DIA_MS = 24 * 60 * 60 * 1000;
-/** Ventana hacia adelante: mas alla de un mes ya no es una alerta, es planificacion. */
 const DIAS_ADELANTE = 30;
 
-/**
- * Fecha sin hora, leida como dia de calendario: `aFechaLocal` evita el
- * corrimiento de un dia que provoca convertir medianoche UTC a hora boliviana.
- */
 function soloFecha(value: Date | string): Date {
   const d = aFechaLocal(value);
   d.setHours(0, 0, 0, 0);
   return d;
 }
 
-/** Domingo es descanso: si la vacacion termina sabado, se reincorpora el lunes. */
 function siguienteDiaHabil(desde: Date): Date {
   const d = new Date(desde);
   d.setDate(d.getDate() + 1);
@@ -49,13 +39,6 @@ function diferenciaEnDias(desde: Date, hasta: Date): number {
   return Math.round((soloFecha(hasta).getTime() - soloFecha(desde).getTime()) / DIA_MS);
 }
 
-/**
- * Contador y alertas de regreso: quien esta de vacaciones ahora, cuando se
- * reincorpora y quien sale proximamente. El alcance lo decide el backend
- * segun el rol (RRHH ve toda la empresa, el supervisor su equipo y el
- * empleado solo lo suyo), asi que este componente solo cambia el tono del
- * texto: en primera persona para el empleado, en tercera para los demas.
- */
 @Component({
   selector: 'app-vacation-returns',
   standalone: true,
@@ -224,7 +207,6 @@ export class VacationReturnsComponent implements OnInit, OnDestroy {
     return this.ausencias().filter((a) => a.enCurso);
   }
 
-  /** Los que se reincorporan dentro de la semana: son la alerta que interesa. */
   vuelvenPronto(): Ausencia[] {
     return this.enCurso().filter((a) => a.diasParaVolver <= 7);
   }
@@ -275,7 +257,6 @@ export class VacationReturnsComponent implements OnInit, OnDestroy {
 
   private aAusencias(entradas: CalendarEntry[], hoy: Date): Ausencia[] {
     return entradas
-      // Solo lo aprobado: lo que sigue en tramite todavia puede no ocurrir.
       .filter((e) => e.status === 'APPROVED')
       .map((e) => {
         const inicio = soloFecha(e.startDate);

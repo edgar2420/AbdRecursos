@@ -11,7 +11,6 @@ export interface AguinaldoRow extends AguinaldoResult {
   baseSalary: number;
 }
 
-/** Vista previa del aguinaldo de la gestion (6.3) antes de incluirlo en la boleta. */
 export class CalculateAguinaldo {
   constructor(
     private readonly employees: EmployeeRepository,

@@ -3,18 +3,12 @@ import { AccessActor, EmployeeAccessPolicy } from '../../../employees/domain/ser
 import { DashboardCounters, ReportRepository } from '../../domain/repositories/ReportRepository';
 
 export interface DashboardResult extends DashboardCounters {
-  /** Rotacion = bajas del periodo / headcount promedio, en porcentaje. */
   turnoverRate: number;
-  /** Ausentismo = faltas / (headcount * dias habiles del periodo), en porcentaje. */
   absenteeismRate: number;
   scope: 'GLOBAL' | 'TEAM' | 'SELF';
   period: { from: Date; to: Date };
 }
 
-/**
- * KPIs del dashboard (2.7). El alcance depende del rol: RRHH/Admin ven la
- * empresa completa, un supervisor solo su equipo.
- */
 export class GetDashboard {
   constructor(
     private readonly reports: ReportRepository,

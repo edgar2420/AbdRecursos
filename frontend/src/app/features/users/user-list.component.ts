@@ -18,7 +18,6 @@ import { EtiquetaPipe, FechaPipe } from '../../shared/pipes/format.pipes';
 
 const ROLES: Role[] = ['EMPLOYEE', 'SUPERVISOR', 'HR', 'ADMIN'];
 
-/** Gestion de usuarios y roles: exclusiva del Administrador (seccion 3). */
 @Component({
   selector: 'app-user-list',
   standalone: true,

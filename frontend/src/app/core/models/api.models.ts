@@ -1,4 +1,3 @@
-/** Contratos de la API (respuesta estandar de la seccion 9). */
 export interface PageMeta {
   total: number;
   page: number;
@@ -104,9 +103,7 @@ export interface VacationRequest {
   reason: string | null;
   status: VacationStatus;
   supervisorApprovedByName: string | null;
-  /** true si quien cerro el paso del supervisor fue RRHH (aprobacion de emergencia). */
   supervisorApprovalIsEmergency: boolean;
-  /** Motivo que dio RRHH al aprobar de emergencia en ausencia del supervisor. */
   emergencyReason: string | null;
   hrApprovedByName: string | null;
   rejectedByName: string | null;
@@ -173,7 +170,6 @@ export interface Payslip {
   totalDeductions: number;
   netPay: number;
   issuedAt: string | null;
-  /** Quien de RRHH emitio la boleta: es la firma autorizada que se imprime en el PDF. */
   issuedByName: string | null;
   details: PayslipLine[];
 }
@@ -368,7 +364,6 @@ export interface Papeleta {
   tiempoSolicitado: string | null;
   horaSalida: string | null;
   horaRetorno: string | null;
-  /** Certificado o foto adjunta (tipico de la salida MEDICA). Ruta relativa: se pide con ApiService.download. */
   attachmentUrl: string | null;
   firmaArea: Firma | null;
   firmaRrhh: Firma | null;

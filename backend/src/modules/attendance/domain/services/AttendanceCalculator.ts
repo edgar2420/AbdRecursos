@@ -24,14 +24,9 @@ export interface DaySummary {
   status: DayStatus;
 }
 
-/**
- * Calculo de tardanzas, horas trabajadas y horas extra (2.5).
- * La jornada de referencia y los recargos vienen de los parametros legales (6.5).
- */
 export class AttendanceCalculator {
   constructor(private readonly params: LegalParameterSet) {}
 
-  /** Minutos de tardanza de una marcacion de entrada contra su horario. */
   lateMinutesFor(timestamp: Date, schedule: DaySchedule | null): number {
     if (!schedule) return 0;
     const expected = timeToMinutes(schedule.startTime) + schedule.toleranceMinutes;
@@ -89,7 +84,6 @@ export class AttendanceCalculator {
   private scheduledMinutes(schedule: DaySchedule): number {
     const start = timeToMinutes(schedule.startTime);
     let end = timeToMinutes(schedule.endTime);
-    // Turno nocturno: la salida cae al dia siguiente.
     if (end <= start) end += 24 * 60;
     return end - start - schedule.breakMinutes;
   }

@@ -20,7 +20,6 @@ export class GetHeadcountReport {
   }
 }
 
-/** El costo de la nomina es informacion global: solo RRHH/Admin. */
 export class GetPayrollReport {
   constructor(
     private readonly reports: ReportRepository,

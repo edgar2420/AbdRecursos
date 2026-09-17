@@ -1,7 +1,6 @@
 import { Paginated, PageQuery } from '../../../../shared/domain/pagination';
 import { LegalParameter, NewLegalParameter } from '../entities/LegalParameter';
 
-/** Puerto de persistencia de parametros legales. */
 export interface LegalParameterRepository {
   findEffective(at: Date): Promise<LegalParameter[]>;
   findByKey(key: string): Promise<LegalParameter[]>;

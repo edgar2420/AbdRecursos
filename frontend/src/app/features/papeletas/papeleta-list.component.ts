@@ -16,10 +16,6 @@ import {
 } from '../../shared/components/ui.components';
 import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/format.pipes';
 
-/**
- * Papeletas de horas extras y de salida, las mismas que antes se llenaban en
- * papel. El circuito de firmas es jefe de area y despues Recursos Humanos.
- */
 @Component({
   selector: 'app-papeleta-list',
   standalone: true,
@@ -434,7 +430,6 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
         font-weight: 600;
       }
 
-      /* Visor: reproduce la papeleta en pantalla, en lugar de abrir directo el PDF. */
       .doc {
         border: 1px solid var(--ink-200);
         border-radius: var(--radius-lg);
@@ -612,7 +607,6 @@ export class PapeletaListComponent implements OnInit, OnDestroy {
   readonly adjuntoArchivo = signal<File | null>(null);
   readonly adjuntoPreview = signal<string | null>(null);
 
-  /** Visor generico embebido en un modal (el PDF de la papeleta o el certificado adjunto). */
   private readonly sanitizer = inject(DomSanitizer);
   readonly docPreview = signal<{ titulo: string; url: SafeResourceUrl } | null>(null);
   private docObjectUrl: string | null = null;
@@ -680,7 +674,6 @@ export class PapeletaListComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** El boton aparece solo si al rol le toca firmar ese paso; la API lo revalida. */
   puedeFirmar(p: Papeleta): boolean {
     if (p.employeeId === this.auth.employeeId()) return false;
     if (p.estado === 'PENDIENTE_JEFE_AREA') return this.auth.hasRole('SUPERVISOR', 'ADMIN');
@@ -838,7 +831,6 @@ export class PapeletaListComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** Ver el PDF de la papeleta dentro de un modal, antes de imprimir. */
   descargar(p: Papeleta): void {
     this.api.download(`/papeletas/${p.id}/pdf`).subscribe({
       next: (r) => this.mostrarEnVisor(r.body as Blob, `Papeleta ${p.numero}`),
@@ -846,7 +838,6 @@ export class PapeletaListComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** Certificado adjunto a una salida medica: misma logica, mismo visor. */
   verAdjunto(p: Papeleta): void {
     if (!p.attachmentUrl) return;
     this.api.download(p.attachmentUrl).subscribe({
@@ -869,7 +860,6 @@ export class PapeletaListComponent implements OnInit, OnDestroy {
     this.docPreview.set(null);
   }
 
-  /** Imprime directo el contenido del iframe: no hace falta buscar el boton del visor del navegador. */
   imprimir(): void {
     const ventana = this.pdfFrame?.nativeElement.contentWindow;
     if (!ventana) {
@@ -884,12 +874,10 @@ export class PapeletaListComponent implements OnInit, OnDestroy {
     this.cerrarDocPreview();
   }
 
-  /** Vista en pantalla de la papeleta: el PDF queda como descarga opcional dentro del visor. */
   ver(p: Papeleta): void {
     this.viendo.set(p);
   }
 
-  /** "Desde" y "hasta" llegan como fecha y hora completas; en el visor solo se muestra la hora. */
   hora(iso: string | null): string {
     if (!iso) return '-';
     const d = new Date(iso);

@@ -17,7 +17,6 @@ import { PayslipPdfGenerator } from './shared/infrastructure/pdf/PayslipPdfGener
 import { ReportPdfGenerator } from './shared/infrastructure/pdf/ReportPdfGenerator';
 import { ZipService } from './shared/infrastructure/storage/ZipService';
 
-// --- auth ---
 import { PrismaUserRepository } from './modules/auth/infrastructure/persistence/PrismaUserRepository';
 import { PrismaRefreshTokenRepository } from './modules/auth/infrastructure/persistence/PrismaRefreshTokenRepository';
 import { Login } from './modules/auth/application/use-cases/Login';
@@ -34,7 +33,6 @@ import {
 import { AuthController } from './modules/auth/infrastructure/http/auth.controller';
 import { authRoutes } from './modules/auth/infrastructure/http/auth.routes';
 
-// --- legal parameters ---
 import { PrismaLegalParameterRepository } from './modules/legal-parameters/infrastructure/persistence/PrismaLegalParameterRepository';
 import { GetLegalParameters } from './modules/legal-parameters/application/use-cases/GetLegalParameters';
 import {
@@ -45,7 +43,6 @@ import {
 import { LegalParameterController } from './modules/legal-parameters/infrastructure/http/legal-parameter.controller';
 import { legalParameterRoutes } from './modules/legal-parameters/infrastructure/http/legal-parameter.routes';
 
-// --- employees ---
 import { PrismaEmployeeRepository } from './modules/employees/infrastructure/persistence/PrismaEmployeeRepository';
 import { PrismaCatalogRepository } from './modules/employees/infrastructure/persistence/PrismaCatalogRepository';
 import { EmployeeAccessPolicy } from './modules/employees/domain/services/EmployeeAccessPolicy';
@@ -62,7 +59,6 @@ import { EmployeeController } from './modules/employees/infrastructure/http/empl
 import { employeeRoutes } from './modules/employees/infrastructure/http/employee.routes';
 import { EmployeeImportProcessor } from './modules/employees/infrastructure/import/EmployeeImportProcessor';
 
-// --- vacations ---
 import {
   PrismaHolidayRepository,
   PrismaVacationRepository,
@@ -80,7 +76,6 @@ import { GetTeamCalendar } from './modules/vacations/application/use-cases/GetTe
 import { VacationController } from './modules/vacations/infrastructure/http/vacation.controller';
 import { vacationRoutes } from './modules/vacations/infrastructure/http/vacation.routes';
 
-// --- payslips ---
 import { PrismaPayslipRepository } from './modules/payslips/infrastructure/persistence/PrismaPayslipRepository';
 import { GeneratePayslips } from './modules/payslips/application/use-cases/GeneratePayslips';
 import { GetPayslip, ListPayslips } from './modules/payslips/application/use-cases/GetPayslip';
@@ -91,7 +86,6 @@ import { CalculateAguinaldo } from './modules/payslips/application/use-cases/Cal
 import { PayslipController } from './modules/payslips/infrastructure/http/payslip.controller';
 import { payslipRoutes } from './modules/payslips/infrastructure/http/payslip.routes';
 
-// --- lactation ---
 import { PrismaLactationRepository } from './modules/lactation/infrastructure/persistence/PrismaLactationRepository';
 import {
   GetExpiringLactationPermits,
@@ -102,7 +96,6 @@ import {
 import { LactationController } from './modules/lactation/infrastructure/http/lactation.controller';
 import { lactationRoutes } from './modules/lactation/infrastructure/http/lactation.routes';
 
-// --- attendance ---
 import { PrismaAttendanceRepository } from './modules/attendance/infrastructure/persistence/PrismaAttendanceRepository';
 import { RegisterAttendance } from './modules/attendance/application/use-cases/RegisterAttendance';
 import { ListAttendance } from './modules/attendance/application/use-cases/ListAttendance';
@@ -116,7 +109,6 @@ import { AttendanceController } from './modules/attendance/infrastructure/http/a
 import { attendanceRoutes } from './modules/attendance/infrastructure/http/attendance.routes';
 import { AttendanceImportProcessor } from './modules/attendance/infrastructure/import/AttendanceImportProcessor';
 
-// --- schedules ---
 import { PrismaScheduleRepository } from './modules/schedules/infrastructure/persistence/PrismaScheduleRepository';
 import {
   AssignSchedule,
@@ -130,7 +122,6 @@ import { ScheduleController } from './modules/schedules/infrastructure/http/sche
 import { scheduleRoutes } from './modules/schedules/infrastructure/http/schedule.routes';
 import { ScheduleImportProcessor } from './modules/schedules/infrastructure/import/ScheduleImportProcessor';
 
-// --- imports ---
 import { PrismaImportRepository } from './modules/imports/infrastructure/persistence/PrismaImportRepository';
 import { ImportProcessor } from './modules/imports/domain/ports/ImportProcessor';
 import { ImportType } from './modules/imports/domain/entities/ImportLog';
@@ -145,7 +136,6 @@ import {
 import { ImportController } from './modules/imports/infrastructure/http/import.controller';
 import { importRoutes } from './modules/imports/infrastructure/http/import.routes';
 
-// --- papeletas ---
 import { PrismaPapeletaRepository } from './modules/papeletas/infrastructure/persistence/PrismaPapeletaRepository';
 import { HmacSelloDeFirma } from './modules/papeletas/infrastructure/HmacSelloDeFirma';
 import { CrearPapeleta } from './modules/papeletas/application/use-cases/CrearPapeleta';
@@ -162,20 +152,13 @@ import { LocalFileStorage } from './shared/infrastructure/storage/LocalFileStora
 import { UploadController } from './shared/infrastructure/http/upload.controller';
 import { uploadRoutes } from './shared/infrastructure/http/upload.routes';
 
-// --- reports ---
 import { PrismaReportRepository } from './modules/reports/infrastructure/persistence/PrismaReportRepository';
 import { GetDashboard } from './modules/reports/application/use-cases/GetDashboard';
 import { GetHeadcountReport, GetPayrollReport } from './modules/reports/application/use-cases/GetReports';
 import { ReportController } from './modules/reports/infrastructure/http/report.controller';
 import { reportRoutes } from './modules/reports/infrastructure/http/report.routes';
 
-/**
- * Composition root (seccion 4.2, regla 3): aqui -y solo aqui- se cablean las
- * implementaciones concretas contra los puertos. Los casos de uso no saben
- * que existe Prisma, Express, pdfkit ni exceljs.
- */
 export function buildApiRouter(): Router {
-  // --- servicios compartidos ---
   const tokens = new JwtService();
   const hasher = new BcryptPasswordHasher();
   const audit = new PrismaAuditLogger();
@@ -185,7 +168,6 @@ export function buildApiRouter(): Router {
   const zip = new ZipService();
   const auth = authenticate(tokens);
 
-  // --- repositorios ---
   const users = new PrismaUserRepository();
   const refreshTokens = new PrismaRefreshTokenRepository();
   const legalParameters = new PrismaLegalParameterRepository();
@@ -201,12 +183,10 @@ export function buildApiRouter(): Router {
   const reports = new PrismaReportRepository();
   const papeletas = new PrismaPapeletaRepository();
 
-  // --- politicas y servicios de aplicacion ---
   const policy = new EmployeeAccessPolicy(employees);
   const parameters = new GetLegalParameters(legalParameters);
   const notifier = new LogNotifier();
 
-  // --- auth ---
   const authController = new AuthController(
     new Login(users, refreshTokens, hasher, tokens, audit),
     new RefreshSession(users, refreshTokens, tokens),
@@ -220,7 +200,6 @@ export function buildApiRouter(): Router {
     users,
   );
 
-  // --- empleados ---
   const employeeController = new EmployeeController(
     new ListEmployees(employees, policy),
     new GetEmployee(employees, policy),
@@ -235,7 +214,6 @@ export function buildApiRouter(): Router {
     reportPdf,
   );
 
-  // --- vacaciones ---
   const balance = new GetVacationBalance(employees, vacations, parameters, policy);
   const vacationController = new VacationController(
     new RequestVacation(employees, vacations, holidays, parameters, policy, balance, audit, notifier),
@@ -248,7 +226,6 @@ export function buildApiRouter(): Router {
     new GetTeamCalendar(vacations, policy),
   );
 
-  // --- boletas ---
   const getPayslip = new GetPayslip(payslips, policy);
   const downloadPayslipPdf = new DownloadPayslipPdf(getPayslip, employees, payslipPdf, audit);
   const payslipController = new PayslipController(
@@ -262,7 +239,6 @@ export function buildApiRouter(): Router {
     new CalculateAguinaldo(employees, parameters, policy),
   );
 
-  // --- lactancia ---
   const lactationController = new LactationController(
     new ListLactationPermits(lactation, policy),
     new RegisterLactationPermit(lactation, employees, parameters, policy, audit),
@@ -270,7 +246,6 @@ export function buildApiRouter(): Router {
     new GetExpiringLactationPermits(lactation, parameters, policy),
   );
 
-  // --- asistencia ---
   const attendanceController = new AttendanceController(
     new RegisterAttendance(attendance, schedules, parameters, policy, audit),
     new ListAttendance(attendance, policy),
@@ -282,7 +257,6 @@ export function buildApiRouter(): Router {
     reportPdf,
   );
 
-  // --- horarios ---
   const scheduleController = new ScheduleController(
     new ListSchedules(schedules),
     new CreateSchedule(schedules, policy, audit),
@@ -292,7 +266,6 @@ export function buildApiRouter(): Router {
     new EndScheduleAssignment(schedules, policy, audit),
   );
 
-  // --- importaciones (un procesador por tipo, mismo flujo generico) ---
   const processors = new Map<ImportType, ImportProcessor>([
     ['EMPLOYEES', new EmployeeImportProcessor(employees, catalogs)],
     ['ATTENDANCE', new AttendanceImportProcessor(attendance, employees)],
@@ -307,11 +280,9 @@ export function buildApiRouter(): Router {
     new DownloadImportTemplate(processors, excel, policy),
   );
 
-  // --- adjuntos (certificados medicos, fotos de justificaciones, etc.) ---
   const fileStorage = new LocalFileStorage();
   const uploadController = new UploadController(fileStorage);
 
-  // --- papeletas ---
   const papeletaPdf = new PapeletaPdfGenerator();
   const sello = new HmacSelloDeFirma();
   const papeletaController = new PapeletaController(
@@ -325,14 +296,12 @@ export function buildApiRouter(): Router {
     fileStorage,
   );
 
-  // --- reportes ---
   const reportController = new ReportController(
     new GetDashboard(reports, policy),
     new GetHeadcountReport(reports, policy),
     new GetPayrollReport(reports, policy),
   );
 
-  // --- montaje ---
   const router = Router();
   router.use('/auth', authRoutes(authController, auth));
   router.use('/employees', auth, employeeRoutes(employeeController));
@@ -357,12 +326,6 @@ export function buildApiRouter(): Router {
   return router;
 }
 
-/**
- * Levanta HTTP o HTTPS segun HTTPS_ENABLED. En desarrollo el certificado es
- * autofirmado (ver certs/), asi que el navegador va a pedir una excepcion de
- * confianza la primera vez; en produccion deberia sustituirse por uno emitido
- * por una autoridad reconocida.
- */
 function crearServidor(app: ReturnType<typeof createApp>) {
   if (!env.HTTPS_ENABLED) return http.createServer(app);
 
@@ -390,7 +353,6 @@ async function bootstrap(): Promise<void> {
       await disconnectPrisma();
       process.exit(0);
     });
-    // Si algo queda colgado, no se espera indefinidamente.
     setTimeout(() => process.exit(1), 10_000).unref();
   };
 

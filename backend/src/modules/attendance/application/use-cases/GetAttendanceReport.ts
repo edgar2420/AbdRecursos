@@ -26,7 +26,6 @@ export interface AttendanceReportRow {
 
 const MAX_RANGE_DAYS = 92;
 
-/** Reporte de asistencia por empleado, equipo o departamento (2.5). */
 export class GetAttendanceReport {
   constructor(
     private readonly attendance: AttendanceRepository,

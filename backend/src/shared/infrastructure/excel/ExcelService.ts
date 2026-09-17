@@ -14,7 +14,6 @@ export interface ParsedRow {
   data: Record<string, unknown>;
 }
 
-/** Puerto de hojas de calculo usado por el modulo generico de importacion (2.8). */
 export interface SpreadsheetPort {
   buildTemplate(sheetName: string, columns: ColumnSpec[]): Promise<Buffer>;
   parse(buffer: Buffer, columns: ColumnSpec[]): Promise<ParsedRow[]>;
@@ -31,7 +30,6 @@ export class ExcelService implements SpreadsheetPort {
     ws.columns = columns.map((c) => ({ header: c.header, key: c.key, width: c.width ?? 22 }));
     this.styleHeader(ws, columns);
 
-    // Fila de ejemplo para que el usuario vea el formato esperado.
     if (columns.some((c) => c.example !== undefined)) {
       const example: Record<string, unknown> = {};
       columns.forEach((c) => (example[c.key] = c.example ?? ''));
@@ -59,7 +57,6 @@ export class ExcelService implements SpreadsheetPort {
     const ws = wb.worksheets[0];
     if (!ws) return [];
 
-    // Se mapea por encabezado (no por posicion) para tolerar columnas movidas.
     const headerRow = ws.getRow(1);
     const indexByKey = new Map<string, number>();
     headerRow.eachCell((cell, colNumber) => {
@@ -110,7 +107,6 @@ export class ExcelService implements SpreadsheetPort {
   }
 }
 
-/** Normaliza celdas de ExcelJS (formulas, hipervinculos, rich text) a valores simples. */
 function normalizeCell(raw: unknown): string | number | Date | boolean | null {
   if (raw === null || raw === undefined) return null;
   if (raw instanceof Date) return raw;

@@ -7,7 +7,6 @@ const EXCEL_MIME = [
   'application/vnd.ms-excel',
 ];
 
-/** Los archivos se procesan en memoria: no se persiste nada sin validar antes. */
 export const uploadExcel = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: env.UPLOAD_MAX_MB * 1024 * 1024, files: 1 },
@@ -27,7 +26,6 @@ export const uploadDocument = multer({
 
 const ADJUNTO_MIME = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 
-/** Adjuntos de papeletas y justificaciones: certificados medicos, fotos, etc. */
 export const uploadAttachment = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: env.UPLOAD_MAX_MB * 1024 * 1024, files: 1 },

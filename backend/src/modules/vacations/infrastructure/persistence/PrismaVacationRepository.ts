@@ -33,12 +33,6 @@ interface Aprobador {
   rol: string;
 }
 
-/**
- * Resuelve en bloque quien aprobo/rechazo cada solicitud, para poder decir
- * "aprobado por Fulano de Tal" en vez de dejarlo como un identificador interno.
- * El rol viaja junto al nombre: es lo que permite distinguir una aprobacion
- * normal del supervisor de una aprobacion de emergencia hecha por RRHH.
- */
 async function resolverAprobadores(ids: (string | null)[]): Promise<Map<string, Aprobador>> {
   const limpios = [...new Set(ids.filter((id): id is string => Boolean(id)))];
   if (limpios.length === 0) return new Map();
@@ -72,8 +66,6 @@ function toDomain(row: Row, aprobadores: Map<string, Aprobador>): VacationReques
     status: row.status as VacationStatus,
     supervisorApprovedAt: row.supervisorApprovedAt,
     supervisorApprovedByName: supervisor?.nombre ?? null,
-    // Si quien cerro el paso del supervisor tiene rol HR, fue una aprobacion
-    // de emergencia (solo RRHH puede sustituir al supervisor real).
     supervisorApprovalIsEmergency: supervisor?.rol === 'HR',
     emergencyReason: row.emergencyReason,
     hrApprovedAt: row.hrApprovedAt,
@@ -198,7 +190,6 @@ export class PrismaVacationRepository implements VacationRepository {
     return unaFila(row);
   }
 
-  /** Aprobadas = dias consumidos; en tramite = dias comprometidos (aun no descontados). */
   async sumDays(employeeId: string, year: number): Promise<{ approved: number; pending: number }> {
     const range = { gte: new Date(year, 0, 1), lte: new Date(year, 11, 31, 23, 59, 59) };
     const [approved, pending] = await Promise.all([

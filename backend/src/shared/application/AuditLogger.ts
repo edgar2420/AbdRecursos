@@ -1,4 +1,3 @@
-/** Puerto de auditoria: toda accion sensible queda registrada (8.4). */
 export interface AuditEvent {
   userId?: string | null;
   action: string;

@@ -1,4 +1,3 @@
-/** Contrato de paginacion/busqueda comun a todos los listados (seccion 9). */
 export interface PageQuery {
   page: number;
   limit: number;

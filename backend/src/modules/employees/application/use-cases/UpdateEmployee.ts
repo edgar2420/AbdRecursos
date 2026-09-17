@@ -6,7 +6,6 @@ import { Employee, UpdateEmployeeData } from '../../domain/entities/Employee';
 import { EmployeeRepository } from '../../domain/repositories/EmployeeRepository';
 import { AccessActor, EmployeeAccessPolicy } from '../../domain/services/EmployeeAccessPolicy';
 
-/** Campos que un empleado puede editar de su propio perfil. */
 const SELF_EDITABLE: (keyof UpdateEmployeeData)[] = [
   'phone',
   'address',
@@ -52,7 +51,6 @@ export class UpdateEmployee {
     return data;
   }
 
-  /** Un empleado no privilegiado solo toca su propio perfil, y solo datos de contacto. */
   private restrictToSelf(actor: AccessActor, id: string, input: UpdateEmployeeData): UpdateEmployeeData {
     if (!this.policy.isSelf(actor, id)) this.policy.assertCanManage(actor);
     const data: UpdateEmployeeData = {};
@@ -64,7 +62,6 @@ export class UpdateEmployee {
     return data;
   }
 
-  /** Ascensos, cambios de salario y de departamento quedan en el historial (2.1). */
   private async recordHistory(
     actor: AccessActor,
     before: Employee,

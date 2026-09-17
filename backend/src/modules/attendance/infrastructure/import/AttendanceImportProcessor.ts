@@ -39,10 +39,6 @@ function parseDay(value: unknown): Date | null {
   return match ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])) : null;
 }
 
-/**
- * Importacion de asistencia historica (2.8). Cada fila del Excel representa un
- * dia y genera hasta dos marcaciones (entrada y salida).
- */
 export class AttendanceImportProcessor implements ImportProcessor {
   readonly type: ImportType = 'ATTENDANCE';
   readonly sheetName = 'Asistencia';

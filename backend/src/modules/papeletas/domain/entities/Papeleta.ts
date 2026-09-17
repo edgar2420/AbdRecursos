@@ -9,12 +9,10 @@ export type PapeletaEstado =
   | 'RECHAZADA'
   | 'ANULADA';
 
-/** Una firma registrada sobre la papeleta: quien, cuando y sobre que contenido. */
 export interface Firma {
   userId: string;
   nombre: string | null;
   fecha: Date;
-  /** Sello de integridad del contenido al momento de firmar. */
   sello: string;
 }
 
@@ -30,23 +28,19 @@ export interface Papeleta {
   area: string;
   fecha: Date;
 
-  // --- horas extras ---
   trabajoRealizado: string | null;
   desde: Date | null;
   hasta: Date | null;
   totalHoras: number | null;
   recargo: RecargoHoraExtra | null;
 
-  // --- salida ---
   salidaMotivo: SalidaMotivo | null;
   motivo: string | null;
   tiempoSolicitado: string | null;
   horaSalida: string | null;
   horaRetorno: string | null;
-  /** Certificado o foto adjunta (tipico de la salida MEDICA). */
   attachmentUrl: string | null;
 
-  // --- firmas ---
   firmaArea: Firma | null;
   firmaRrhh: Firma | null;
   motivoRechazo: string | null;

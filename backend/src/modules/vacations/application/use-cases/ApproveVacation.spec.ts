@@ -9,12 +9,6 @@ import { VacationRequest } from '../../domain/entities/VacationRequest';
 import { VacationRepository } from '../../domain/repositories/VacationRepository';
 import { ApproveVacation } from './ApproveVacation';
 
-/**
- * Verifica el punto que motivo este archivo: el paso del supervisor solo lo
- * puede resolver el supervisor real del equipo o, en su ausencia, Recursos
- * Humanos como aprobacion de emergencia. Un Administrador queda excluido: no
- * debe poder aprobar vacaciones saltandose a RRHH.
- */
 
 const SOLICITUD_BASE: VacationRequest = {
   id: 'req-1',
@@ -66,7 +60,6 @@ function vacationRepoStub(overrides: Partial<VacationRepository> = {}): Vacation
   } as unknown as VacationRepository;
 }
 
-/** equipo: mapa supervisor (employeeId) -> ids de su equipo. */
 function employeeRepoStub(equipo: Record<string, string[]>): EmployeeRepository {
   return {
     isSupervisorOf: async (supervisorId: string, employeeId: string) =>

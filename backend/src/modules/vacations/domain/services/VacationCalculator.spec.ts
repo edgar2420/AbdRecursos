@@ -52,8 +52,6 @@ describe('VacationCalculator - gestiones y tramos (6.1)', () => {
   });
 
   it('reproduce la escalera real de un empleado de la planilla de RRHH', () => {
-    // Caso tomado de "VACACIONES DEL PERSONAL": ingreso 15-sept-2012,
-    // 13 gestiones cargadas con 15,15,15,15,15,20,20,20,20,20,30,30,30.
     const gestiones = calculator.gestiones(new Date(2012, 8, 15), new Date(2025, 11, 31));
     const otorgados = gestiones.slice(0, 13).map((g) => g.diasOtorgados);
 
@@ -88,16 +86,15 @@ describe('VacationCalculator - gestiones y tramos (6.1)', () => {
 
 describe('VacationCalculator - dias habiles del rango', () => {
   it('excluye domingos', () => {
-    // Lunes 1 a domingo 7 de junio de 2026 -> 6 dias sin contar sabado ni domingo...
     const calculator = new VacationCalculator(params());
     const days = calculator.workingDays(new Date(2026, 5, 1), new Date(2026, 5, 7), []);
-    expect(days).toBe(5); // lunes a viernes
+    expect(days).toBe(5); 
   });
 
   it('cuenta el sabado si el parametro lo indica', () => {
     const calculator = new VacationCalculator(params({ VACATION_COUNT_SATURDAY: 'true' }));
     const days = calculator.workingDays(new Date(2026, 5, 1), new Date(2026, 5, 7), []);
-    expect(days).toBe(6); // lunes a sabado
+    expect(days).toBe(6); 
   });
 
   it('excluye feriados', () => {

@@ -28,7 +28,6 @@ const include = {
 
 type Row = Prisma.PayslipGetPayload<{ include: typeof include }>;
 
-/** Nombre de quien emitio cada boleta, resuelto en bloque (evita N+1). */
 async function resolverNombres(ids: (string | null)[]): Promise<Map<string, string>> {
   const limpios = [...new Set(ids.filter((id): id is string => Boolean(id)))];
   if (limpios.length === 0) return new Map();
@@ -174,7 +173,6 @@ export class PrismaPayslipRepository implements PayslipRepository {
     return unaFila(row);
   }
 
-  /** Regenerar un borrador reemplaza sus lineas dentro de una transaccion. */
   async replace(id: string, data: NewPayslip): Promise<Payslip> {
     const row = await prisma.$transaction(async (tx) => {
       await tx.payslipDetail.deleteMany({ where: { payslipId: id } });

@@ -42,7 +42,6 @@ export function payslipRoutes(controller: PayslipController): Router {
     asyncHandler(controller.issue),
   );
 
-  // El control de propiedad de la boleta vive en el caso de uso, no aqui (8.2).
   router.get('/:id', validate(payslipIdParamSchema, 'params'), asyncHandler(controller.get));
   router.get('/:id/pdf', validate(payslipIdParamSchema, 'params'), asyncHandler(controller.pdf));
   router.post(

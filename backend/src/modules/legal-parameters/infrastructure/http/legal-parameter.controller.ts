@@ -23,7 +23,6 @@ export class LegalParameterController {
     res.json(await this.listUseCase.execute(query));
   };
 
-  /** Valores vigentes hoy, en formato clave -> valor (lo que consume el frontend). */
   effective = async (_req: AuthenticatedRequest, res: Response): Promise<void> => {
     const set = await this.getParameters.execute(new Date());
     res.json({ data: set.snapshot(), meta: { effectiveAt: set.effectiveAt } });

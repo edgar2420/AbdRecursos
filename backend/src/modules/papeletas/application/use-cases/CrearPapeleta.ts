@@ -25,17 +25,9 @@ export interface CrearSalidaInput {
   tiempoSolicitado: string;
   horaSalida: string;
   horaRetorno?: string;
-  /** Certificado o foto adjunta, ya subida via /uploads (ver UploadAttachment). */
   attachmentUrl?: string;
 }
 
-/**
- * Emision de una papeleta. Por defecto cada quien emite la suya; RRHH puede
- * registrarla por un tercero, igual que cuando llenaba el formulario en papel.
- *
- * El area y el codigo salen de la ficha del empleado: no se escriben a mano
- * para que no puedan declararse de otra area que la propia.
- */
 export class CrearPapeleta {
   constructor(
     private readonly papeletas: PapeletaRepository,

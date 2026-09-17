@@ -50,7 +50,6 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
                 <span class="error-text">Ingrese un correo valido</span>
               }
             </div>
-
             <div class="field">
               <label for="password">Contraseña</label>
               <div class="input-icon">
@@ -154,8 +153,6 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
   styles: [
     `
       .login {
-        /* Prueba puntual: solo esta pantalla usa Montserrat, el resto de la
-           app sigue con la tipografia global (--font: Inter). */
         font-family: 'Montserrat', var(--font);
         position: relative;
         min-height: 100vh;
@@ -180,9 +177,6 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
         font-weight: 600;
       }
 
-      /* Formas decoradas flotando de fondo: le dan profundidad al degrade
-         plano sin depender de ninguna imagen. Se apagan si el usuario pide
-         menos movimiento. */
       .blob {
         position: absolute;
         border-radius: 50%;
@@ -231,10 +225,6 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
         .blob { animation: none; }
       }
 
-      /* La tarjeta y el panel son dos piezas separadas que se superponen
-         (la tarjeta "flota" encima), no un solo bloque partido al medio:
-         asi las cuatro esquinas de cada una quedan redondeadas, tambien
-         las del centro, en vez de encontrarse en un corte recto. */
       .stage {
         position: relative;
         z-index: 1;
@@ -297,7 +287,6 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
         margin-top: 8px;
       }
 
-      /* Icono dentro del campo: el input le deja el hueco con padding-left. */
       .input-icon {
         position: relative;
       }
@@ -389,8 +378,6 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
         opacity: 0.5;
         pointer-events: none;
       }
-      /* Resplandor grande detras del contenido: sin esto el panel queda un
-         bloque de color plano y chato, aunque tenga texto encima. */
       .art-glow {
         position: absolute;
         width: 480px;

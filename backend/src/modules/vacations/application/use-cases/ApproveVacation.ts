@@ -16,18 +16,6 @@ const ROL_LEGIBLE: Record<AccessActor['role'], string> = {
   ADMIN: 'Administracion',
 };
 
-/**
- * Flujo Empleado -> Supervisor -> RRHH (2.2). El numero de aprobaciones es
- * configurable via VACATION_REQUIRE_HR_APPROVAL.
- *
- * Cuando el supervisor real del equipo no puede aprobar (esta de licencia, ya
- * no trabaja ahi, etc.), Recursos Humanos puede cerrar ese paso en su lugar:
- * es una APROBACION DE EMERGENCIA. Un Administrador del sistema NO puede
- * hacerlo: aprobar vacaciones es una decision de RRHH, no una tarea de
- * administracion del sistema, y dejarla pasar por una cuenta de Admin sin
- * pasar por RRHH seria un hueco de control. Toda aprobacion de emergencia
- * queda auditada y notificada nombrando a quien la hizo.
- */
 export class ApproveVacation {
   constructor(
     private readonly vacations: VacationRepository,
@@ -69,18 +57,12 @@ export class ApproveVacation {
       );
     }
 
-    // PENDING_HR: solo RRHH/Admin cierra el flujo.
     if (!this.policy.isPrivileged(actor)) {
       throw new ForbiddenError('La aprobacion final corresponde a RRHH');
     }
     return this.finish(actor, request, 'APPROVED', { hrApprovedBy: actor.userId }, false);
   }
 
-  /**
-   * Devuelve si esta aprobacion del paso del supervisor es una aprobacion de
-   * emergencia (la hace alguien que no es el supervisor real del equipo).
-   * Solo RRHH puede resolver esa emergencia; nadie mas queda habilitado.
-   */
   private async esAprobacionDeEmergencia(actor: AccessActor, employeeId: string): Promise<boolean> {
     if (actor.role === 'SUPERVISOR' && actor.employeeId) {
       const esElSupervisorDelEquipo = await this.employees.isSupervisorOf(actor.employeeId, employeeId);
@@ -138,7 +120,6 @@ export class ApproveVacation {
     return updated;
   }
 
-  /** Nombre para mostrar en la auditoria y en la notificacion: nunca solo un identificador. */
   private async nombreDelActor(actor: AccessActor): Promise<string> {
     if (actor.employeeId) {
       const empleado = await this.employees.findById(actor.employeeId);

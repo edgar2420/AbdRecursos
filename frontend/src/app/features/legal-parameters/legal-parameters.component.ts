@@ -13,7 +13,6 @@ import {
 } from '../../shared/components/ui.components';
 import { FechaPipe } from '../../shared/pipes/format.pipes';
 
-/** Agrupacion por tema para que RRHH encuentre rapido lo que busca. */
 const GROUPS: { title: string; prefix: string[]; note: string }[] = [
   {
     title: 'Vacaciones',

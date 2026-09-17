@@ -59,7 +59,6 @@ const ETIQUETA_CONTRATO: Record<string, string> = {
       } @else {
       @if (data(); as kpi) {
         @if (esEmpleado()) {
-          <!-- Panel simple: solo lo suyo, sin indicadores de la empresa. -->
           <div class="grid cols-2">
             <app-kpi
               label="Vacaciones pendientes"
@@ -237,7 +236,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.detenerRefresco?.();
   }
 
-  /** Un empleado raso solo ve su propio panel: nada de indicadores de la empresa. */
   esEmpleado(): boolean {
     return this.auth.role() === 'EMPLOYEE';
   }
@@ -266,7 +264,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }));
   }
 
-  /** `silent`: refresco en segundo plano (autoRefresh) - sin spinner ni mensaje de error visible. */
   load(silent = false): void {
     if (!silent) {
       this.loading.set(true);

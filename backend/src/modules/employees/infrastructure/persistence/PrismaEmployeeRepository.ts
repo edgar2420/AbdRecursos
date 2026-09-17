@@ -13,10 +13,6 @@ import {
 import { EmployeeFilters, EmployeeRepository } from '../../domain/repositories/EmployeeRepository';
 import { FieldCipher } from '../../../../shared/infrastructure/security/FieldCipher';
 
-/**
- * La C.I. y la cuenta bancaria se guardan cifradas (AES-256-GCM) y se descifran
- * al mapear a dominio, de modo que quien mire la base directamente no las lee.
- */
 const cipher = new FieldCipher();
 
 const include = {
@@ -29,7 +25,6 @@ type Row = Prisma.EmployeeGetPayload<{ include: typeof include }>;
 
 const SORTABLE = ['lastName', 'firstName', 'hireDate', 'baseSalary', 'employeeCode', 'createdAt'] as const;
 
-/** Mapeo explicito Prisma -> dominio: la entidad de dominio no conoce Prisma (5.2). */
 function toDomain(row: Row): Employee {
   return {
     id: row.id,
@@ -85,16 +80,12 @@ function buildWhere(filters: Partial<EmployeeFilters>): Prisma.EmployeeWhereInpu
     ...(filters.search
       ? {
           OR: [
-            // Nombre y apellido por separado ("Maria Quispe" exige ambas palabras,
-            // en cualquier orden, sin importar en que campo caiga cada una).
             searchTokensWhere(filters.search, (t) => [
               { firstName: { contains: t, mode: 'insensitive' } },
               { lastName: { contains: t, mode: 'insensitive' } },
               { employeeCode: { contains: t, mode: 'insensitive' } },
               { email: { contains: t, mode: 'insensitive' } },
             ]),
-            // La C.I. esta cifrada: solo se puede buscar por coincidencia exacta
-            // via su huella (HMAC), nunca por fragmento.
             { ciHuella: cipher.huella(filters.search.trim()) },
           ],
         }
@@ -114,7 +105,6 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
   }
 
   async findByCI(ci: string): Promise<Employee | null> {
-    // Se busca por la huella: el valor cifrado cambia en cada guardado.
     const row = await prisma.employee.findUnique({ where: { ciHuella: cipher.huella(ci) }, include });
     return row ? toDomain(row) : null;
   }
@@ -287,7 +277,6 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
     return { data, meta: buildMeta(total, query.page, query.limit) };
   }
 
-  /** Correlativo EMP-0001. El UUID sigue siendo el identificador publico (8.2). */
   async nextEmployeeCode(): Promise<string> {
     const last = await prisma.employee.findFirst({
       where: { employeeCode: { startsWith: 'EMP-' } },

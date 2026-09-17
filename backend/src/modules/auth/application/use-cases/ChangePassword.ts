@@ -23,7 +23,6 @@ export class ChangePassword {
     }
 
     await this.users.updatePassword(userId, await this.hasher.hash(newPassword));
-    // Al cambiar la contraseña se cierran las demas sesiones.
     await this.refreshTokens.revokeAllForUser(userId);
     await this.audit.log({ userId, action: 'PASSWORD_CHANGED', entity: 'User', entityId: userId });
   }

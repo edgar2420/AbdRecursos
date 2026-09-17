@@ -4,10 +4,6 @@ import { AccessActor, EmployeeAccessPolicy } from '../../../employees/domain/ser
 import { Papeleta } from '../../domain/entities/Papeleta';
 import { PapeletaFilters, PapeletaRepository } from '../../domain/repositories/PapeletaRepository';
 
-/**
- * Listado con el alcance de siempre: el empleado ve las suyas, el jefe de area
- * las de su equipo, RRHH y Administracion las de toda la empresa.
- */
 export class ListarPapeletas {
   constructor(
     private readonly papeletas: PapeletaRepository,
@@ -37,13 +33,11 @@ export class ObtenerPapeleta {
   async execute(actor: AccessActor, id: string): Promise<Papeleta> {
     const papeleta = await this.papeletas.findById(id);
     if (!papeleta) throw new NotFoundError('Papeleta');
-    // Verificacion de propiedad en el caso de uso, no solo por rol.
     await this.policy.assertCanView(actor, papeleta.employeeId);
     return papeleta;
   }
 }
 
-/** Anular una papeleta que todavia no completo su circuito de firmas. */
 export class AnularPapeleta {
   constructor(
     private readonly papeletas: PapeletaRepository,

@@ -20,12 +20,6 @@ const PRESETS: Preset[] = [
   { label: 'Mes anterior', range: () => ({ from: iso(firstOfMonth(-1)), to: iso(lastOfMonth(-1)) }) },
 ];
 
-/**
- * Selector de rango de fechas tipo BI: un boton que muestra el rango elegido
- * y despliega una lista de atajos comunes, con un rango personalizado al pie
- * (seccion "Filtros" del metodo de dataviz: presets arriba, custom detras de
- * una linea, seleccion marcada, sin reinventar un calendario propio).
- */
 @Component({
   selector: 'app-date-range-picker',
   standalone: true,

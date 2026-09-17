@@ -12,7 +12,6 @@ export interface AccessTokenPayload {
   email: string;
 }
 
-/** Puerto de tokens: el caso de uso no sabe que se firma con JWT. */
 export interface TokenServicePort {
   signAccessToken(payload: AccessTokenPayload): string;
   verifyAccessToken(token: string): AccessTokenPayload;
@@ -40,10 +39,6 @@ export class JwtService implements TokenServicePort {
     }
   }
 
-  /**
-   * El refresh token es un secreto opaco: se entrega al cliente en cookie httpOnly
-   * y en base de datos solo vive su hash (asi una filtracion de BD no permite refrescar).
-   */
   generateRefreshToken(): { token: string; tokenHash: string; expiresAt: Date } {
     const token = crypto.randomBytes(48).toString('hex');
     return {

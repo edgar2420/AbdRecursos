@@ -8,10 +8,6 @@ import { ImportRepository } from '../../domain/repositories/ImportRepository';
 
 const MAX_ROWS = 5000;
 
-/**
- * Paso 1 del flujo de importacion: subir -> validar fila por fila -> vista previa.
- * Nada se persiste en las tablas de negocio hasta que el usuario confirma.
- */
 export class UploadImportFile {
   constructor(
     private readonly imports: ImportRepository,

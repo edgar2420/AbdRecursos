@@ -1,4 +1,3 @@
-/** Errores de dominio: no conocen HTTP, el adaptador los traduce a status codes. */
 export class DomainError extends Error {
   constructor(message: string, public readonly code = 'DOMAIN_ERROR') {
     super(message);
@@ -30,7 +29,6 @@ export class UnauthorizedError extends DomainError {
   }
 }
 
-/** Se lanza tanto por rol insuficiente como por acceso a un recurso ajeno (IDOR). */
 export class ForbiddenError extends DomainError {
   constructor(message = 'No tiene permisos para acceder a este recurso') {
     super(message, 'FORBIDDEN');

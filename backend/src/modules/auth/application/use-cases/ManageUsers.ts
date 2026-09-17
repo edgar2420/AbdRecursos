@@ -6,7 +6,6 @@ import { Role, User } from '../../domain/entities/User';
 import { RefreshTokenRepository } from '../../domain/repositories/RefreshTokenRepository';
 import { UserRepository } from '../../domain/repositories/UserRepository';
 
-/** Gestion de usuarios y roles: exclusiva de ADMIN (matriz de la seccion 3). */
 export class ListUsers {
   constructor(private readonly users: UserRepository) {}
 
@@ -60,7 +59,6 @@ export class UpdateUserRole {
     if (target.id === actorId) throw new ForbiddenError('No puede cambiar su propio rol');
 
     const updated = await this.users.updateRole(userId, role);
-    // El rol viaja dentro del JWT: se invalidan las sesiones para que tome efecto ya.
     await this.refreshTokens.revokeAllForUser(userId);
     await this.audit.log({
       userId: actorId,

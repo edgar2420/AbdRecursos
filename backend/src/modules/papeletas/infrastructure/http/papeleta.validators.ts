@@ -36,7 +36,6 @@ export const crearSalidaSchema = z.object({
   tiempoSolicitado: z.string().trim().min(1).max(60),
   horaSalida: hora,
   horaRetorno: hora.optional(),
-  // Ruta relativa que devuelve /api/v1/uploads: nunca una URL externa arbitraria.
   attachmentUrl: z.string().trim().regex(/^\/uploads\/[a-f0-9-]+\.\w+$/).max(300).optional(),
 });
 

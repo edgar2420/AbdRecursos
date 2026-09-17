@@ -25,11 +25,9 @@ export interface PayslipView {
   totalEarnings: number;
   totalDeductions: number;
   netPay: number;
-  /** Quien confirmo/emitio la boleta: firma autorizada de RRHH en el PDF. Null si sigue en borrador. */
   authorizedByName?: string | null;
 }
 
-/** Puerto: el caso de uso pide "el PDF de esta boleta" sin saber que se usa pdfkit. */
 export interface PayslipPdfPort {
   render(view: PayslipView): Promise<Buffer>;
 }
@@ -138,12 +136,6 @@ export class PayslipPdfGenerator implements PayslipPdfPort {
     doc.y = y + 50;
   }
 
-  /**
-   * Dos firmas siempre presentes: la del empleado queda en blanco a proposito
-   * (la firma fisica va ahi, no hay nada que imprimir); la autorizada muestra
-   * quien de RRHH emitio la boleta, para que nunca sea una linea vacia sin
-   * responsable — salvo que la boleta siga en borrador y todavia no la emitio nadie.
-   */
   private footer(doc: PDFKit.PDFDocument, view: PayslipView): void {
     const y = doc.y + 40;
     doc.strokeColor('#94a3b8');

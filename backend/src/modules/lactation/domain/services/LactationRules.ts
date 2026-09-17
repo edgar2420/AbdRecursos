@@ -3,12 +3,6 @@ import { addMonths, daysBetween, timeToMinutes } from '../../../../shared/domain
 import { LEGAL_KEYS } from '../../../legal-parameters/domain/parameter-keys';
 import { LegalParameterSet } from '../../../legal-parameters/domain/services/LegalParameterSet';
 
-/**
- * Ley 3460 (Fomento a la Lactancia Materna), seccion 6.2:
- * una hora diaria de permiso, fraccionable en dos periodos de 30 minutos,
- * vigente hasta que el hijo o hija cumple un anio. Ambos valores son
- * parametros legales, no constantes.
- */
 export class LactationRules {
   constructor(private readonly params: LegalParameterSet) {}
 
@@ -16,13 +10,11 @@ export class LactationRules {
     return this.params.number(LEGAL_KEYS.LACTATION_DAILY_MINUTES, 60);
   }
 
-  /** Vigencia: desde el reintegro post-parto hasta que el hijo/a cumple 1 anio. */
   endDateFor(birthDate: Date): Date {
     const months = this.params.number(LEGAL_KEYS.LACTATION_MONTHS, 12);
     return addMonths(birthDate, months);
   }
 
-  /** Inamovilidad laboral asociada: campo informativo para RRHH, no bloquea acciones. */
   jobProtectionUntil(birthDate: Date): Date {
     const months = this.params.number(LEGAL_KEYS.JOB_PROTECTION_MONTHS_AFTER_BIRTH, 12);
     return addMonths(birthDate, months);
@@ -36,7 +28,6 @@ export class LactationRules {
     return Math.max(0, daysBetween(at, endDate));
   }
 
-  /** Valida que los tramos horarios sumen exactamente el permiso diario. */
   assertValidSlots(
     slots: { start?: string | null; end?: string | null }[],
     dailyMinutes: number,

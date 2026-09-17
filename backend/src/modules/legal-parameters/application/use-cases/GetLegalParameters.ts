@@ -1,10 +1,6 @@
 import { LegalParameterRepository } from '../../domain/repositories/LegalParameterRepository';
 import { LegalParameterSet } from '../../domain/services/LegalParameterSet';
 
-/**
- * Resuelve los parametros vigentes en una fecha. Cachea por dia porque los
- * parametros cambian por gestion, no por request.
- */
 export class GetLegalParameters {
   private cache = new Map<string, { set: LegalParameterSet; loadedAt: number }>();
   private static readonly TTL_MS = 60_000;

@@ -11,7 +11,6 @@ import {
   uploadImportSchema,
 } from './import.validators';
 
-/** Carga masiva de Excel: exclusiva de RRHH/Admin (seccion 3). */
 export function importRoutes(controller: ImportController): Router {
   const router = Router();
   router.use(requireRole('HR', 'ADMIN'));

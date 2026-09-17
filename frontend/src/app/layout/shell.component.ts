@@ -13,7 +13,6 @@ interface NavItem {
   roles?: Role[];
 }
 
-/** Navegacion: se oculta lo que el rol no puede usar (la API igual lo bloquea). */
 const NAV: NavItem[] = [
   { path: '/dashboard', label: 'Panel', icon: '▦' },
   { path: '/mi-perfil', label: 'Mi perfil', icon: '☺' },
@@ -26,8 +25,6 @@ const NAV: NavItem[] = [
   { path: '/horarios', label: 'Horarios y turnos', icon: '◫', roles: ['HR', 'ADMIN'] },
   { path: '/lactancia', label: 'Lactancia', icon: '♡', roles: ['HR', 'ADMIN'] },
   { path: '/importaciones', label: 'Carga masiva', icon: '⇪', roles: ['HR', 'ADMIN'] },
-  // Parametros legales queda fuera del menu por pedido del usuario: la ruta y la
-  // API siguen funcionando (/parametros) para quien la necesite puntualmente.
   { path: '/usuarios', label: 'Usuarios y roles', icon: '◎', roles: ['ADMIN'] },
 ];
 
@@ -139,8 +136,6 @@ const SIDEBAR_COLLAPSED_KEY = 'sgrh.sidebar.collapsed';
         width: 72px;
       }
 
-      /* Manija siempre visible a caballo entre el sidebar y el contenido:
-         nunca desaparece, este contraido o expandido, ni depende de hover. */
       .collapse-handle {
         position: absolute;
         top: 22px;
@@ -176,8 +171,6 @@ const SIDEBAR_COLLAPSED_KEY = 'sgrh.sidebar.collapsed';
         gap: 11px;
         padding: 18px 14px 16px;
       }
-      /* El logo trae su propio texto oscuro: una placa clara detras asegura
-         contraste sobre el fondo oscuro del sidebar. */
       .brand-mark-full {
         flex-shrink: 0;
         background: #fff;
@@ -353,13 +346,10 @@ export class ShellComponent {
     this.collapsed.set(next);
     try {
       localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? '1' : '0');
-    } catch {
-      // almacenamiento no disponible (modo privado, etc.): no es critico.
-    }
+    } catch {}
   }
 
   constructor() {
-    // Cierre por inactividad: solo corre dentro de la zona autenticada.
     this.idle.iniciar();
   }
 

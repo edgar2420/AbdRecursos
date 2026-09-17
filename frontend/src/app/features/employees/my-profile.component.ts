@@ -15,10 +15,6 @@ import {
 import { FlameGaugeComponent } from '../../shared/components/flame-gauge.component';
 import { BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/format.pipes';
 
-/**
- * Portal del empleado: cada quien ve y edita solo su propio perfil, y solo los
- * datos de contacto (el backend ignora cualquier otro campo que se envie).
- */
 @Component({
   selector: 'app-my-profile',
   standalone: true,
@@ -251,7 +247,6 @@ export class MyProfileComponent implements OnInit {
     });
   }
 
-  /** Referencia del 100% de la llama: lo acreditado en gestiones ya cumplidas. */
   maxFlame(bal: VacationBalance): number {
     const total = bal.gestiones?.reduce((sum, g) => sum + g.diasAcreditados, 0) ?? 0;
     return total > 0 ? total : bal.entitledDays;

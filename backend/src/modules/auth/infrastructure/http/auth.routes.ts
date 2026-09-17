@@ -18,12 +18,10 @@ import {
 export function authRoutes(controller: AuthController, authenticate: RequestHandler): Router {
   const router = Router();
 
-  // --- publicas ---
   router.post('/login', loginRateLimit, validate(loginSchema), asyncHandler(controller.login));
   router.post('/refresh', loginRateLimit, asyncHandler(controller.refresh));
   router.post('/logout', asyncHandler(controller.logout));
 
-  // --- autenticadas ---
   router.get('/me', authenticate, asyncHandler(controller.me));
   router.post(
     '/change-password',
@@ -32,7 +30,6 @@ export function authRoutes(controller: AuthController, authenticate: RequestHand
     asyncHandler(controller.changePassword),
   );
 
-  // --- gestion de usuarios y roles: solo ADMIN (seccion 3) ---
   router.get(
     '/users',
     authenticate,

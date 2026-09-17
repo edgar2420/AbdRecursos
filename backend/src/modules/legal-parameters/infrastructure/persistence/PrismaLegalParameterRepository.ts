@@ -32,7 +32,6 @@ export class PrismaLegalParameterRepository implements LegalParameterRepository 
       },
       orderBy: { validFrom: 'desc' },
     });
-    // Si hubiera solapamientos, gana la version mas reciente por clave.
     const byKey = new Map<string, Row>();
     rows.forEach((row) => {
       if (!byKey.has(row.key)) byKey.set(row.key, row);

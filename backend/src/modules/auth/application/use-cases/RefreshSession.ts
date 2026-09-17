@@ -10,14 +10,6 @@ export interface RefreshResult {
   refreshExpiresAt: Date;
 }
 
-/**
- * Rotacion de refresh token: cada uso emite uno nuevo y revoca el anterior (8.1).
- *
- * Ademas corta por INACTIVIDAD: si la sesion no se usa durante
- * SESSION_IDLE_MINUTES minutos, se revoca aunque el token todavia no haya
- * expirado. Asi una sesion abierta y olvidada en una maquina compartida deja de
- * servir a los 15 minutos.
- */
 export class RefreshSession {
   constructor(
     private readonly users: UserRepository,
@@ -31,7 +23,6 @@ export class RefreshSession {
     if (!stored) throw new UnauthorizedError('Sesion invalida');
 
     if (stored.revokedAt) {
-      // Reuso de un token ya rotado: se asume robo y se cierran todas las sesiones.
       await this.refreshTokens.revokeAllForUser(stored.userId);
       throw new UnauthorizedError('Sesion invalidada por seguridad. Vuelva a iniciar sesion.');
     }

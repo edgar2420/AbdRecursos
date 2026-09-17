@@ -89,7 +89,6 @@ export class PrismaReportRepository implements ReportRepository {
       }),
     ]);
 
-    // Ausencias = dias habiles del periodo sin ninguna marcacion de entrada.
     const attendanceAbsenceCount = await this.countAbsences(from, to, headcount, employeeIds, departmentId);
 
     return {
@@ -108,10 +107,6 @@ export class PrismaReportRepository implements ReportRepository {
     };
   }
 
-  /**
-   * Aproximacion de ausencias: dias habiles esperados menos dias con marcacion.
-   * Es un indicador de tablero; el detalle exacto sale del reporte de asistencia.
-   */
   private async countAbsences(
     from: Date,
     to: Date,

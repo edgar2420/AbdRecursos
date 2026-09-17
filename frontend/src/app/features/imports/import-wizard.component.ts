@@ -14,11 +14,6 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
 
 type ImportType = 'EMPLOYEES' | 'ATTENDANCE' | 'SCHEDULES';
 
-/**
- * Flujo generico de carga masiva (2.8):
- * subir -> validar contra la plantilla -> previsualizar filas validas/erroneas
- * -> confirmar -> procesar -> log descargable.
- */
 @Component({
   selector: 'app-import-wizard',
   standalone: true,

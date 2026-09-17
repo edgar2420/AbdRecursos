@@ -1,4 +1,3 @@
-/** Utilidades de dinero: siempre 2 decimales, redondeo half-up sobre centavos. */
 export function round2(value: number): number {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }

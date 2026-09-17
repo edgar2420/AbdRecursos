@@ -4,10 +4,6 @@ import { Employee } from '../../domain/entities/Employee';
 import { EmployeeRepository } from '../../domain/repositories/EmployeeRepository';
 import { AccessActor, EmployeeAccessPolicy } from '../../domain/services/EmployeeAccessPolicy';
 
-/**
- * Baja logica (is_active = false): nunca se borra un empleado, porque sus boletas
- * y su historial deben seguir existiendo (seccion 9).
- */
 export class DeactivateEmployee {
   constructor(
     private readonly employees: EmployeeRepository,

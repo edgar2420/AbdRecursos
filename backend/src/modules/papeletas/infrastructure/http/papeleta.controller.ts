@@ -27,9 +27,6 @@ function hhmm(fecha: Date | null): string | null {
 }
 
 export function aVista(papeleta: Papeleta): PapeletaView {
-  // El pie del documento ("La Paz, 8 de septiembre del 2026") es la fecha en
-  // que se emite/imprime el PDF, no la fecha del turno o de la salida (esa
-  // ya se ve en el campo TIEMPO/HORA de cada tipo de papeleta).
   const ahora = new Date();
   return {
     numero: papeleta.numero,
@@ -114,18 +111,13 @@ export class PapeletaController {
     const papeleta = await this.obtener.execute(requireActor(req), req.params.id);
     const vista = aVista(papeleta);
 
-    // El certificado se incrusta en el PDF solo si es una imagen: un PDF
-    // adjunto no se puede fusionar aca sin una libreria aparte, asi que en
-    // ese caso solo se avisa que existe (ver PapeletaPdfGenerator).
     if (papeleta.attachmentUrl) {
       const nombreArchivo = papeleta.attachmentUrl.split('/').pop() ?? '';
       const esImagen = ['.jpg', '.jpeg', '.png', '.webp'].includes(path.extname(nombreArchivo).toLowerCase());
       if (esImagen) {
         try {
           vista.attachmentImage = await this.storage.leer(nombreArchivo);
-        } catch {
-          // el archivo pudo haberse perdido; el PDF se genera igual, sin la imagen.
-        }
+        } catch {}
       }
     }
 

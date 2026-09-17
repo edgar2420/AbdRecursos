@@ -8,7 +8,6 @@ export interface PayslipFilters extends PageQuery {
   periodYear?: number;
   periodMonth?: number;
   status?: PayslipStatus;
-  /** El empleado no ve sus propios borradores: RRHH los puede regenerar, no son definitivos. */
   excludeDraft?: boolean;
 }
 

@@ -3,7 +3,6 @@ import { LegalParameterSet } from '../../../legal-parameters/domain/services/Leg
 import { LegalParameter } from '../../../legal-parameters/domain/entities/LegalParameter';
 import { PayslipCalculator } from './PayslipCalculator';
 
-/** Los parametros llegan como datos: el calculo no depende de constantes. */
 function params(overrides: Record<string, string> = {}): LegalParameterSet {
   const base: Record<string, string> = {
     WORK_DAYS_PER_MONTH: '30',
@@ -43,12 +42,11 @@ describe('PayslipCalculator', () => {
     const result = new PayslipCalculator(params()).calculate({ baseSalary: 5000, workedDays: 30 });
     const afp = result.lines.find((l) => l.code === 'AFP');
 
-    expect(afp?.amount).toBe(635.5); // 5000 * 12.71%
+    expect(afp?.amount).toBe(635.5); 
     expect(result.netPay).toBe(5000 - 635.5);
   });
 
   it('no aplica RC-IVA cuando el neto no supera el minimo no imponible', () => {
-    // 4 salarios minimos = 11000; un sueldo de 5000 queda exento.
     const result = new PayslipCalculator(params()).calculate({ baseSalary: 5000, workedDays: 30 });
 
     expect(result.lines.some((l) => l.code === 'RC_IVA')).toBe(false);
@@ -67,10 +65,8 @@ describe('PayslipCalculator', () => {
     const rcivaSin = sinFacturas.lines.find((l) => l.code === 'RC_IVA')?.amount ?? 0;
     const rcivaCon = conFacturas.lines.find((l) => l.code === 'RC_IVA')?.amount ?? 0;
 
-    // Base: 20000 - 2542 (AFP) - 11000 (4 salarios minimos) = 6458 -> 13% = 839.54
     expect(rcivaSin).toBe(839.54);
     expect(rcivaCon).toBe(round(839.54 - 3000 * 0.13));
-    // Con suficiente credito fiscal el descuento se anula, nunca queda negativo.
     expect(conMuchasFacturas.lines.some((l) => l.code === 'RC_IVA')).toBe(false);
   });
 
@@ -82,7 +78,6 @@ describe('PayslipCalculator', () => {
     });
     const extra = result.lines.find((l) => l.code === 'HE_DIURNA');
 
-    // Hora = 4800 / (30 * 8) = 20 Bs; con 100% de recargo = 40 Bs por hora.
     expect(extra?.amount).toBe(80);
     expect(extra?.quantity).toBe(2);
   });

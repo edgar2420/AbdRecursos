@@ -2,23 +2,12 @@ import { DestroyRef, Injectable, inject, signal } from '@angular/core';
 import { AuthService } from './auth.service';
 import { ToastService } from './toast.service';
 
-/** Minutos de inactividad tras los cuales se cierra la sesion (igual que el backend). */
 const MINUTOS_INACTIVIDAD = 15;
-/** Aviso previo, para que a nadie se le corte el trabajo sin advertencia. */
 const AVISO_ANTES_MS = 60_000;
-/** Cada cuanto se renueva el token mientras la persona esta trabajando. */
 const RENOVAR_CADA_MS = 10 * 60_000;
 
 const EVENTOS = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'];
 
-/**
- * Cierre de sesion por inactividad.
- *
- * Mientras hay actividad el token se renueva solo, asi la sesion no se corta a
- * alguien que esta trabajando. Si no hay actividad, no se renueva nada y a los
- * 15 minutos se cierra: el backend ademas lo verifica por su cuenta, esto es
- * para que la pantalla no quede abierta con datos de personal a la vista.
- */
 @Injectable({ providedIn: 'root' })
 export class IdleService {
   private readonly auth = inject(AuthService);
@@ -75,7 +64,6 @@ export class IdleService {
       return;
     }
 
-    // Con actividad reciente, se renueva el token antes de que expire.
     const huboActividad = inactivoMs < RENOVAR_CADA_MS;
     if (huboActividad && Date.now() - this.ultimaRenovacion > RENOVAR_CADA_MS) {
       this.ultimaRenovacion = Date.now();

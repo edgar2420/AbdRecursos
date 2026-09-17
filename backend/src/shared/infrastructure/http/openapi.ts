@@ -1,9 +1,5 @@
 import { env } from '../config/env';
 
-/**
- * Documentacion de la API mantenida junto a las rutas (seccion 11).
- * Se sirve en /docs (Swagger UI) y /openapi.json.
- */
 const pageParams = [
   { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
   { name: 'limit', in: 'query', schema: { type: 'integer', default: 10, maximum: 100 } },

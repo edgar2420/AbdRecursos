@@ -260,8 +260,6 @@ const MONTHS = [
       .filters .field {
         min-width: 150px;
       }
-      /* Barra de emision arriba de la tabla: es la accion principal de RRHH,
-         no algo que haya que ir a buscar despues de scrollear toda la planilla. */
       .bulk {
         display: flex;
         align-items: center;
@@ -367,7 +365,6 @@ export class PayslipListComponent implements OnInit, OnDestroy {
     return drafts.length > 0 && drafts.every((p) => this.selected().has(p.id));
   }
 
-  /** Borradores de la pagina actual: es lo que la barra de arriba puede emitir de una. */
   draftCount(): number {
     return this.payslips().filter((p) => p.status === 'DRAFT').length;
   }

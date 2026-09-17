@@ -5,20 +5,11 @@ import { LEGAL_KEYS } from '../../../legal-parameters/domain/parameter-keys';
 import { LegalParameterSet } from '../../../legal-parameters/domain/services/LegalParameterSet';
 import { Papeleta, PapeletaEstado, RecargoHoraExtra } from '../entities/Papeleta';
 
-/** Quien debe firmar en cada paso, tal como en la papeleta de papel. */
 export type Firmante = 'JEFE_AREA' | 'RRHH';
 
-/**
- * Reglas de las papeletas del Departamento de RR.HH.
- *
- * El circuito de firmas es el mismo que en papel: primero el jefe del area del
- * empleado y despues Recursos Humanos. Ninguno de los dos puede firmar dos
- * veces ni saltarse el turno del otro, y nadie firma su propia papeleta.
- */
 export class PapeletaRules {
   constructor(private readonly params: LegalParameterSet) {}
 
-  /** Horas de una papeleta de horas extras, con dos decimales. */
   calcularHoras(desde: Date, hasta: Date): number {
     if (hasta <= desde) {
       throw new BusinessRuleError('La hora final debe ser posterior a la inicial');
@@ -33,14 +24,12 @@ export class PapeletaRules {
     return round2(horas);
   }
 
-  /** Recargo que corresponde a esas horas extra, segun los parametros legales. */
   porcentajeRecargo(recargo: RecargoHoraExtra): number {
     if (recargo === 'NOCTURNA') return this.params.number(LEGAL_KEYS.OVERTIME_NIGHT_SURCHARGE, 200);
     if (recargo === 'FERIADO') return this.params.number(LEGAL_KEYS.OVERTIME_HOLIDAY_SURCHARGE, 200);
     return this.params.number(LEGAL_KEYS.OVERTIME_DAY_SURCHARGE, 100);
   }
 
-  /** La papeleta de salida declara una hora de salida y, si vuelve, una de retorno. */
   validarSalida(horaSalida: string, horaRetorno?: string | null): void {
     if (!horaRetorno) return;
     if (timeToMinutes(horaRetorno) <= timeToMinutes(horaSalida)) {
@@ -48,19 +37,16 @@ export class PapeletaRules {
     }
   }
 
-  /** Estado inicial: siempre empieza esperando la firma del jefe de area. */
   estadoInicial(): PapeletaEstado {
     return 'PENDIENTE_JEFE_AREA';
   }
 
-  /** A quien le toca firmar ahora. */
   firmantePendiente(estado: PapeletaEstado): Firmante | null {
     if (estado === 'PENDIENTE_JEFE_AREA') return 'JEFE_AREA';
     if (estado === 'PENDIENTE_RRHH') return 'RRHH';
     return null;
   }
 
-  /** Estado que queda despues de que firme quien corresponde. */
   estadoTrasFirmar(estado: PapeletaEstado): PapeletaEstado {
     if (estado === 'PENDIENTE_JEFE_AREA') return 'PENDIENTE_RRHH';
     if (estado === 'PENDIENTE_RRHH') return 'APROBADA';

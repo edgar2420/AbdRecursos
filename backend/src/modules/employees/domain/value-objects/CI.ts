@@ -1,9 +1,5 @@
 import { ValidationError } from '../../../../shared/domain/errors';
 
-/**
- * Cedula de Identidad boliviana. Se guarda normalizada (solo digitos y guiones)
- * y la extension (departamento emisor) va aparte.
- */
 export class CI {
   private constructor(public readonly value: string) {}
 

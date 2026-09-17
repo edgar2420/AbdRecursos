@@ -8,14 +8,6 @@ import { VacationBalance, GestionBalance } from '../../domain/entities/VacationR
 import { VacationRepository } from '../../domain/repositories/VacationRepository';
 import { VacationCalculator } from '../../domain/services/VacationCalculator';
 
-/**
- * Saldo de vacaciones tal como lo lleva Recursos Humanos: una fila por gestion
- * (el anio de servicio entre aniversarios de ingreso), con los dias que otorga
- * cada una, los que se tomaron y lo que quedo pendiente.
- *
- * Lo no tomado NO se pierde: se acumula. El saldo disponible es la suma de los
- * pendientes de todas las gestiones ya cumplidas.
- */
 export class GetVacationBalance {
   constructor(
     private readonly employees: EmployeeRepository,
@@ -34,13 +26,11 @@ export class GetVacationBalance {
     const gestiones = calculator.gestiones(employee.hireDate, at);
     const acreditaAlInicio = calculator.acreditaAlIniciarGestion();
     const solicitudes = await this.vacations.listConsuming(employeeId);
-    // Lo que ya se habia tomado antes de migrar al sistema, por gestion.
     const historico = new Map(
       (await this.vacations.historicalGestiones(employeeId)).map((h) => [h.periodYear, h.takenDays]),
     );
 
     const detalle: GestionBalance[] = gestiones.map((g) => {
-      // Cada solicitud se imputa a la gestion en la que empieza.
       const delPeriodo = solicitudes.filter((s) => s.startDate >= g.inicio && s.startDate <= g.fin);
       const tomados =
         (historico.get(g.inicio.getFullYear()) ?? 0) +
@@ -70,21 +60,12 @@ export class GetVacationBalance {
     const totalOtorgado = round2(computables.reduce((acc, g) => acc + g.diasAcreditados, 0));
     const totalTomados = round2(detalle.reduce((acc, g) => acc + g.takenDays, 0));
     const totalTramite = round2(detalle.reduce((acc, g) => acc + g.pendingDays, 0));
-    // OJO: el saldo se resta de forma global (todo lo otorgado menos todo lo
-    // tomado/en tramite, sin importar en que gestion cayo cada solicitud), no
-    // sumando el saldo ya recortado por gestion. Sumar saldoGestion (que cada
-    // fila trunca en 0) hacia perder el descuento cuando la solicitud caia en
-    // la gestion en curso: esa fila daba otorgados=0, entonces "0 - tomado"
-    // quedaba en 0 en vez de descontarse del saldo acumulado de gestiones
-    // anteriores, y el empleado veia el mismo saldo disponible sin importar
-    // cuanto pidiera.
     const saldoAcumulado = round2(Math.max(0, totalOtorgado - totalTomados - totalTramite));
     const enCurso = detalle.find((g) => !g.cumplida) ?? null;
 
     return {
       employeeId,
       periodYear: year ?? at.getFullYear(),
-      // Lo que otorga su gestion vigente, para mostrar "le corresponden N dias por gestion".
       entitledDays: calculator.entitledDays(employee.hireDate, at),
       takenDays: totalTomados,
       pendingDays: totalTramite,

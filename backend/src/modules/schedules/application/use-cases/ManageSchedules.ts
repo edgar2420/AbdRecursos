@@ -68,7 +68,6 @@ export class UpdateSchedule {
   }
 }
 
-/** Asignacion de horario a uno o varios empleados, con vigencia (2.6). */
 export class AssignSchedule {
   constructor(
     private readonly schedules: ScheduleRepository,
@@ -129,7 +128,6 @@ export class ListScheduleAssignments {
     if (this.policy.isPrivileged(actor)) return this.schedules.listAssignments(query);
     const scope = await this.policy.scopeFor(actor);
     const page = await this.schedules.listAssignments(query);
-    // Un supervisor solo ve los turnos de su equipo; un empleado, el suyo.
     return {
       ...page,
       data: page.data.filter((a) => scope.employeeIds.includes(a.employeeId)),

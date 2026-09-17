@@ -5,7 +5,6 @@ import { AccessActor, EmployeeAccessPolicy } from '../../../employees/domain/ser
 import { AttendanceJustification, JustificationStatus } from '../../domain/entities/AttendanceRecord';
 import { AttendanceRepository } from '../../domain/repositories/AttendanceRepository';
 
-/** Justificacion de faltas/tardanzas con adjunto (2.5). */
 export class JustifyAbsence {
   constructor(
     private readonly attendance: AttendanceRepository,
@@ -57,7 +56,6 @@ export class ListJustifications {
   }
 }
 
-/** Revisar (aprobar/rechazar) corresponde al supervisor del equipo o a RRHH. */
 export class ReviewJustification {
   constructor(
     private readonly attendance: AttendanceRepository,

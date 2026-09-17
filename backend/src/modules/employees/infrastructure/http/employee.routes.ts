@@ -16,7 +16,6 @@ import {
 export function employeeRoutes(controller: EmployeeController): Router {
   const router = Router();
 
-  // --- catalogos (antes de /:id para que no los capture el parametro) ---
   router.get('/departments', validate(pageQuerySchema, 'query'), asyncHandler(controller.listDepartments));
   router.post('/departments', requireRole('HR', 'ADMIN'), validate(catalogSchema), asyncHandler(controller.createDepartment));
   router.patch(
@@ -45,9 +44,6 @@ export function employeeRoutes(controller: EmployeeController): Router {
     asyncHandler(controller.export),
   );
 
-  // --- CRUD ---
-  // El listado completo es de Supervisor en adelante (matriz de la seccion 3); el
-  // acceso a la ficha individual sigue abierto y se resuelve por propiedad en el caso de uso.
   router.get(
     '/',
     requireRole('SUPERVISOR', 'HR', 'ADMIN'),

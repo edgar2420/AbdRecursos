@@ -19,7 +19,6 @@ const include = {
 
 type Row = Prisma.PapeletaGetPayload<{ include: typeof include }>;
 
-/** Nombres de los firmantes, resueltos en bloque para no consultar de a uno. */
 async function nombresDeUsuarios(ids: (string | null)[]): Promise<Map<string, string>> {
   const limpios = [...new Set(ids.filter((id): id is string => Boolean(id)))];
   if (limpios.length === 0) return new Map();

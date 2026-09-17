@@ -34,9 +34,7 @@ export interface PapeletaRepository {
   ): Promise<Papeleta>;
   rechazar(id: string, data: { userId: string; motivo: string }): Promise<Papeleta>;
   anular(id: string): Promise<Papeleta>;
-  /** Correlativo por tipo y gestion: HE-2026-0001 / PS-2026-0001. */
   siguienteNumero(tipo: PapeletaTipo, anio: number): Promise<string>;
-  /** Horas extra aprobadas de un periodo, para liquidarlas en la boleta. */
   horasAprobadasEnPeriodo(
     employeeIds: string[],
     desde: Date,

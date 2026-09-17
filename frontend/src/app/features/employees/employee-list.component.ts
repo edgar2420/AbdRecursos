@@ -459,7 +459,6 @@ export class EmployeeListComponent implements OnInit {
     }
 
     const raw = this.form.getRawValue();
-    // Los campos vacios no se envian: el backend los trata como "sin cambio".
     const payload: Record<string, unknown> = {};
     Object.entries(raw).forEach(([key, value]) => {
       if (value !== '' && value !== null) payload[key] = value;

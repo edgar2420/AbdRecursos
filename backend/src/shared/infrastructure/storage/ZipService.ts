@@ -6,7 +6,6 @@ export interface ZipEntry {
   content: Buffer;
 }
 
-/** Empaquetado de boletas masivas en ZIP (seccion 2.3). */
 export class ZipService {
   build(entries: ZipEntry[]): Promise<Buffer> {
     return new Promise((resolve, reject) => {

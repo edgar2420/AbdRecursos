@@ -5,8 +5,6 @@ export const contractTypes = ['INDEFINIDO', 'PLAZO_FIJO', 'EVENTUAL', 'CONSULTOR
 export const employeeStatuses = ['ACTIVE', 'ON_LEAVE', 'TERMINATED'] as const;
 
 export const listEmployeesSchema = pageQuerySchema.extend({
-  // Una nomina se lee alfabeticamente: el orden por defecto es ascendente,
-  // a diferencia del resto de listados (mas recientes primero).
   order: z.enum(['asc', 'desc']).default('asc'),
   departmentId: z.string().uuid().optional(),
   positionId: z.string().uuid().optional(),

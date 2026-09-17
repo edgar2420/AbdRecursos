@@ -29,7 +29,6 @@ export function vacationRoutes(controller: VacationController): Router {
   router.post('/requests', validate(createVacationSchema), asyncHandler(controller.create));
   router.get('/requests/:id', validate(vacationIdParamSchema, 'params'), asyncHandler(controller.get));
 
-  // La verificacion fina (supervisor del equipo / RRHH) ocurre dentro del caso de uso.
   router.post(
     '/requests/:id/approve',
     requireRole('SUPERVISOR', 'HR', 'ADMIN'),

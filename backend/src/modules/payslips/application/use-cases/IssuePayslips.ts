@@ -3,10 +3,6 @@ import { BusinessRuleError } from '../../../../shared/domain/errors';
 import { AccessActor, EmployeeAccessPolicy } from '../../../employees/domain/services/EmployeeAccessPolicy';
 import { PayslipRepository } from '../../domain/repositories/PayslipRepository';
 
-/**
- * Emitir cierra el periodo: la boleta pasa de borrador a emitida y ya no se
- * regenera (solo se puede anular, nunca borrar - historial intacto).
- */
 export class IssuePayslips {
   constructor(
     private readonly payslips: PayslipRepository,

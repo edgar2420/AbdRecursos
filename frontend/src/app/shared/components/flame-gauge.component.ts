@@ -1,16 +1,9 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-/** Silueta de llama, reutilizada para el trazo de fondo y el relleno encendido. */
 const FLAME_PATH =
   'M32 4C21 17 13 27 13 40a19 19 0 0 0 38 0c0-9-5-15-9-20 2 7-3 11-7 8-4-3-2-13-3-24z';
 
-/**
- * El saldo de vacaciones como una llama: mientras mas dias disponibles, mas
- * alta y viva se ve; a medida que pide vacaciones (o se le acercan a
- * agotarse), se va apagando. Nunca es solo el color: siempre lleva el numero
- * y una etiqueta de texto al lado.
- */
 @Component({
   selector: 'app-flame-gauge',
   standalone: true,
@@ -33,7 +26,6 @@ const FLAME_PATH =
             </linearGradient>
           </defs>
 
-          <!-- silueta de referencia: el 100% de la capacidad -->
           <path [attr.d]="FLAME_PATH" class="flame-track" />
 
           <g class="flame-fill" [style.transform]="'scaleY(' + porcentaje() + ')'">
@@ -52,11 +44,6 @@ const FLAME_PATH =
   `,
   styles: [
     `
-      /* Angular encapsula los estilos por componente: .kpi definido en
-         ui.components.ts no le llega a este. Se repite aca a proposito para
-         que la forma sea identica (mismo padding, borde y sombra) y solo
-         cambie el acento superior, a color fuego, para distinguirla sin
-         romper la fila de KPIs. */
       .kpi {
         display: flex;
         flex-direction: column;
@@ -144,14 +131,12 @@ const FLAME_PATH =
 export class FlameGaugeComponent {
   @Input({ required: true }) label = '';
   @Input({ required: true }) value = 0;
-  /** Referencia del 100%: normalmente los dias que le corresponden por gestion. */
   @Input({ required: true }) max = 1;
 
   readonly FLAME_PATH = FLAME_PATH;
 
   porcentaje(): number {
     if (this.max <= 0) return 0;
-    // Piso del 6%: una brasa siempre visible en vez de desaparecer del todo.
     return Math.max(0.06, Math.min(1, this.value / this.max));
   }
 

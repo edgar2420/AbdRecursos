@@ -6,11 +6,6 @@ import { ZipService } from '../../../../shared/infrastructure/storage/ZipService
 import { PayslipRepository } from '../../domain/repositories/PayslipRepository';
 import { DownloadPayslipPdf } from './DownloadPayslipPdf';
 
-/**
- * Descarga masiva en ZIP (2.3). Para nominas grandes esto deberia moverse a una
- * cola de trabajos (BullMQ) como indica la seccion 5.5; el limite evita bloquear
- * el request mientras tanto.
- */
 const MAX_PAYSLIPS_PER_ZIP = 300;
 
 export class BulkPayslipsZip {

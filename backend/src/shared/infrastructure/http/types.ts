@@ -1,7 +1,6 @@
 import { Request } from 'express';
 import { AccessTokenPayload } from '../security/JwtService';
 
-/** Identidad del solicitante que viaja hasta el caso de uso para el ownership check (8.2). */
 export interface Actor {
   userId: string;
   role: AccessTokenPayload['role'];

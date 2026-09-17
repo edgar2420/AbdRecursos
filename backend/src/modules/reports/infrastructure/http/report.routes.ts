@@ -8,7 +8,6 @@ import { dashboardQuerySchema, payrollQuerySchema } from './report.validators';
 export function reportRoutes(controller: ReportController): Router {
   const router = Router();
 
-  // El alcance (empresa o equipo) lo resuelve el caso de uso segun el rol.
   router.get('/dashboard', validate(dashboardQuerySchema, 'query'), asyncHandler(controller.dashboard));
   router.get('/headcount', requireRole('SUPERVISOR', 'HR', 'ADMIN'), asyncHandler(controller.headcount));
   router.get(

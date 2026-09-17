@@ -10,11 +10,6 @@ function extensionSegura(nombreOriginal: string): string {
   return EXTENSIONES_PERMITIDAS.has(ext) ? ext : 'bin';
 }
 
-/**
- * Adjuntos guardados en disco con nombre generado (UUID): nunca se conserva
- * el nombre original ni se arma la ruta a partir de datos del usuario, para
- * no abrir la puerta a path traversal ni a colisiones de nombre.
- */
 export class LocalFileStorage {
   private readonly dir = path.resolve(env.UPLOAD_DIR);
 

@@ -21,7 +21,6 @@ export interface RegisterLactationInput {
   notes?: string;
 }
 
-/** Registrar un permiso de lactancia es exclusivo de RRHH/Admin (seccion 3). */
 export class RegisterLactationPermit {
   constructor(
     private readonly permits: LactationRepository,
@@ -67,7 +66,6 @@ export class RegisterLactationPermit {
       notes: input.notes ?? null,
     });
 
-    // Inamovilidad laboral: se marca en el perfil como dato informativo (6.2).
     await this.employees.update(input.employeeId, {
       jobProtection: true,
       jobProtectionUntil: rules.jobProtectionUntil(input.birthDate),
@@ -91,7 +89,6 @@ export class ListLactationPermits {
   ) {}
 
   async execute(actor: AccessActor, filters: LactationFilters): Promise<Paginated<LactationPermit>> {
-    // Los datos de lactancia son sensibles: RRHH/Admin ven todo, el resto solo lo propio.
     if (this.policy.isPrivileged(actor)) return this.permits.list(filters);
     if (!actor.employeeId) {
       return { data: [], meta: { total: 0, page: filters.page, limit: filters.limit, totalPages: 1 } };
@@ -146,7 +143,6 @@ export class UpdateLactationPermit {
   }
 }
 
-/** Alertas de vencimiento proximo del beneficio (2.4). */
 export class GetExpiringLactationPermits {
   constructor(
     private readonly permits: LactationRepository,

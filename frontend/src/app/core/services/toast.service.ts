@@ -7,7 +7,6 @@ export interface Toast {
   message?: string;
 }
 
-/** Notificaciones no bloqueantes (seccion 10). */
 @Injectable({ providedIn: 'root' })
 export class ToastService {
   private counter = 0;

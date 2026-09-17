@@ -25,9 +25,7 @@ export interface GeneratePayslipsInput {
   periodMonth: number;
   employeeIds?: string[];
   includeAguinaldo?: boolean;
-  /** Ajustes que RRHH captura por empleado (anticipos, horas extra, facturas). */
   overrides?: PayslipOverride[];
-  /** Regenera las boletas en borrador que ya existan para el periodo. */
   overwriteDrafts?: boolean;
 }
 
@@ -51,8 +49,6 @@ export class GeneratePayslips {
       throw new BusinessRuleError('El mes del periodo debe estar entre 1 y 12');
     }
 
-    // Los parametros se resuelven al ultimo dia del periodo: una boleta de marzo
-    // se calcula con las tasas vigentes en marzo, no con las de hoy.
     const periodEnd = new Date(input.periodYear, input.periodMonth, 0, 23, 59, 59);
     const params = await this.parameters.execute(periodEnd);
     const calculator = new PayslipCalculator(params);
@@ -136,7 +132,6 @@ export class GeneratePayslips {
     return { generated, skipped };
   }
 
-  /** Un empleado que ingreso a mitad de mes cobra solo los dias trabajados. */
   private defaultWorkedDays(hireDate: Date, input: GeneratePayslipsInput, workDaysPerMonth: number): number {
     const periodStart = new Date(input.periodYear, input.periodMonth - 1, 1);
     if (hireDate <= periodStart) return workDaysPerMonth;

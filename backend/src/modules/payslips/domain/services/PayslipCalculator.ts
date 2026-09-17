@@ -27,7 +27,6 @@ export interface PayslipInput {
   overtime?: OvertimeInput;
   extraEarnings?: ExtraLine[];
   otherDeductions?: ExtraLine[];
-  /** Monto de facturas presentadas para el credito fiscal del RC-IVA. */
   fiscalCredit?: number;
   aguinaldo?: number;
 }
@@ -41,12 +40,6 @@ export interface PayslipResult {
   lines: PayslipLine[];
 }
 
-/**
- * Calculo de la boleta de pago (seccion 6.4).
- * Ningun porcentaje esta escrito aqui: la tasa de AFP, la del RC-IVA, el salario
- * minimo y los recargos de horas extra vienen de los parametros legales, que
- * RRHH edita por gestion.
- */
 export class PayslipCalculator {
   constructor(private readonly params: LegalParameterSet) {}
 
@@ -60,15 +53,12 @@ export class PayslipCalculator {
     const earnings: PayslipLine[] = [];
     let order = 0;
 
-    // Se prorratea sobre el sueldo completo (no sobre el valor dia redondeado):
-    // asi un mes completo paga exactamente el haber basico, sin centavos de arrastre.
     const basic =
       workedDays >= workDaysPerMonth
         ? round2(input.baseSalary)
         : round2((input.baseSalary * workedDays) / workDaysPerMonth);
     earnings.push(this.line('EARNING', 'HABER_BASICO', 'Haber basico', workedDays, basic, order++));
 
-    // Bonos configurables por empleado: monto fijo o porcentaje del haber basico.
     for (const bonus of input.bonuses ?? []) {
       const amount = bonus.amount != null && bonus.amount > 0
         ? round2(bonus.amount)
@@ -78,7 +68,6 @@ export class PayslipCalculator {
       }
     }
 
-    // Horas extra con recargo configurable (diurno / nocturno / feriado).
     const overtime = input.overtime ?? {};
     const overtimeLines: [string, string, number, number][] = [
       ['HE_DIURNA', 'Horas extra diurnas', overtime.dayHours ?? 0, this.params.number(LEGAL_KEYS.OVERTIME_DAY_SURCHARGE, 100)],
@@ -104,7 +93,6 @@ export class PayslipCalculator {
 
     const totalEarnings = sum(earnings.map((e) => e.amount));
 
-    // --- descuentos ---
     const deductions: PayslipLine[] = [];
     const afpRate = this.params.number(LEGAL_KEYS.AFP_EMPLOYEE_RATE);
     const afp = round2((totalEarnings * afpRate) / 100);
@@ -135,11 +123,6 @@ export class PayslipCalculator {
     };
   }
 
-  /**
-   * RC-IVA: se aplica sobre el excedente del minimo no imponible
-   * (N salarios minimos, parametrizable) despues del aporte laboral, y se
-   * descuenta el credito fiscal de las facturas presentadas.
-   */
   private calculateRciva(
     totalEarnings: number,
     afp: number,

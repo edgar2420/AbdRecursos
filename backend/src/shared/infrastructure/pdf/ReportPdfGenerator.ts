@@ -8,7 +8,6 @@ export interface ReportColumn {
   align?: 'left' | 'right' | 'center';
 }
 
-/** Exportacion a PDF de cualquier listado/reporte (seccion 2.7). */
 export class ReportPdfGenerator {
   render(
     title: string,

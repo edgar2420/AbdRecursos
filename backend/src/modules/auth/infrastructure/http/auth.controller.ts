@@ -19,7 +19,6 @@ import { listUsersSchema } from './auth.validators';
 
 export const REFRESH_COOKIE = 'sgrh_refresh';
 
-/** Cookie del refresh token: httpOnly + secure + sameSite=strict (8.1). */
 function refreshCookieOptions(expiresAt: Date): CookieOptions {
   return {
     httpOnly: true,
