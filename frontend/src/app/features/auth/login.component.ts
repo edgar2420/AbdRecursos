@@ -228,17 +228,17 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
         .blob { animation: none; }
       }
 
+      /* La tarjeta y el panel son dos piezas separadas que se superponen
+         (la tarjeta "flota" encima), no un solo bloque partido al medio:
+         asi las cuatro esquinas de cada una quedan redondeadas, tambien
+         las del centro, en vez de encontrarse en un corte recto. */
       .stage {
         position: relative;
         z-index: 1;
         width: 100%;
-        max-width: 980px;
-        display: grid;
-        grid-template-columns: minmax(340px, 440px) 1fr;
+        max-width: 940px;
+        display: flex;
         align-items: stretch;
-        border-radius: 28px;
-        overflow: hidden;
-        box-shadow: 0 30px 70px -20px rgba(3, 22, 34, 0.55);
         animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
       }
       @keyframes rise {
@@ -250,7 +250,14 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
       }
 
       .card {
+        position: relative;
+        z-index: 2;
+        flex: none;
+        width: min(400px, 100%);
+        margin-right: -58px;
         background: var(--surface);
+        border-radius: 26px;
+        box-shadow: 0 26px 60px -18px rgba(3, 22, 34, 0.5);
         padding: 44px 40px;
         display: flex;
         flex-direction: column;
@@ -356,15 +363,19 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
 
       .art {
         position: relative;
+        flex: 1;
+        min-width: 0;
+        border-radius: 26px;
         background: linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 55%),
           linear-gradient(150deg, var(--brand-700), var(--brand-800) 60%, var(--brand-900));
         color: #e0f2fe;
-        padding: 52px 48px;
+        padding: 52px 48px 52px 104px;
         display: flex;
         flex-direction: column;
         justify-content: center;
         gap: 20px;
         overflow: hidden;
+        box-shadow: 0 26px 60px -18px rgba(3, 22, 34, 0.5);
       }
       .art::before {
         content: '';
@@ -451,14 +462,13 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
       }
 
       @media (max-width: 900px) {
-        .stage {
-          grid-template-columns: 1fr;
-          border-radius: 22px;
-        }
         .art {
           display: none;
         }
         .card {
+          width: 100%;
+          margin-right: 0;
+          border-radius: 22px;
           padding: 34px 26px;
         }
       }
