@@ -1,10 +1,5 @@
-/* ============================================================================
-   SGRH - Sistema de diseño
-   Paleta celeste/azul (seccion 10). Contraste AA en texto y controles.
-   ========================================================================== */
 
 :root {
-  /* Marca */
   --brand-900: #083344;
   --brand-800: #0c4a6e;
   --brand-700: #0e7490;
@@ -14,7 +9,6 @@
   --brand-100: #e0f2fe;
   --brand-50: #f0f9ff;
 
-  /* Neutros */
   --ink-900: #0f172a;
   --ink-700: #334155;
   --ink-500: #64748b;
@@ -25,7 +19,6 @@
   --surface: #ffffff;
   --canvas: #f4f8fb;
 
-  /* Estados */
   --ok-700: #047857;
   --ok-100: #d1fae5;
   --warn-700: #b45309;
@@ -36,7 +29,6 @@
   --info-700: #1d4ed8;
   --info-100: #dbeafe;
 
-  /* Elevacion y forma */
   --radius-sm: 8px;
   --radius: 12px;
   --radius-lg: 18px;
@@ -88,7 +80,6 @@ a:hover { text-decoration: underline; }
   border-radius: var(--radius-sm);
 }
 
-/* ------------------------------------------------------------------ layout */
 .page {
   display: flex;
   flex-direction: column;
@@ -139,7 +130,6 @@ a:hover { text-decoration: underline; }
 .grid.cols-3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
 .grid.cols-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 
-/* ------------------------------------------------------------------- card */
 .card {
   background: var(--surface);
   border: 1px solid var(--ink-200);
@@ -163,7 +153,6 @@ a:hover { text-decoration: underline; }
 
 .card-body { padding: 18px; }
 
-/* ---------------------------------------------------------------- controls */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -258,7 +247,6 @@ input:focus, select:focus, textarea:focus {
   box-shadow: var(--ring);
 }
 
-/* Campo de contrasena con boton para revelar/ocultar (el "ojo"). */
 .password-field {
   position: relative;
   display: flex;
@@ -304,7 +292,6 @@ input[type='checkbox'] {
   font-weight: 500;
 }
 
-/* ------------------------------------------------------------------ tabla */
 .table-wrap {
   overflow-x: auto;
   border-radius: var(--radius-lg);
@@ -347,7 +334,6 @@ table.data tbody tr:last-child td { border-bottom: none; }
 .muted { color: var(--ink-500); }
 .strong { font-weight: 600; }
 
-/* ------------------------------------------------------------------ badge */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -366,7 +352,6 @@ table.data tbody tr:last-child td { border-bottom: none; }
 .badge-warn { background: var(--warn-100); color: var(--warn-700); }
 .badge-danger { background: var(--danger-100); color: var(--danger-700); }
 
-/* ------------------------------------------------------------------ estado */
 .state {
   display: flex;
   flex-direction: column;
@@ -415,7 +400,6 @@ table.data tbody tr:last-child td { border-bottom: none; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ------------------------------------------------------------------ toast */
 .toast-stack {
   position: fixed;
   right: 18px;
@@ -423,8 +407,6 @@ table.data tbody tr:last-child td { border-bottom: none; }
   display: flex;
   flex-direction: column;
   gap: 10px;
-  /* Por encima del fondo del modal (z-index 100): un error de guardado debe
-     leerse aunque haya un dialogo abierto, nunca quedar difuminado detras. */
   z-index: 110;
 }
 
@@ -454,7 +436,6 @@ table.data tbody tr:last-child td { border-bottom: none; }
   to { opacity: 1; transform: none; }
 }
 
-/* ------------------------------------------------------------------ modal */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -492,7 +473,6 @@ table.data tbody tr:last-child td { border-bottom: none; }
 .modal-foot { border-top: 1px solid var(--ink-200); justify-content: flex-end; }
 .modal-body { padding: 20px; }
 
-/* --------------------------------------------------------------- utilidades */
 .flex-1 { flex: 1; }
 .text-right { text-align: right; }
 .hidden-sm { display: initial; }

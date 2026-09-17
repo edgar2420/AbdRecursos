@@ -74,6 +74,7 @@ const SIDEBAR_COLLAPSED_KEY = 'sgrh.sidebar.collapsed';
         @if (!collapsed()) {
           <div class="sidebar-foot">
             <span class="muted">Bolivia · Ley General del Trabajo</span>
+            <span class="credit">Desarrollado por Ing. Edgar Rojas</span>
           </div>
         }
       </aside>
@@ -116,31 +117,32 @@ const SIDEBAR_COLLAPSED_KEY = 'sgrh.sidebar.collapsed';
       .shell {
         display: flex;
         min-height: 100vh;
-        position: relative;
       }
 
       .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
         width: var(--sidebar-width);
+        height: 100vh;
         flex-shrink: 0;
         background: linear-gradient(180deg, var(--brand-900), var(--brand-800));
         color: #e0f2fe;
         display: flex;
         flex-direction: column;
-        position: sticky;
-        top: 0;
-        height: 100vh;
         transition: width 0.18s ease;
         overflow: hidden;
+        z-index: 40;
       }
       .collapsed .sidebar {
         width: 72px;
       }
 
       .collapse-handle {
-        position: absolute;
+        position: fixed;
         top: 22px;
         left: calc(var(--sidebar-width) - 13px);
-        z-index: 30;
+        z-index: 45;
         width: 26px;
         height: 26px;
         display: grid;
@@ -247,7 +249,8 @@ const SIDEBAR_COLLAPSED_KEY = 'sgrh.sidebar.collapsed';
         font-weight: 600;
       }
       .nav-icon {
-        width: 18px;
+        width: 24px;
+        font-size: 18px;
         text-align: center;
         opacity: 0.9;
         flex-shrink: 0;
@@ -262,6 +265,13 @@ const SIDEBAR_COLLAPSED_KEY = 'sgrh.sidebar.collapsed';
         border-top: 1px solid rgba(255, 255, 255, 0.1);
         font-size: 11px;
         color: var(--brand-300);
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      .sidebar-foot .credit {
+        font-size: 10.5px;
+        color: rgba(224, 242, 254, 0.45);
       }
 
       .main {
@@ -269,6 +279,11 @@ const SIDEBAR_COLLAPSED_KEY = 'sgrh.sidebar.collapsed';
         min-width: 0;
         display: flex;
         flex-direction: column;
+        margin-left: var(--sidebar-width);
+        transition: margin-left 0.18s ease;
+      }
+      .collapsed .main {
+        margin-left: 72px;
       }
 
       .topbar {
@@ -319,7 +334,6 @@ const SIDEBAR_COLLAPSED_KEY = 'sgrh.sidebar.collapsed';
 
       @media (max-width: 900px) {
         .sidebar {
-          position: fixed;
           z-index: 50;
           transform: translateX(-100%);
           transition: transform 0.2s ease;
@@ -327,6 +341,10 @@ const SIDEBAR_COLLAPSED_KEY = 'sgrh.sidebar.collapsed';
         }
         .nav-open .sidebar {
           transform: none;
+        }
+        .main,
+        .collapsed .main {
+          margin-left: 0;
         }
         .menu-btn {
           display: inline-flex;
