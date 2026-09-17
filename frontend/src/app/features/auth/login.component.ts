@@ -154,6 +154,9 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
   styles: [
     `
       .login {
+        /* Prueba puntual: solo esta pantalla usa Montserrat, el resto de la
+           app sigue con la tipografia global (--font: Inter). */
+        font-family: 'Montserrat', var(--font);
         position: relative;
         min-height: 100vh;
         overflow: hidden;
