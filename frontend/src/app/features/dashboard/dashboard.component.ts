@@ -71,7 +71,6 @@ const ETIQUETA_CONTRATO: Record<string, string> = {
               [hint]="'Liquido: ' + (kpi.payslipsNetTotal | bs)"
             />
           </div>
-
           <app-card heading="Vacaciones">
             <div class="row" style="gap:22px">
               <div>
