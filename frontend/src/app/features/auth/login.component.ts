@@ -98,28 +98,57 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
         </section>
 
         <aside class="art">
-          <span class="art-kicker">Laboratorios ABD</span>
-          <h2>Gestion de personal conforme a la normativa boliviana</h2>
-          <ul>
-            <li>
-              <span class="dot"></span>
-              Vacaciones por antiguedad segun la Ley General del Trabajo
-            </li>
-            <li>
-              <span class="dot"></span>
-              Boletas de pago con AFP y RC-IVA parametrizables
-            </li>
-            <li>
-              <span class="dot"></span>
-              Permisos de lactancia (Ley 3460) con alertas de vencimiento
-            </li>
-            <li>
-              <span class="dot"></span>
-              Asistencia, horarios y carga masiva desde Excel
-            </li>
-          </ul>
+          <div class="art-glow" aria-hidden="true"></div>
+
+          <span class="art-kicker">Sistema interno · Laboratorios ABD</span>
+          <h2>Todo tu equipo, en un solo lugar</h2>
+          <p class="art-lead">Vacaciones, boletas de pago, asistencia y permisos de tu personal, en una sola herramienta.</p>
+
+          <div class="feature-grid">
+            <div class="feature">
+              <span class="feature-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="3" />
+                  <path d="M16 2v4M8 2v4M3 10h18" />
+                </svg>
+              </span>
+              <span>Vacaciones</span>
+            </div>
+            <div class="feature">
+              <span class="feature-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 3h16v18l-3-2-2.5 2-2.5-2-2.5 2L7 19l-3 2Z" />
+                  <path d="M8 8h8M8 12h8M8 16h4" />
+                </svg>
+              </span>
+              <span>Boletas de pago</span>
+            </div>
+            <div class="feature">
+              <span class="feature-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.5 8.5c0 4.5-8.5 10-8.5 10s-8.5-5.5-8.5-10a4.5 4.5 0 0 1 8.5-2 4.5 4.5 0 0 1 8.5 2Z" />
+                </svg>
+              </span>
+              <span>Lactancia</span>
+            </div>
+            <div class="feature">
+              <span class="feature-icon">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3.5 2" />
+                </svg>
+              </span>
+              <span>Asistencia</span>
+            </div>
+          </div>
+
+          <p class="art-legal">Conforme a la Ley General del Trabajo y normativa boliviana vigente.</p>
         </aside>
       </div>
+
+      <footer class="credit">
+        Desarrollado por <strong>Ing. Edgar Rojas</strong> · Sistema interno de Laboratorios ABD
+      </footer>
     </div>
   `,
   styles: [
@@ -129,10 +158,23 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
         min-height: 100vh;
         overflow: hidden;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
+        gap: 18px;
         padding: 32px 20px;
         background: linear-gradient(160deg, var(--brand-900) 0%, var(--brand-800) 42%, #082a38 100%);
+      }
+      .credit {
+        position: relative;
+        z-index: 1;
+        font-size: 11.5px;
+        color: rgba(224, 242, 254, 0.55);
+        text-align: center;
+      }
+      .credit strong {
+        color: rgba(224, 242, 254, 0.85);
+        font-weight: 600;
       }
 
       /* Formas decoradas flotando de fondo: le dan profundidad al degrade
@@ -321,7 +363,8 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
         display: flex;
         flex-direction: column;
         justify-content: center;
-        gap: 18px;
+        gap: 20px;
+        overflow: hidden;
       }
       .art::before {
         content: '';
@@ -330,6 +373,18 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
         background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px);
         background-size: 22px 22px;
         opacity: 0.5;
+        pointer-events: none;
+      }
+      /* Resplandor grande detras del contenido: sin esto el panel queda un
+         bloque de color plano y chato, aunque tenga texto encima. */
+      .art-glow {
+        position: absolute;
+        width: 480px;
+        height: 480px;
+        right: -160px;
+        top: -120px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(125, 211, 252, 0.35), transparent 70%);
         pointer-events: none;
       }
       .art-kicker {
@@ -343,36 +398,56 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
       .art h2 {
         position: relative;
         color: #fff;
-        font-size: 27px;
-        max-width: 440px;
-        line-height: 1.28;
+        font-size: 30px;
+        max-width: 420px;
+        line-height: 1.24;
         margin: 0;
       }
-      .art ul {
+      .art-lead {
         position: relative;
-        list-style: none;
-        margin: 4px 0 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 13px;
-        font-size: 13.5px;
-        max-width: 420px;
+        margin: -8px 0 0;
+        max-width: 400px;
+        font-size: 14px;
+        line-height: 1.5;
+        color: rgba(224, 242, 254, 0.82);
       }
-      .art li {
+
+      .feature-grid {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        max-width: 400px;
+        margin-top: 4px;
+      }
+      .feature {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         gap: 10px;
-        line-height: 1.4;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        font-size: 13px;
+        font-weight: 500;
+        backdrop-filter: blur(2px);
       }
-      .art .dot {
+      .feature-icon {
         flex: none;
-        width: 7px;
-        height: 7px;
-        margin-top: 6px;
-        border-radius: 50%;
-        background: var(--brand-300);
-        box-shadow: 0 0 0 4px rgba(125, 211, 252, 0.18);
+        display: grid;
+        place-items: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: rgba(125, 211, 252, 0.16);
+        color: var(--brand-300);
+      }
+      .art-legal {
+        position: relative;
+        margin: 4px 0 0;
+        font-size: 11.5px;
+        color: rgba(224, 242, 254, 0.55);
+        max-width: 400px;
       }
 
       @media (max-width: 900px) {
