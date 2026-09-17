@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { DashboardData, HeadcountReport, LactationPermit } from '../../core/models/api.models';
@@ -22,7 +21,6 @@ const ETIQUETA_CONTRATO: Record<string, string> = {
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
     PageHeaderComponent,
     CardComponent,
     KpiComponent,
@@ -75,16 +73,6 @@ const ETIQUETA_CONTRATO: Record<string, string> = {
               [value]="kpi.payslipsThisMonth"
               [hint]="'Liquido: ' + (kpi.payslipsNetTotal | bs)"
             />
-          </div>
-
-          <div class="quick-links">
-            <span class="quick-links-label">Accesos rapidos</span>
-            <div class="row">
-              <a class="btn btn-secondary btn-sm" routerLink="/asistencia/marcar">Marcar asistencia</a>
-              <a class="btn btn-secondary btn-sm" routerLink="/vacaciones">Solicitar vacaciones</a>
-              <a class="btn btn-secondary btn-sm" routerLink="/boletas">Mis boletas</a>
-              <a class="btn btn-secondary btn-sm" routerLink="/papeletas">Papeletas</a>
-            </div>
           </div>
         } @else {
           <div class="grid cols-4">
@@ -156,20 +144,6 @@ const ETIQUETA_CONTRATO: Record<string, string> = {
               }
             </app-card>
           }
-
-          <div class="quick-links">
-            <span class="quick-links-label">Accesos rapidos</span>
-            <div class="row">
-              <a class="btn btn-secondary btn-sm" routerLink="/asistencia/marcar">Marcar asistencia</a>
-              <a class="btn btn-secondary btn-sm" routerLink="/vacaciones">Solicitar vacaciones</a>
-              <a class="btn btn-secondary btn-sm" routerLink="/boletas">Mis boletas</a>
-              <a class="btn btn-secondary btn-sm" routerLink="/papeletas">Papeletas</a>
-              @if (auth.isHr()) {
-                <a class="btn btn-secondary btn-sm" routerLink="/empleados">Gestionar empleados</a>
-                <a class="btn btn-secondary btn-sm" routerLink="/importaciones">Carga masiva</a>
-              }
-            </div>
-          </div>
         }
       }
       }
@@ -200,18 +174,6 @@ const ETIQUETA_CONTRATO: Record<string, string> = {
         letter-spacing: 0.04em;
         color: var(--ink-500);
         margin: 0 0 10px;
-      }
-      .quick-links {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      .quick-links-label {
-        font-size: 11.5px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: var(--ink-500);
       }
     `,
   ],
