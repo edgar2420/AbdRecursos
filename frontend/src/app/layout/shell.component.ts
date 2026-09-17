@@ -26,6 +26,7 @@ const NAV: NavItem[] = [
   { path: '/lactancia', label: 'Lactancia', icon: '♡', roles: ['HR', 'ADMIN'] },
   { path: '/importaciones', label: 'Carga masiva', icon: '⇪', roles: ['HR', 'ADMIN'] },
   { path: '/usuarios', label: 'Usuarios y roles', icon: '◎', roles: ['ADMIN'] },
+  { path: '/auditoria', label: 'Auditoria', icon: '⌕', roles: ['ADMIN'] },
 ];
 
 const SIDEBAR_COLLAPSED_KEY = 'sgrh.sidebar.collapsed';

@@ -34,6 +34,10 @@ import { AuthController } from './modules/auth/infrastructure/http/auth.controll
 import { authRoutes } from './modules/auth/infrastructure/http/auth.routes';
 
 import { PrismaLegalParameterRepository } from './modules/legal-parameters/infrastructure/persistence/PrismaLegalParameterRepository';
+import { ListAuditLogs } from './modules/audit/application/use-cases/ListAuditLogs';
+import { AuditController } from './modules/audit/infrastructure/http/audit.controller';
+import { auditRoutes } from './modules/audit/infrastructure/http/audit.routes';
+import { PrismaAuditLogRepository } from './modules/audit/infrastructure/persistence/PrismaAuditLogRepository';
 import { GetLegalParameters } from './modules/legal-parameters/application/use-cases/GetLegalParameters';
 import {
   CreateLegalParameterVersion,
@@ -105,6 +109,7 @@ import {
   ReviewJustification,
 } from './modules/attendance/application/use-cases/JustifyAbsence';
 import { GetAttendanceReport } from './modules/attendance/application/use-cases/GetAttendanceReport';
+import { UpdateAttendanceRecord } from './modules/attendance/application/use-cases/UpdateAttendanceRecord';
 import { AttendanceController } from './modules/attendance/infrastructure/http/attendance.controller';
 import { attendanceRoutes } from './modules/attendance/infrastructure/http/attendance.routes';
 import { AttendanceImportProcessor } from './modules/attendance/infrastructure/import/AttendanceImportProcessor';
@@ -250,6 +255,7 @@ export function buildApiRouter(): Router {
     new RegisterAttendance(attendance, schedules, parameters, policy, audit),
     new ListAttendance(attendance, policy),
     new GetAttendanceReport(attendance, employees, schedules, parameters, policy),
+    new UpdateAttendanceRecord(attendance, schedules, parameters, policy, audit),
     new JustifyAbsence(attendance, policy, audit),
     new ListJustifications(attendance, policy),
     new ReviewJustification(attendance, policy, audit),
@@ -322,6 +328,7 @@ export function buildApiRouter(): Router {
       parameters,
     ),
   ));
+  router.use('/audit-logs', auth, auditRoutes(new AuditController(new ListAuditLogs(new PrismaAuditLogRepository()))));
 
   return router;
 }

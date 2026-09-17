@@ -48,3 +48,9 @@ export const reviewJustificationSchema = z.object({
 });
 
 export const attendanceIdParamSchema = z.object({ id: z.string().uuid() });
+
+export const updateAttendanceSchema = z.object({
+  timestamp: z.coerce.date().optional(),
+  notes: z.string().trim().max(200).optional(),
+  reason: z.string().trim().min(5, 'Describa el motivo de la modificacion').max(300),
+});

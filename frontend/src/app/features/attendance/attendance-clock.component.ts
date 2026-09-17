@@ -4,7 +4,7 @@ import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { apiErrorMessage } from '../../core/interceptors/auth.interceptor';
-import { AttendanceJustification, AttendanceRecord } from '../../core/models/api.models';
+import { AttendanceJustification, AttendanceRecord, EmployeeOption } from '../../core/models/api.models';
 import {
   CardComponent,
   ModalComponent,
@@ -45,7 +45,39 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
         </div>
       </div>
 
-      <app-card heading="Mis marcaciones recientes" [padded]="false">
+      @if (esPrivilegiado()) {
+        <app-card heading="Marcar asistencia de un empleado">
+          <div class="hr-form">
+            <div class="field">
+              <label>Empleado *</label>
+              <select [value]="hrEmployeeId()" (change)="onHrEmployeeChange($any($event.target).value)">
+                <option value="">Seleccione...</option>
+                @for (option of options(); track option.id) {
+                  <option [value]="option.id">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+            <div class="field flex-1">
+              <label>Motivo de la tardanza (si corresponde)</label>
+              <input
+                [value]="hrReason()"
+                (input)="hrReason.set($any($event.target).value)"
+                placeholder="Obligatorio si la entrada es con retraso"
+              />
+            </div>
+            <div class="hr-actions">
+              <button class="btn btn-primary btn-sm" [disabled]="hrSaving()" (click)="hrPunch('CHECK_IN')">
+                Marcar entrada
+              </button>
+              <button class="btn btn-secondary btn-sm" [disabled]="hrSaving()" (click)="hrPunch('CHECK_OUT')">
+                Marcar salida
+              </button>
+            </div>
+          </div>
+        </app-card>
+      }
+
+      <app-card [heading]="esPrivilegiado() && hrEmployeeId() ? 'Marcaciones recientes del empleado' : 'Mis marcaciones recientes'" [padded]="false">
         @if (loading()) {
           <app-state mode="loading" title="Cargando marcaciones"></app-state>
         } @else if (records().length === 0) {
@@ -59,6 +91,10 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
                   <th>Tipo</th>
                   <th>Origen</th>
                   <th class="num">Tardanza</th>
+                  <th>Motivo</th>
+                  @if (esPrivilegiado()) {
+                    <th></th>
+                  }
                 </tr>
               </thead>
               <tbody>
@@ -70,6 +106,12 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
                     <td class="num" [class.late]="record.lateMinutes > 0">
                       {{ record.lateMinutes > 0 ? record.lateMinutes + ' min' : '-' }}
                     </td>
+                    <td class="muted">{{ record.notes ?? '-' }}</td>
+                    @if (esPrivilegiado()) {
+                      <td class="nowrap text-right">
+                        <button class="btn btn-ghost btn-sm" (click)="abrirEdicion(record)">Editar</button>
+                      </td>
+                    }
                   </tr>
                 }
               </tbody>
@@ -137,6 +179,35 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
         </div>
       </app-modal>
     }
+
+    @if (edicion(); as record) {
+      <app-modal title="Modificar marcacion" (closed)="edicion.set(null)">
+        <div class="field">
+          <label>Fecha y hora</label>
+          <input
+            type="datetime-local"
+            [value]="editTimestamp()"
+            (change)="editTimestamp.set($any($event.target).value)"
+          />
+        </div>
+        <div class="field">
+          <label>Motivo / observacion de la marcacion</label>
+          <input [value]="editNotes()" (input)="editNotes.set($any($event.target).value)" />
+        </div>
+        <div class="field">
+          <label>Motivo de la modificacion *</label>
+          <textarea
+            [value]="editReason()"
+            (input)="editReason.set($any($event.target).value)"
+            placeholder="Explique por que se corrige este registro"
+          ></textarea>
+        </div>
+        <div footer>
+          <button class="btn btn-ghost" (click)="edicion.set(null)">Cancelar</button>
+          <button class="btn btn-primary" (click)="guardarEdicion(record)">Guardar</button>
+        </div>
+      </app-modal>
+    }
   `,
   styles: [
     `
@@ -181,6 +252,19 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
         color: var(--danger-700);
         font-weight: 600;
       }
+      .hr-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: flex-end;
+      }
+      .hr-form .field {
+        min-width: 220px;
+      }
+      .hr-actions {
+        display: flex;
+        gap: 10px;
+      }
       @media (max-width: 620px) {
         .actions {
           width: 100%;
@@ -209,6 +293,16 @@ export class AttendanceClockComponent implements OnInit, OnDestroy {
   readonly justifyReason = signal('');
   readonly justifyUrl = signal('');
 
+  readonly options = signal<EmployeeOption[]>([]);
+  readonly hrEmployeeId = signal('');
+  readonly hrReason = signal('');
+  readonly hrSaving = signal(false);
+
+  readonly edicion = signal<AttendanceRecord | null>(null);
+  readonly editTimestamp = signal('');
+  readonly editNotes = signal('');
+  readonly editReason = signal('');
+
   private timer?: ReturnType<typeof setInterval>;
 
   ngOnInit(): void {
@@ -218,6 +312,16 @@ export class AttendanceClockComponent implements OnInit, OnDestroy {
       this.time.set(formatTime(date));
     }, 1000);
     this.load();
+    if (this.esPrivilegiado()) {
+      this.api.get<EmployeeOption[]>('/employees/options').subscribe({
+        next: (response) => this.options.set(response.data),
+        error: () => this.options.set([]),
+      });
+    }
+  }
+
+  esPrivilegiado(): boolean {
+    return this.auth.isHr();
   }
 
   ngOnDestroy(): void {
@@ -233,7 +337,7 @@ export class AttendanceClockComponent implements OnInit, OnDestroy {
   }
 
   load(): void {
-    const employeeId = this.auth.employeeId();
+    const employeeId = (this.esPrivilegiado() && this.hrEmployeeId()) || this.auth.employeeId();
     if (!employeeId) {
       this.loading.set(false);
       return;
@@ -311,6 +415,76 @@ export class AttendanceClockComponent implements OnInit, OnDestroy {
         error: (error) => this.toast.error('No se pudo enviar', apiErrorMessage(error)),
       });
   }
+
+  onHrEmployeeChange(employeeId: string): void {
+    this.hrEmployeeId.set(employeeId);
+    this.load();
+  }
+
+  hrPunch(type: 'CHECK_IN' | 'CHECK_OUT'): void {
+    const employeeId = this.hrEmployeeId();
+    if (!employeeId) {
+      this.toast.warn('Seleccione un empleado');
+      return;
+    }
+    this.hrSaving.set(true);
+    const path = type === 'CHECK_IN' ? '/attendance/check-in' : '/attendance/check-out';
+    this.api
+      .post<AttendanceRecord>(path, {
+        employeeId,
+        notes: this.hrReason() || undefined,
+      })
+      .subscribe({
+        next: (response) => {
+          this.hrSaving.set(false);
+          const late = response.data.lateMinutes;
+          this.toast.success(
+            type === 'CHECK_IN' ? 'Entrada registrada' : 'Salida registrada',
+            late > 0 ? `Con ${late} minutos de retraso` : undefined,
+          );
+          this.hrReason.set('');
+          this.load();
+        },
+        error: (error) => {
+          this.hrSaving.set(false);
+          this.toast.error('No se pudo registrar', apiErrorMessage(error));
+        },
+      });
+  }
+
+  abrirEdicion(record: AttendanceRecord): void {
+    this.edicion.set(record);
+    this.editTimestamp.set(toDatetimeLocal(record.timestamp));
+    this.editNotes.set(record.notes ?? '');
+    this.editReason.set('');
+  }
+
+  guardarEdicion(record: AttendanceRecord): void {
+    if (this.editReason().trim().length < 5) {
+      this.toast.warn('Indique el motivo de la modificacion', 'Escriba al menos 5 caracteres');
+      return;
+    }
+    this.api
+      .patch<AttendanceRecord>(`/attendance/${record.id}`, {
+        timestamp: this.editTimestamp() ? new Date(this.editTimestamp()).toISOString() : undefined,
+        notes: this.editNotes() || undefined,
+        reason: this.editReason(),
+      })
+      .subscribe({
+        next: () => {
+          this.toast.success('Marcacion actualizada');
+          this.edicion.set(null);
+          this.load();
+        },
+        error: (error) => this.toast.error('No se pudo modificar', apiErrorMessage(error)),
+      });
+  }
+}
+
+function toDatetimeLocal(iso: string): string {
+  const d = new Date(iso);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
 function formatTime(date: Date): string {

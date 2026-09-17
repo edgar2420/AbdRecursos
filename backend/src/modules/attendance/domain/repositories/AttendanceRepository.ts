@@ -22,6 +22,8 @@ export interface AttendanceRepository {
   listBetween(from: Date, to: Date, employeeIds?: string[]): Promise<AttendanceRecord[]>;
   lastRecordOfDay(employeeId: string, date: Date): Promise<AttendanceRecord | null>;
   countLateInMonth(employeeIds: string[], year: number, month: number): Promise<number>;
+  findById(id: string): Promise<AttendanceRecord | null>;
+  update(id: string, data: { timestamp?: Date; notes?: string | null; lateMinutes?: number }): Promise<AttendanceRecord>;
 
   createJustification(data: {
     employeeId: string;

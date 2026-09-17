@@ -103,6 +103,11 @@ export const routes: Routes = [
         canActivate: [roleGuard('ADMIN')],
         loadComponent: () => import('./features/users/user-list.component').then((m) => m.UserListComponent),
       },
+      {
+        path: 'auditoria',
+        canActivate: [roleGuard('ADMIN')],
+        loadComponent: () => import('./features/audit/audit-log.component').then((m) => m.AuditLogComponent),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

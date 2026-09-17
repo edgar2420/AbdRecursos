@@ -149,6 +149,27 @@ export class PrismaAttendanceRepository implements AttendanceRepository {
     return row ? toDomain(row) : null;
   }
 
+  async findById(id: string): Promise<AttendanceRecord | null> {
+    const row = await prisma.attendanceRecord.findUnique({ where: { id }, include });
+    return row ? toDomain(row) : null;
+  }
+
+  async update(
+    id: string,
+    data: { timestamp?: Date; notes?: string | null; lateMinutes?: number },
+  ): Promise<AttendanceRecord> {
+    const row = await prisma.attendanceRecord.update({
+      where: { id },
+      data: {
+        ...(data.timestamp ? { timestamp: data.timestamp } : {}),
+        ...(data.notes !== undefined ? { notes: data.notes } : {}),
+        ...(data.lateMinutes !== undefined ? { lateMinutes: data.lateMinutes } : {}),
+      },
+      include,
+    });
+    return toDomain(row);
+  }
+
   async countLateInMonth(employeeIds: string[], year: number, month: number): Promise<number> {
     return prisma.attendanceRecord.count({
       where: {

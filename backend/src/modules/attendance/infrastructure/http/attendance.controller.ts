@@ -13,7 +13,13 @@ import {
   ReviewJustification,
 } from '../../application/use-cases/JustifyAbsence';
 import { GetAttendanceReport } from '../../application/use-cases/GetAttendanceReport';
-import { listAttendanceSchema, listJustificationsSchema, reportQuerySchema } from './attendance.validators';
+import { UpdateAttendanceRecord } from '../../application/use-cases/UpdateAttendanceRecord';
+import {
+  listAttendanceSchema,
+  listJustificationsSchema,
+  reportQuerySchema,
+  updateAttendanceSchema,
+} from './attendance.validators';
 
 const REPORT_COLUMNS = [
   { key: 'employeeCode', header: 'Codigo', width: 70 },
@@ -34,6 +40,7 @@ export class AttendanceController {
     private readonly registerUseCase: RegisterAttendance,
     private readonly listUseCase: ListAttendance,
     private readonly reportUseCase: GetAttendanceReport,
+    private readonly updateUseCase: UpdateAttendanceRecord,
     private readonly justifyUseCase: JustifyAbsence,
     private readonly listJustificationsUseCase: ListJustifications,
     private readonly reviewUseCase: ReviewJustification,
@@ -81,6 +88,12 @@ export class AttendanceController {
       return;
     }
     res.json({ data: rows, meta: { ...buildMeta(total, query.page, query.limit), period } });
+  };
+
+  update = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    const body = validated<z.infer<typeof updateAttendanceSchema>>(req, 'body');
+    const record = await this.updateUseCase.execute(requireActor(req), req.params.id, body);
+    res.json({ data: record });
   };
 
   createJustification = async (req: AuthenticatedRequest, res: Response): Promise<void> => {

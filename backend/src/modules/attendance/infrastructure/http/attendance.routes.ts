@@ -11,6 +11,7 @@ import {
   punchSchema,
   reportQuerySchema,
   reviewJustificationSchema,
+  updateAttendanceSchema,
 } from './attendance.validators';
 
 export function attendanceRoutes(controller: AttendanceController): Router {
@@ -19,6 +20,14 @@ export function attendanceRoutes(controller: AttendanceController): Router {
   router.post('/check-in', validate(punchSchema), asyncHandler(controller.checkIn));
   router.post('/check-out', validate(punchSchema), asyncHandler(controller.checkOut));
   router.get('/report', validate(reportQuerySchema, 'query'), asyncHandler(controller.report));
+
+  router.patch(
+    '/:id',
+    requireRole('HR', 'ADMIN'),
+    validate(attendanceIdParamSchema, 'params'),
+    validate(updateAttendanceSchema),
+    asyncHandler(controller.update),
+  );
 
   router.get(
     '/justifications',

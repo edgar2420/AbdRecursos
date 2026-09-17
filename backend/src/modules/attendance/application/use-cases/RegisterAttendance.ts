@@ -66,6 +66,10 @@ export class RegisterAttendance {
           )
         : 0;
 
+    if (isThirdParty && input.type === 'CHECK_IN' && lateMinutes > 0 && !input.notes?.trim()) {
+      throw new BusinessRuleError('Debe indicar el motivo de la tardanza');
+    }
+
     const record = await this.attendance.create({
       employeeId,
       timestamp,
