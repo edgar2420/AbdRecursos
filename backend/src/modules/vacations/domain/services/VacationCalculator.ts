@@ -83,8 +83,11 @@ export class VacationCalculator {
     return this.params.boolean(LEGAL_KEYS.VACATION_REQUIRE_HR_APPROVAL, true);
   }
 
-  assertValidRange(start: Date, end: Date): void {
+  assertValidRange(start: Date, end: Date, at: Date = new Date()): void {
     if (end < start) throw new BusinessRuleError('La fecha final no puede ser anterior a la inicial');
+    if (startOfDay(start) < startOfDay(at)) {
+      throw new BusinessRuleError('La fecha de inicio no puede ser anterior a hoy');
+    }
     const maxRangeDays = 366;
     const diff = (startOfDay(end).getTime() - startOfDay(start).getTime()) / 86400000;
     if (diff > maxRangeDays) throw new BusinessRuleError('El rango solicitado es demasiado extenso');

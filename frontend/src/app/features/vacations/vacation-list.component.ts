@@ -103,17 +103,16 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
                   <th>Hasta</th>
                   <th class="num">Dias habiles</th>
                   <th>Estado</th>
+                  <th>Regreso</th>
                   <th>Motivo</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
                 @for (request of requests(); track request.id) {
-                  <tr>
+                  <tr class="fila-clickeable" (click)="verDetalle(request)">
                     <td>
-                      <button type="button" class="link-empleado" (click)="verDetalle(request)">
-                        {{ request.employeeName }}
-                      </button>
+                      <span class="strong">{{ request.employeeName }}</span>
                       <div class="muted" style="font-size:11.5px">{{ request.departmentName ?? '-' }}</div>
                     </td>
                     <td class="nowrap">{{ request.startDate | fecha }}</td>
@@ -142,8 +141,11 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
                         <div class="muted" style="font-size:11px">{{ request.rejectionReason }}</div>
                       }
                     </td>
+                    <td>
+                      <span [class]="badgeContador(request)">{{ textoContador(request) }}</span>
+                    </td>
                     <td class="muted">{{ request.reason ?? '-' }}</td>
-                    <td class="nowrap text-right">
+                    <td class="nowrap text-right" (click)="$event.stopPropagation()">
                       @if (canApprove(request)) {
                         <button class="btn btn-secondary btn-sm" (click)="onApproveClick(request)">Aprobar</button>
                         <button class="btn btn-ghost btn-sm" (click)="openReject(request)">Rechazar</button>
@@ -298,18 +300,11 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
       .filters .field {
         min-width: 160px;
       }
-      .link-empleado {
-        background: none;
-        border: 0;
-        padding: 0;
-        font: inherit;
-        font-weight: 600;
-        color: var(--brand-700);
+      .fila-clickeable {
         cursor: pointer;
-        text-align: left;
       }
-      .link-empleado:hover {
-        text-decoration: underline;
+      .fila-clickeable:hover {
+        background: var(--brand-50, #eef4ff);
       }
       .detalle {
         display: flex;
@@ -469,6 +464,24 @@ export class VacationListComponent implements OnInit, OnDestroy {
     const reincorporacion = siguienteDiaHabil(fin);
     const diasParaVolver = diferenciaEnDias(soloFecha(new Date()), reincorporacion);
     return { reincorporacion, diasParaVolver };
+  }
+
+  textoContador(request: VacationRequest): string {
+    if (request.status !== 'APPROVED') return '-';
+    const { diasParaVolver } = this.contadorRegreso(request);
+    if (diasParaVolver > 1) return `${diasParaVolver} dias`;
+    if (diasParaVolver === 1) return 'Manana';
+    if (diasParaVolver === 0) return 'Hoy';
+    return 'Ya volvio';
+  }
+
+  badgeContador(request: VacationRequest): string {
+    if (request.status !== 'APPROVED') return 'badge badge-neutral';
+    const { diasParaVolver } = this.contadorRegreso(request);
+    if (diasParaVolver <= 0) return 'badge badge-neutral';
+    if (diasParaVolver <= 1) return 'badge badge-warn';
+    if (diasParaVolver <= 7) return 'badge badge-info';
+    return 'badge badge-neutral';
   }
 
   canApprove(request: VacationRequest): boolean {

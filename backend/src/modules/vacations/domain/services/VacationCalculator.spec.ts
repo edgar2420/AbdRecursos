@@ -111,6 +111,18 @@ describe('VacationCalculator - validaciones', () => {
     expect(() => calculator.assertValidRange(new Date('2026-06-10'), new Date('2026-06-01'))).toThrow();
   });
 
+  it('rechaza una fecha de inicio anterior a hoy', () => {
+    expect(() =>
+      calculator.assertValidRange(new Date('2026-05-01'), new Date('2026-05-10'), new Date('2026-06-01')),
+    ).toThrow(/anterior a hoy/);
+  });
+
+  it('acepta una fecha de inicio de hoy en adelante', () => {
+    expect(() =>
+      calculator.assertValidRange(new Date('2026-06-01'), new Date('2026-06-10'), new Date('2026-06-01')),
+    ).not.toThrow();
+  });
+
   it('rechaza una solicitud sin saldo suficiente', () => {
     expect(() => calculator.assertEnoughBalance(10, 5)).toThrow(/Saldo insuficiente/);
   });
