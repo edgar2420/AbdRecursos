@@ -17,7 +17,7 @@ import {
   StateComponent,
 } from '../../shared/components/ui.components';
 import { FlameGaugeComponent } from '../../shared/components/flame-gauge.component';
-import { VacationReturnsComponent } from './vacation-returns.component';
+import { VacationReturnsComponent, diferenciaEnDias, siguienteDiaHabil, soloFecha } from './vacation-returns.component';
 import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/format.pipes';
 
 @Component({
@@ -60,7 +60,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
 
       <app-vacation-returns />
 
-      <app-card>
+      <app-card heading="Solicitudes" [padded]="false">
         <div class="filters">
           <div class="field">
             <label>Estado</label>
@@ -86,9 +86,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
             <input type="search" [value]="filters().search" (input)="setSearch($any($event.target).value)" />
           </div>
         </div>
-      </app-card>
 
-      <app-card [padded]="false">
         @if (loading()) {
           <app-state mode="loading" title="Cargando solicitudes"></app-state>
         } @else if (requests().length === 0) {
@@ -113,7 +111,9 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
                 @for (request of requests(); track request.id) {
                   <tr>
                     <td>
-                      <span class="strong">{{ request.employeeName }}</span>
+                      <button type="button" class="link-empleado" (click)="verDetalle(request)">
+                        {{ request.employeeName }}
+                      </button>
                       <div class="muted" style="font-size:11.5px">{{ request.departmentName ?? '-' }}</div>
                     </td>
                     <td class="nowrap">{{ request.startDate | fecha }}</td>
@@ -226,6 +226,64 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
         </div>
       </app-modal>
     }
+
+    @if (detalle(); as d) {
+      <app-modal [title]="d.employeeName" (closed)="detalle.set(null)">
+        <div class="detalle">
+          <div class="detalle-fechas">
+            <div>
+              <span class="detalle-etiqueta">Desde</span>
+              <strong>{{ d.startDate | fecha }}</strong>
+            </div>
+            <div>
+              <span class="detalle-etiqueta">Hasta</span>
+              <strong>{{ d.endDate | fecha }}</strong>
+            </div>
+            <div>
+              <span class="detalle-etiqueta">Dias habiles</span>
+              <strong>{{ d.workingDays }}</strong>
+            </div>
+          </div>
+
+          <div class="detalle-estado">
+            <span [class]="d.status | badgeClase">{{ d.status | etiqueta }}</span>
+            @if (d.reason) {
+              <span class="muted" style="font-size:12.5px">{{ d.reason }}</span>
+            }
+          </div>
+
+          @if (contadorRegreso(d); as c) {
+            @if (d.status === 'APPROVED') {
+              <div class="contador" [class.critico]="c.diasParaVolver <= 1">
+                @if (c.diasParaVolver > 0) {
+                  <strong>{{ c.diasParaVolver }}</strong>
+                  <span>{{ c.diasParaVolver === 1 ? 'dia para que vuelva' : 'dias para que vuelva' }}</span>
+                } @else if (c.diasParaVolver === 0) {
+                  <strong>Hoy</strong>
+                  <span>se reincorpora</span>
+                } @else {
+                  <strong>Ya volvio</strong>
+                  <span>se reincorporo el {{ c.reincorporacion | fecha }}</span>
+                }
+              </div>
+              @if (c.diasParaVolver > 0) {
+                <p class="muted" style="font-size:12px;margin:0">
+                  Se reincorpora el {{ c.reincorporacion | fecha }}.
+                </p>
+              }
+            } @else if (d.status === 'PENDING_SUPERVISOR' || d.status === 'PENDING_HR') {
+              <p class="muted" style="font-size:12.5px;margin:0">
+                Todavia no esta aprobada. Si se aprueba tal cual esta pedida, se reincorporaria el
+                {{ c.reincorporacion | fecha }}.
+              </p>
+            }
+          }
+        </div>
+        <div footer>
+          <button class="btn btn-ghost" (click)="detalle.set(null)">Cerrar</button>
+        </div>
+      </app-modal>
+    }
   `,
   styles: [
     `
@@ -234,9 +292,73 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
         flex-wrap: wrap;
         gap: 12px;
         align-items: flex-end;
+        padding: 16px 18px;
+        border-bottom: 1px solid var(--ink-200);
       }
       .filters .field {
         min-width: 160px;
+      }
+      .link-empleado {
+        background: none;
+        border: 0;
+        padding: 0;
+        font: inherit;
+        font-weight: 600;
+        color: var(--brand-700);
+        cursor: pointer;
+        text-align: left;
+      }
+      .link-empleado:hover {
+        text-decoration: underline;
+      }
+      .detalle {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .detalle-fechas {
+        display: flex;
+        gap: 22px;
+        flex-wrap: wrap;
+      }
+      .detalle-fechas > div {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .detalle-etiqueta {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--ink-500);
+      }
+      .detalle-estado {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .contador {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        padding: 14px 16px;
+        border-radius: var(--radius-lg);
+        background: var(--brand-50);
+        border-top: 3px solid var(--brand-600);
+      }
+      .contador strong {
+        font-size: 26px;
+        line-height: 1.15;
+      }
+      .contador span {
+        font-size: 12px;
+        color: var(--ink-500);
+      }
+      .contador.critico {
+        background: var(--warn-100);
+        border-top-color: var(--warn-700);
       }
       .stack {
         display: flex;
@@ -262,6 +384,7 @@ export class VacationListComponent implements OnInit, OnDestroy {
   readonly rejectReason = signal('');
   readonly approvingEmergency = signal<VacationRequest | null>(null);
   readonly emergencyReason = signal('');
+  readonly detalle = signal<VacationRequest | null>(null);
 
   readonly filters = signal({ status: '', dateFrom: '', dateTo: '', search: '', page: 1, limit: 10 });
 
@@ -335,6 +458,17 @@ export class VacationListComponent implements OnInit, OnDestroy {
   maxFlame(bal: VacationBalance): number {
     const total = bal.gestiones?.reduce((sum, g) => sum + g.diasAcreditados, 0) ?? 0;
     return total > 0 ? total : bal.entitledDays;
+  }
+
+  verDetalle(request: VacationRequest): void {
+    this.detalle.set(request);
+  }
+
+  contadorRegreso(request: VacationRequest): { reincorporacion: Date; diasParaVolver: number } {
+    const fin = soloFecha(request.endDate);
+    const reincorporacion = siguienteDiaHabil(fin);
+    const diasParaVolver = diferenciaEnDias(soloFecha(new Date()), reincorporacion);
+    return { reincorporacion, diasParaVolver };
   }
 
   canApprove(request: VacationRequest): boolean {

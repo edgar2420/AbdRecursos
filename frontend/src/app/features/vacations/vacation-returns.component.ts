@@ -22,20 +22,20 @@ interface Ausencia {
 const DIA_MS = 24 * 60 * 60 * 1000;
 const DIAS_ADELANTE = 30;
 
-function soloFecha(value: Date | string): Date {
+export function soloFecha(value: Date | string): Date {
   const d = aFechaLocal(value);
   d.setHours(0, 0, 0, 0);
   return d;
 }
 
-function siguienteDiaHabil(desde: Date): Date {
+export function siguienteDiaHabil(desde: Date): Date {
   const d = new Date(desde);
   d.setDate(d.getDate() + 1);
   while (d.getDay() === 0) d.setDate(d.getDate() + 1);
   return d;
 }
 
-function diferenciaEnDias(desde: Date, hasta: Date): number {
+export function diferenciaEnDias(desde: Date, hasta: Date): number {
   return Math.round((soloFecha(hasta).getTime() - soloFecha(desde).getTime()) / DIA_MS);
 }
 
