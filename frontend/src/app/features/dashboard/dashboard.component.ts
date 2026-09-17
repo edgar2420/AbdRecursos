@@ -59,11 +59,16 @@ const ETIQUETA_CONTRATO: Record<string, string> = {
       } @else {
       @if (data(); as kpi) {
         @if (esEmpleado()) {
-          <div class="grid cols-2">
+          <div class="grid cols-3">
             <app-kpi
               label="Vacaciones pendientes"
               [value]="kpi.pendingVacations"
               hint="Solicitudes esperando aprobacion"
+            />
+            <app-kpi
+              label="Dias de vacacion aprobados"
+              [value]="kpi.approvedVacationDays"
+              hint="En el periodo seleccionado"
             />
             <app-kpi
               label="Boletas del mes"
@@ -71,27 +76,16 @@ const ETIQUETA_CONTRATO: Record<string, string> = {
               [hint]="'Liquido: ' + (kpi.payslipsNetTotal | bs)"
             />
           </div>
-          <app-card heading="Vacaciones">
-            <div class="row" style="gap:22px">
-              <div>
-                <strong style="font-size:22px">{{ kpi.approvedVacationDays }}</strong>
-                <div class="muted" style="font-size:12px">dias habiles aprobados en el periodo</div>
-              </div>
-              <div>
-                <strong style="font-size:22px;color:var(--warn-700)">{{ kpi.pendingVacations }}</strong>
-                <div class="muted" style="font-size:12px">solicitudes en tramite</div>
-              </div>
-            </div>
-          </app-card>
 
-          <app-card heading="Accesos rapidos">
+          <div class="quick-links">
+            <span class="quick-links-label">Accesos rapidos</span>
             <div class="row">
               <a class="btn btn-secondary btn-sm" routerLink="/asistencia/marcar">Marcar asistencia</a>
               <a class="btn btn-secondary btn-sm" routerLink="/vacaciones">Solicitar vacaciones</a>
               <a class="btn btn-secondary btn-sm" routerLink="/boletas">Mis boletas</a>
               <a class="btn btn-secondary btn-sm" routerLink="/papeletas">Papeletas</a>
             </div>
-          </app-card>
+          </div>
         } @else {
           <div class="grid cols-4">
             <app-kpi label="Personal activo" [value]="kpi.headcount" hint="Empleados con contrato vigente" />
@@ -112,38 +106,28 @@ const ETIQUETA_CONTRATO: Record<string, string> = {
             />
           </div>
 
-          <div class="grid cols-2">
-            <app-card heading="Distribucion por departamento">
-              @if (headcount()?.byDepartment?.length) {
-                <app-donut-chart [data]="headcountSlices()" centerLabel="Empleados" />
-              } @else {
-                <app-state title="Sin datos de headcount" message="Registre empleados para ver la distribucion."></app-state>
-              }
-            </app-card>
-
-            <app-card heading="Distribucion por tipo de contrato">
-              @if (contractSlices().length) {
-                <app-donut-chart [data]="contractSlices()" centerLabel="Empleados" />
-              } @else {
-                <app-state title="Sin datos de contratos" message="Registre empleados para ver la distribucion."></app-state>
-              }
-            </app-card>
-          </div>
-
-          <div class="grid cols-2">
-            <app-card heading="Vacaciones">
-              <div class="row" style="gap:22px">
-                <div>
-                  <strong style="font-size:22px">{{ kpi.approvedVacationDays }}</strong>
-                  <div class="muted" style="font-size:12px">dias habiles aprobados en el periodo</div>
-                </div>
-                <div>
-                  <strong style="font-size:22px;color:var(--warn-700)">{{ kpi.pendingVacations }}</strong>
-                  <div class="muted" style="font-size:12px">solicitudes en tramite</div>
-                </div>
+          <app-card heading="Distribucion de personal">
+            <div class="grid cols-2">
+              <div>
+                <h3 class="subheading">Por departamento</h3>
+                @if (headcount()?.byDepartment?.length) {
+                  <app-donut-chart [data]="headcountSlices()" centerLabel="Empleados" />
+                } @else {
+                  <app-state title="Sin datos" message="Registre empleados para ver la distribucion."></app-state>
+                }
               </div>
-            </app-card>
+              <div>
+                <h3 class="subheading">Por tipo de contrato</h3>
+                @if (contractSlices().length) {
+                  <app-donut-chart [data]="contractSlices()" centerLabel="Empleados" />
+                } @else {
+                  <app-state title="Sin datos" message="Registre empleados para ver la distribucion."></app-state>
+                }
+              </div>
+            </div>
+          </app-card>
 
+          @if (auth.isHr()) {
             <app-card heading="Lactancia (Ley 3460)">
               <div class="row" style="gap:22px;margin-bottom:12px">
                 <div>
@@ -165,15 +149,16 @@ const ETIQUETA_CONTRATO: Record<string, string> = {
                     </li>
                   }
                 </ul>
-              } @else if (auth.isHr()) {
+              } @else {
                 <p class="muted" style="font-size:12.5px;margin:0">
                   No hay permisos proximos a vencer.
                 </p>
               }
             </app-card>
-          </div>
+          }
 
-          <app-card heading="Accesos rapidos">
+          <div class="quick-links">
+            <span class="quick-links-label">Accesos rapidos</span>
             <div class="row">
               <a class="btn btn-secondary btn-sm" routerLink="/asistencia/marcar">Marcar asistencia</a>
               <a class="btn btn-secondary btn-sm" routerLink="/vacaciones">Solicitar vacaciones</a>
@@ -184,7 +169,7 @@ const ETIQUETA_CONTRATO: Record<string, string> = {
                 <a class="btn btn-secondary btn-sm" routerLink="/importaciones">Carga masiva</a>
               }
             </div>
-          </app-card>
+          </div>
         }
       }
       }
@@ -207,6 +192,26 @@ const ETIQUETA_CONTRATO: Record<string, string> = {
         gap: 10px;
         padding-bottom: 8px;
         border-bottom: 1px solid var(--ink-100);
+      }
+      .subheading {
+        font-size: 11.5px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--ink-500);
+        margin: 0 0 10px;
+      }
+      .quick-links {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .quick-links-label {
+        font-size: 11.5px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--ink-500);
       }
     `,
   ],
