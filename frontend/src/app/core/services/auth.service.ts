@@ -34,15 +34,11 @@ export class AuthService {
     return this.accessToken();
   }
 
-  login(
-    employeeCode: string,
-    lastName: string,
-    password: string,
-  ): Observable<Envelope<{ accessToken: string; user: SessionUser }>> {
+  login(username: string, password: string): Observable<Envelope<{ accessToken: string; user: SessionUser }>> {
     return this.http
       .post<Envelope<{ accessToken: string; user: SessionUser }>>(
         `${environment.apiUrl}/auth/login`,
-        { employeeCode, lastName, password },
+        { username, password },
         { withCredentials: true },
       )
       .pipe(tap((response) => this.setSession(response.data.accessToken, response.data.user)));

@@ -7,8 +7,7 @@ import { UserRepository } from '../../domain/repositories/UserRepository';
 import { User } from '../../domain/entities/User';
 
 export interface LoginInput {
-  employeeCode: string;
-  lastName: string;
+  username: string;
   password: string;
   ip?: string | null;
   userAgent?: string | null;
@@ -31,7 +30,7 @@ export class Login {
   ) {}
 
   async execute(input: LoginInput): Promise<LoginResult> {
-    const user = await this.users.findForLogin(input.employeeCode.trim(), input.lastName.trim());
+    const user = await this.users.findForLogin(input.username);
 
     if (!user) {
       await this.hasher.compare(input.password, '$2a$12$invalidinvalidinvalidinvalidinvalidinvalidinvalidinv');

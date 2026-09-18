@@ -7,8 +7,7 @@ const passwordRules = z
   .max(8, 'Maximo 8 caracteres');
 
 export const loginSchema = z.object({
-  employeeCode: z.string().trim().min(1, 'Ingrese su codigo de empleado').max(30),
-  lastName: z.string().trim().min(1, 'Ingrese su apellido').max(120),
+  username: z.string().trim().min(1, 'Ingrese su usuario').max(150),
   password: z.string().min(1, 'La contraseña es obligatoria').max(128),
 });
 

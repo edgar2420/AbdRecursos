@@ -45,8 +45,7 @@ export class AuthController {
 
   login = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     const result = await this.loginUseCase.execute({
-      employeeCode: req.body.employeeCode,
-      lastName: req.body.lastName,
+      username: req.body.username,
       password: req.body.password,
       ip: req.ip,
       userAgent: req.header('user-agent'),

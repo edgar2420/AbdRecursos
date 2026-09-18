@@ -23,6 +23,10 @@ function toDomainWithSecret(row: Row): UserWithSecret {
   return { ...toDomain(row), passwordHash: row.passwordHash };
 }
 
+function normalizeLoginId(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, '');
+}
+
 export class PrismaUserRepository implements UserRepository {
   async findByEmail(email: string): Promise<UserWithSecret | null> {
     const row = await prisma.user.findUnique({ where: { email } });
@@ -39,16 +43,17 @@ export class PrismaUserRepository implements UserRepository {
     return row ? toDomain(row) : null;
   }
 
-  async findForLogin(employeeCode: string, lastName: string): Promise<UserWithSecret | null> {
-    const row = await prisma.user.findFirst({
-      where: {
-        employee: {
-          employeeCode: { equals: employeeCode, mode: 'insensitive' },
-          lastName: { equals: lastName, mode: 'insensitive' },
-        },
-      },
+  async findForLogin(username: string): Promise<UserWithSecret | null> {
+    const normalized = normalizeLoginId(username);
+    if (!normalized) return null;
+    const rows = await prisma.user.findMany({
+      where: { employeeId: { not: null } },
+      include: { employee: { select: { employeeCode: true, lastName: true } } },
     });
-    return row ? toDomainWithSecret(row) : null;
+    const match = rows.find(
+      (row) => row.employee && normalizeLoginId(`${row.employee.employeeCode}${row.employee.lastName}`) === normalized,
+    );
+    return match ? toDomainWithSecret(match) : null;
   }
 
   async list(query: PageQuery & { role?: Role; isActive?: boolean }): Promise<Paginated<User>> {
