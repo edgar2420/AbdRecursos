@@ -103,6 +103,7 @@ model User {
   passwordHash String    @map("password_hash")
   role         Role      @default(EMPLOYEE)
   isActive     Boolean   @default(true) @map("is_active")
+  mustChangePassword Boolean @default(true) @map("must_change_password")
   lastLoginAt  DateTime? @map("last_login_at")
   employeeId   String?   @unique @map("employee_id") @db.Uuid
   employee     Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)

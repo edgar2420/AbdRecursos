@@ -130,7 +130,7 @@ import { BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
                   />
                   <app-eye-toggle [visible]="verNueva()" (toggled)="verNueva.set($event)" />
                 </div>
-                <span class="hint">Minimo 10 caracteres, con mayuscula, minuscula y numero.</span>
+                <span class="hint">Entre 4 y 8 caracteres.</span>
               </div>
               <button class="btn btn-secondary" type="submit" [disabled]="changingPassword()">
                 Cambiar contraseña
@@ -214,7 +214,7 @@ export class MyProfileComponent implements OnInit {
 
   readonly passwordForm = this.fb.nonNullable.group({
     currentPassword: ['', Validators.required],
-    newPassword: ['', [Validators.required, Validators.minLength(10)]],
+    newPassword: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(8)]],
   });
 
   ngOnInit(): void {

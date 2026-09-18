@@ -7,7 +7,8 @@ import { UserRepository } from '../../domain/repositories/UserRepository';
 import { User } from '../../domain/entities/User';
 
 export interface LoginInput {
-  email: string;
+  employeeCode: string;
+  lastName: string;
   password: string;
   ip?: string | null;
   userAgent?: string | null;
@@ -30,7 +31,7 @@ export class Login {
   ) {}
 
   async execute(input: LoginInput): Promise<LoginResult> {
-    const user = await this.users.findByEmail(input.email.toLowerCase());
+    const user = await this.users.findForLogin(input.employeeCode.trim(), input.lastName.trim());
 
     if (!user) {
       await this.hasher.compare(input.password, '$2a$12$invalidinvalidinvalidinvalidinvalidinvalidinvalidinv');
@@ -55,6 +56,7 @@ export class Login {
       role: user.role,
       employeeId: user.employeeId,
       email: user.email,
+      mustChangePassword: user.mustChangePassword,
     });
     const refresh = this.tokens.generateRefreshToken();
     await this.refreshTokens.save({

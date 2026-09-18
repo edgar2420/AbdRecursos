@@ -56,6 +56,7 @@ export class RefreshSession {
         role: user.role,
         employeeId: user.employeeId,
         email: user.email,
+        mustChangePassword: user.mustChangePassword,
       }),
       refreshToken: next.token,
       refreshExpiresAt: next.expiresAt,

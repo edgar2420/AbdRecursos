@@ -22,7 +22,7 @@ export class ChangePassword {
       throw new ValidationError('La nueva contraseña debe ser distinta de la actual');
     }
 
-    await this.users.updatePassword(userId, await this.hasher.hash(newPassword));
+    await this.users.updatePassword(userId, await this.hasher.hash(newPassword), false);
     await this.refreshTokens.revokeAllForUser(userId);
     await this.audit.log({ userId, action: 'PASSWORD_CHANGED', entity: 'User', entityId: userId });
   }

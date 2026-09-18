@@ -10,6 +10,7 @@ export interface AccessTokenPayload {
   role: UserRole;
   employeeId: string | null;
   email: string;
+  mustChangePassword: boolean;
 }
 
 export interface TokenServicePort {
@@ -33,6 +34,7 @@ export class JwtService implements TokenServicePort {
         role: decoded.role as UserRole,
         employeeId: (decoded.employeeId as string | null) ?? null,
         email: String(decoded.email),
+        mustChangePassword: Boolean(decoded.mustChangePassword),
       };
     } catch {
       throw new UnauthorizedError('Token invalido o expirado');

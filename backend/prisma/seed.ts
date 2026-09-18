@@ -185,7 +185,7 @@ const DEMO_PEOPLE: DemoPerson[] = [
   { firstName: 'Andrea', lastName: 'Flores Chumacero', ci: '9911223', position: 'Desarrollador de Software', department: 'Tecnologia', salary: 11000, hireYearsAgo: 3, email: 'andrea.flores@empresa.bo', role: 'EMPLOYEE' },
 ];
 
-const DEMO_PASSWORD = 'Sgrh2026.demo';
+const DEMO_PASSWORD = 'Demo2026';
 
 async function seedPeople(
   departments: Map<string, string>,
@@ -231,7 +231,7 @@ async function seedPeople(
 
     await prisma.user.upsert({
       where: { email: person.email },
-      update: { role: person.role, employeeId: employee.id },
+      update: { role: person.role, employeeId: employee.id, passwordHash, mustChangePassword: true },
       create: {
         email: person.email,
         passwordHash,
@@ -282,9 +282,12 @@ async function main(): Promise<void> {
   await seedPeople(departments, positions, scheduleId);
   console.log('Listo.');
   console.log('');
-  console.log('Accesos de prueba:');
-  DEMO_PEOPLE.forEach((p) => console.log(`  ${p.role.padEnd(10)} ${p.email}`));
+  console.log('Accesos de prueba (codigo de empleado + apellido + contrasena):');
+  DEMO_PEOPLE.forEach((p, i) =>
+    console.log(`  ${p.role.padEnd(10)} EMP-${String(i + 1).padStart(4, '0')}  ${p.lastName}`),
+  );
   console.log(`  Contrasena para todos: ${DEMO_PASSWORD}`);
+  console.log('  (el sistema pedira cambiarla en el primer ingreso)');
 }
 
 main()

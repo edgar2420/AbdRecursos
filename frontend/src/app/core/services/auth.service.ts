@@ -23,6 +23,7 @@ export class AuthService {
   readonly isHr = computed(() => this.hasRole('HR', 'ADMIN'));
   readonly isAdmin = computed(() => this.hasRole('ADMIN'));
   readonly isSupervisor = computed(() => this.hasRole('SUPERVISOR', 'HR', 'ADMIN'));
+  readonly mustChangePassword = computed(() => this.user()?.mustChangePassword ?? false);
 
   hasRole(...roles: Role[]): boolean {
     const current = this.user()?.role;
@@ -33,11 +34,15 @@ export class AuthService {
     return this.accessToken();
   }
 
-  login(email: string, password: string): Observable<Envelope<{ accessToken: string; user: SessionUser }>> {
+  login(
+    employeeCode: string,
+    lastName: string,
+    password: string,
+  ): Observable<Envelope<{ accessToken: string; user: SessionUser }>> {
     return this.http
       .post<Envelope<{ accessToken: string; user: SessionUser }>>(
         `${environment.apiUrl}/auth/login`,
-        { email, password },
+        { employeeCode, lastName, password },
         { withCredentials: true },
       )
       .pipe(tap((response) => this.setSession(response.data.accessToken, response.data.user)));

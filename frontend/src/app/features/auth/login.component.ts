@@ -28,26 +28,45 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
           </div>
 
           <h1>Ingrese a su cuenta</h1>
-          <p class="muted">Use el correo institucional que le asigno Recursos Humanos.</p>
+          <p class="muted">Use el codigo de empleado y apellido que le asigno Recursos Humanos.</p>
 
           <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
             <div class="field">
-              <label for="email">Correo electronico</label>
+              <label for="employeeCode">Codigo de empleado</label>
               <div class="input-icon">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="2" y="4" width="20" height="16" rx="2.5" />
-                  <path d="m3 6.5 8.4 6a1 1 0 0 0 1.2 0L21 6.5" />
+                  <rect x="3" y="4" width="18" height="16" rx="2.5" />
+                  <path d="M7 9h10M7 13h6" />
                 </svg>
                 <input
-                  id="email"
-                  type="email"
-                  formControlName="email"
+                  id="employeeCode"
+                  type="text"
+                  formControlName="employeeCode"
                   autocomplete="username"
-                  placeholder="nombre@empresa.bo"
+                  placeholder="EMP-0001"
                 />
               </div>
-              @if (form.controls.email.touched && form.controls.email.invalid) {
-                <span class="error-text">Ingrese un correo valido</span>
+              @if (form.controls.employeeCode.touched && form.controls.employeeCode.invalid) {
+                <span class="error-text">Ingrese su codigo de empleado</span>
+              }
+            </div>
+            <div class="field">
+              <label for="lastName">Apellido</label>
+              <div class="input-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="8" r="3.5" />
+                  <path d="M5 20c1.2-3.4 4-5 7-5s5.8 1.6 7 5" />
+                </svg>
+                <input
+                  id="lastName"
+                  type="text"
+                  formControlName="lastName"
+                  autocomplete="family-name"
+                  placeholder="Apellido"
+                />
+              </div>
+              @if (form.controls.lastName.touched && form.controls.lastName.invalid) {
+                <span class="error-text">Ingrese su apellido</span>
               }
             </div>
             <div class="field">
@@ -476,7 +495,8 @@ export class LoginComponent {
   readonly verClave = signal(false);
 
   readonly form = this.fb.nonNullable.group({
-    email: ['', [Validators.required, Validators.email]],
+    employeeCode: ['', [Validators.required]],
+    lastName: ['', [Validators.required]],
     password: ['', [Validators.required]],
   });
 
@@ -488,10 +508,14 @@ export class LoginComponent {
     this.loading.set(true);
     this.error.set(null);
 
-    const { email, password } = this.form.getRawValue();
-    this.auth.login(email, password).subscribe({
-      next: () => {
+    const { employeeCode, lastName, password } = this.form.getRawValue();
+    this.auth.login(employeeCode, lastName, password).subscribe({
+      next: (response) => {
         this.loading.set(false);
+        if (response.data.user.mustChangePassword) {
+          void this.router.navigateByUrl('/cambiar-clave');
+          return;
+        }
         const redirect = this.route.snapshot.queryParamMap.get('redirect') ?? '/dashboard';
         void this.router.navigateByUrl(redirect);
       },

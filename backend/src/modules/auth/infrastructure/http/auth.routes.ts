@@ -15,17 +15,21 @@ import {
   userIdParamSchema,
 } from './auth.validators';
 
-export function authRoutes(controller: AuthController, authenticate: RequestHandler): Router {
+export function authRoutes(
+  controller: AuthController,
+  authenticate: RequestHandler,
+  authenticateAllowPasswordChange: RequestHandler = authenticate,
+): Router {
   const router = Router();
 
   router.post('/login', loginRateLimit, validate(loginSchema), asyncHandler(controller.login));
   router.post('/refresh', loginRateLimit, asyncHandler(controller.refresh));
   router.post('/logout', asyncHandler(controller.logout));
 
-  router.get('/me', authenticate, asyncHandler(controller.me));
+  router.get('/me', authenticateAllowPasswordChange, asyncHandler(controller.me));
   router.post(
     '/change-password',
-    authenticate,
+    authenticateAllowPasswordChange,
     validate(changePasswordSchema),
     asyncHandler(controller.changePassword),
   );

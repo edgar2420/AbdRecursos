@@ -3,14 +3,12 @@ import { pageQuerySchema } from '../../../../shared/infrastructure/http/query';
 
 const passwordRules = z
   .string()
-  .min(10, 'Minimo 10 caracteres')
-  .max(128)
-  .regex(/[a-z]/, 'Debe incluir una minuscula')
-  .regex(/[A-Z]/, 'Debe incluir una mayuscula')
-  .regex(/\d/, 'Debe incluir un numero');
+  .min(4, 'Minimo 4 caracteres')
+  .max(8, 'Maximo 8 caracteres');
 
 export const loginSchema = z.object({
-  email: z.string().trim().toLowerCase().email('Correo invalido'),
+  employeeCode: z.string().trim().min(1, 'Ingrese su codigo de empleado').max(30),
+  lastName: z.string().trim().min(1, 'Ingrese su apellido').max(120),
   password: z.string().min(1, 'La contraseña es obligatoria').max(128),
 });
 

@@ -22,6 +22,7 @@ export interface SessionUser {
   email: string;
   role: Role;
   employeeId: string | null;
+  mustChangePassword?: boolean;
   lastLoginAt?: string | null;
 }
 

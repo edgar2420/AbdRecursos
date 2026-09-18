@@ -106,7 +106,7 @@ export class ResetUserPassword {
   async execute(userId: string, newPassword: string, actorId: string): Promise<void> {
     const target = await this.users.findById(userId);
     if (!target) throw new NotFoundError('Usuario');
-    await this.users.updatePassword(userId, await this.hasher.hash(newPassword));
+    await this.users.updatePassword(userId, await this.hasher.hash(newPassword), true);
     await this.refreshTokens.revokeAllForUser(userId);
     await this.audit.log({
       userId: actorId,

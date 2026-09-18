@@ -158,7 +158,7 @@ const ROLES: Role[] = ['EMPLOYEE', 'SUPERVISOR', 'HR', 'ADMIN'];
               <input [type]="verNueva() ? 'text' : 'password'" formControlName="password" />
               <app-eye-toggle [visible]="verNueva()" (toggled)="verNueva.set($event)" />
             </div>
-            <span class="hint">Minimo 10 caracteres, con mayuscula, minuscula y numero.</span>
+            <span class="hint">Entre 4 y 8 caracteres. El empleado debera cambiarla en su primer ingreso.</span>
           </div>
           <div class="field">
             <label>Rol *</label>
@@ -170,13 +170,13 @@ const ROLES: Role[] = ['EMPLOYEE', 'SUPERVISOR', 'HR', 'ADMIN'];
           </div>
           <div class="field">
             <label>Empleado vinculado</label>
-            <select formControlName="employeeId">
+            <select formControlName="employeeId" (change)="onEmployeeSelected($any($event.target).value)">
               <option value="">Sin vincular</option>
               @for (option of options(); track option.id) {
                 <option [value]="option.id">{{ option.label }}</option>
               }
             </select>
-            <span class="hint">Necesario para que el usuario vea sus boletas, vacaciones y asistencia.</span>
+            <span class="hint">Necesario para que el usuario vea sus boletas, vacaciones y asistencia. Al elegirlo se sugiere su codigo como contraseña inicial.</span>
           </div>
         </form>
         <div footer>
@@ -198,7 +198,7 @@ const ROLES: Role[] = ['EMPLOYEE', 'SUPERVISOR', 'HR', 'ADMIN'];
             />
             <app-eye-toggle [visible]="verReset()" (toggled)="verReset.set($event)" />
           </div>
-          <span class="hint">Se cerraran todas las sesiones activas de ese usuario.</span>
+          <span class="hint">Entre 4 y 8 caracteres. Se cerraran todas las sesiones activas y debera cambiarla en su proximo ingreso.</span>
         </div>
         <div footer>
           <button class="btn btn-ghost" (click)="resetting.set(null)">Cancelar</button>
@@ -265,7 +265,7 @@ export class UserListComponent implements OnInit {
 
   readonly form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(10)]],
+    password: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(8)]],
     role: ['EMPLOYEE' as Role, Validators.required],
     employeeId: [''],
   });
@@ -278,6 +278,14 @@ export class UserListComponent implements OnInit {
       next: (response) => this.options.set(response.data),
       error: () => this.options.set([]),
     });
+  }
+
+  onEmployeeSelected(employeeId: string): void {
+    const option = this.options().find((o) => o.id === employeeId);
+    const match = option?.label.match(/\(([^)]+)\)$/);
+    if (match) {
+      this.form.patchValue({ password: match[1] });
+    }
   }
 
   setSearch(value: string): void {

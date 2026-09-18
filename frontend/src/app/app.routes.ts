@@ -1,11 +1,17 @@
 import { Routes } from '@angular/router';
-import { authGuard, loginGuard, roleGuard } from './core/guards/auth.guard';
+import { authGuard, loginGuard, mustChangePasswordGuard, roleGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
     path: 'login',
     canActivate: [loginGuard],
     loadComponent: () => import('./features/auth/login.component').then((m) => m.LoginComponent),
+  },
+  {
+    path: 'cambiar-clave',
+    canActivate: [mustChangePasswordGuard],
+    loadComponent: () =>
+      import('./features/auth/force-change-password.component').then((m) => m.ForceChangePasswordComponent),
   },
   {
     path: '',

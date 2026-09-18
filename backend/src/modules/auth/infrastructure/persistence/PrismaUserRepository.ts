@@ -12,6 +12,7 @@ function toDomain(row: Row): User {
     email: row.email,
     role: row.role as Role,
     isActive: row.isActive,
+    mustChangePassword: row.mustChangePassword,
     employeeId: row.employeeId,
     lastLoginAt: row.lastLoginAt,
     createdAt: row.createdAt,
@@ -36,6 +37,18 @@ export class PrismaUserRepository implements UserRepository {
   async findByEmployeeId(employeeId: string): Promise<User | null> {
     const row = await prisma.user.findUnique({ where: { employeeId } });
     return row ? toDomain(row) : null;
+  }
+
+  async findForLogin(employeeCode: string, lastName: string): Promise<UserWithSecret | null> {
+    const row = await prisma.user.findFirst({
+      where: {
+        employee: {
+          employeeCode: { equals: employeeCode, mode: 'insensitive' },
+          lastName: { equals: lastName, mode: 'insensitive' },
+        },
+      },
+    });
+    return row ? toDomainWithSecret(row) : null;
   }
 
   async list(query: PageQuery & { role?: Role; isActive?: boolean }): Promise<Paginated<User>> {
@@ -73,8 +86,8 @@ export class PrismaUserRepository implements UserRepository {
     return toDomain(row);
   }
 
-  async updatePassword(id: string, passwordHash: string): Promise<void> {
-    await prisma.user.update({ where: { id }, data: { passwordHash } });
+  async updatePassword(id: string, passwordHash: string, mustChangePassword: boolean): Promise<void> {
+    await prisma.user.update({ where: { id }, data: { passwordHash, mustChangePassword } });
   }
 
   async updateRole(id: string, role: Role): Promise<User> {

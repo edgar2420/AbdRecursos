@@ -172,6 +172,7 @@ export function buildApiRouter(): Router {
   const reportPdf = new ReportPdfGenerator();
   const zip = new ZipService();
   const auth = authenticate(tokens);
+  const authAllowPasswordChange = authenticate(tokens, { allowMustChangePassword: true });
 
   const users = new PrismaUserRepository();
   const refreshTokens = new PrismaRefreshTokenRepository();
@@ -309,7 +310,7 @@ export function buildApiRouter(): Router {
   );
 
   const router = Router();
-  router.use('/auth', authRoutes(authController, auth));
+  router.use('/auth', authRoutes(authController, auth, authAllowPasswordChange));
   router.use('/employees', auth, employeeRoutes(employeeController));
   router.use('/vacations', auth, vacationRoutes(vacationController));
   router.use('/payslips', auth, payslipRoutes(payslipController));

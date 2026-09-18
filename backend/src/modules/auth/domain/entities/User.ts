@@ -7,6 +7,7 @@ export interface User {
   email: string;
   role: Role;
   isActive: boolean;
+  mustChangePassword: boolean;
   employeeId: string | null;
   lastLoginAt: Date | null;
   createdAt: Date;

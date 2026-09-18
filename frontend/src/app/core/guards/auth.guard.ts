@@ -7,8 +7,21 @@ import { Role } from '../models/api.models';
 export const authGuard: CanActivateFn = (_route, state) => {
   const auth = inject(AuthService);
   const router = inject(Router);
-  if (auth.isAuthenticated()) return true;
-  return router.createUrlTree(['/login'], { queryParams: { redirect: state.url } });
+  if (!auth.isAuthenticated()) {
+    return router.createUrlTree(['/login'], { queryParams: { redirect: state.url } });
+  }
+  if (auth.mustChangePassword()) {
+    return router.createUrlTree(['/cambiar-clave']);
+  }
+  return true;
+};
+
+export const mustChangePasswordGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  if (!auth.isAuthenticated()) return router.createUrlTree(['/login']);
+  if (!auth.mustChangePassword()) return router.createUrlTree(['/dashboard']);
+  return true;
 };
 
 export function roleGuard(...roles: Role[]): CanActivateFn {
