@@ -64,7 +64,7 @@ import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../s
             <select id="dep" [value]="filters().departmentId" (change)="setFilter('departmentId', $any($event.target).value)">
               <option value="">Todos</option>
               @for (dep of departments(); track dep.id) {
-                <option [value]="dep.id">{{ dep.name }}</option>
+                <option [value]="dep.id" [selected]="dep.id === filters().departmentId">{{ dep.name }}</option>
               }
             </select>
           </div>
@@ -126,9 +126,9 @@ import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../s
                     <td>
                       <a [routerLink]="['/empleados', employee.id]" class="strong">{{ employee.fullName }}</a>
                       @if (employee.jobProtection) {
-                        <span class="badge badge-info" style="margin-left:6px">Inamovilidad</span>
+                        <span class="badge badge-info ml-sm">Inamovilidad</span>
                       }
-                      <div class="muted" style="font-size:11.5px">{{ employee.email ?? 'Sin correo' }}</div>
+                      <div class="muted text-sm">{{ employee.email ?? 'Sin correo' }}</div>
                     </td>
                     <td class="nowrap">{{ employee.ci }}</td>
                     <td>{{ employee.departmentName ?? '-' }}</td>
@@ -244,7 +244,7 @@ import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../s
             <label>Cuenta bancaria</label>
             <input formControlName="bankAccount" />
           </div>
-          <div class="field" style="grid-column:1/-1">
+          <div class="field span-all">
             <label>Direccion</label>
             <input formControlName="address" />
           </div>
@@ -267,24 +267,7 @@ import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../s
       </app-modal>
     }
   `,
-  styles: [
-    `
-      .filters {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: flex-end;
-      }
-      .filters .field {
-        min-width: 170px;
-      }
-      .form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-        gap: 14px;
-      }
-    `,
-  ],
+  styleUrl: './employee-list.component.scss',
 })
 export class EmployeeListComponent implements OnInit {
   private readonly api = inject(ApiService);

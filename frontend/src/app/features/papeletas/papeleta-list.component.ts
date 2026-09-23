@@ -98,17 +98,17 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
                     <td class="nowrap">{{ p.tipo | etiqueta }}</td>
                     <td>
                       {{ p.employeeNombre }}
-                      <div class="muted" style="font-size:11.5px">{{ p.employeeCodigo }}</div>
+                      <div class="muted text-sm">{{ p.employeeCodigo }}</div>
                     </td>
                     <td class="muted">{{ p.area }}</td>
                     <td class="nowrap">{{ p.fecha | fecha }}</td>
-                    <td class="muted" style="max-width:220px">
+                    <td class="muted col-detalle">
                       @if (p.tipo === 'HORAS_EXTRAS') {
                         {{ p.totalHoras }} h · {{ p.recargo | etiqueta }}
-                        <div style="font-size:11.5px">{{ p.trabajoRealizado }}</div>
+                        <div class="text-sm">{{ p.trabajoRealizado }}</div>
                       } @else {
                         {{ p.salidaMotivo | etiqueta }} · {{ p.tiempoSolicitado }}
-                        <div style="font-size:11.5px">{{ p.motivo }}</div>
+                        <div class="text-sm">{{ p.motivo }}</div>
                       }
                     </td>
                     <td class="nowrap">
@@ -118,7 +118,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
                     <td>
                       <span [class]="p.estado | badgeClase">{{ p.estado | etiqueta }}</span>
                       @if (p.motivoRechazo) {
-                        <div class="muted" style="font-size:11px">{{ p.motivoRechazo }}</div>
+                        <div class="muted text-sm">{{ p.motivoRechazo }}</div>
                       }
                     </td>
                     <td class="nowrap text-right">
@@ -152,7 +152,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
             <label>Trabajo realizado *</label>
             <textarea formControlName="trabajoRealizado" placeholder="Describa la tarea que motivo las horas extra"></textarea>
           </div>
-          <div class="row" style="gap:14px">
+          <div class="row gap-md">
             <div class="field flex-1">
               <label>Desde *</label>
               <input type="time" formControlName="horaDesde" />
@@ -170,7 +170,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
               </select>
             </div>
           </div>
-          <p class="muted" style="font-size:12px;margin:0">
+          <p class="muted text-sm m-0">
             Su nombre, codigo y area salen de su ficha. La papeleta pasa primero por el jefe de area y
             despues por Recursos Humanos.
           </p>
@@ -208,7 +208,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
             <label>Motivo *</label>
             <textarea formControlName="motivo"></textarea>
           </div>
-          <div class="row" style="gap:14px">
+          <div class="row gap-md">
             <div class="field flex-1">
               <label>Hora de salida *</label>
               <input type="time" formControlName="horaSalida" />
@@ -228,7 +228,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
               @if (adjuntoPreview()) {
                 <img [src]="adjuntoPreview()" alt="Vista previa del certificado" class="adjunto-preview" />
               } @else if (adjuntoArchivo()) {
-                <span class="badge badge-ok" style="margin-top:6px">{{ adjuntoArchivo()!.name }}</span>
+                <span class="badge badge-ok mt-sm">{{ adjuntoArchivo()!.name }}</span>
               }
             </div>
           }
@@ -311,7 +311,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
               <div class="doc-field wide">
                 <span>Certificado medico</span>
                 @if (p.attachmentUrl) {
-                  <button class="btn btn-secondary btn-sm" style="margin-top:4px;align-self:start" (click)="verAdjunto(p)">
+                  <button class="btn btn-secondary btn-sm mt-xs self-start" (click)="verAdjunto(p)">
                     Ver certificado
                   </button>
                 } @else {
@@ -368,220 +368,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
       </app-modal>
     }
   `,
-  styles: [
-    `
-      .filtros {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: flex-end;
-      }
-      .filtros .field {
-        min-width: 170px;
-      }
-      .stack {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-      }
-      .adjunto-preview {
-        margin-top: 8px;
-        max-width: 160px;
-        max-height: 120px;
-        border-radius: 8px;
-        border: 1px solid var(--ink-200);
-        object-fit: cover;
-      }
-      .pdf-frame {
-        width: 100%;
-        height: 68vh;
-        border: 0;
-        border-radius: 8px;
-        background: var(--ink-100);
-      }
-      .firma {
-        display: inline-block;
-        padding: 2px 7px;
-        margin-right: 4px;
-        border-radius: 6px;
-        font-size: 10.5px;
-        font-weight: 600;
-        background: var(--ink-100);
-        color: var(--ink-500);
-      }
-      .firma.ok {
-        background: var(--ok-100);
-        color: var(--ok-700);
-      }
-      .opcion {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 12px;
-        border: 1px solid var(--ink-300);
-        border-radius: 10px;
-        font-size: 13px;
-        cursor: pointer;
-      }
-      .opcion.activa {
-        border-color: var(--brand-600);
-        background: var(--brand-50);
-        color: var(--brand-800);
-        font-weight: 600;
-      }
-
-      .doc {
-        border: 1px solid var(--ink-200);
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-      }
-      .doc-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 14px 18px;
-        background: var(--brand-800);
-        color: #fff;
-      }
-      .doc-head.salida {
-        background: var(--brand-700);
-      }
-      .doc-brand {
-        display: flex;
-        flex-direction: column;
-        line-height: 1.3;
-      }
-      .doc-brand span {
-        font-size: 10px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        opacity: 0.75;
-      }
-      .doc-brand strong {
-        font-size: 14px;
-        color: #fff;
-      }
-      .doc-banner {
-        padding: 10px 18px;
-        background: var(--brand-50);
-        color: var(--brand-800);
-        font-weight: 700;
-        font-size: 13px;
-        text-align: center;
-        letter-spacing: 0.02em;
-        border-bottom: 1px solid var(--ink-200);
-      }
-      .doc-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 14px;
-        padding: 16px 18px 4px;
-      }
-      .doc-field {
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-      }
-      .doc-field.wide {
-        padding: 0 18px 4px;
-      }
-      .doc-field span {
-        font-size: 10.5px;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--ink-500);
-        font-weight: 600;
-      }
-      .doc-field strong {
-        font-size: 13.5px;
-        color: var(--ink-900);
-      }
-      .doc-total {
-        color: var(--brand-700);
-        font-size: 16px;
-      }
-      .doc-checks {
-        display: flex;
-        gap: 10px;
-        padding: 14px 18px 4px;
-      }
-      .doc-check {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
-        border: 1px solid var(--ink-300);
-        border-radius: 10px;
-        font-size: 12.5px;
-        color: var(--ink-500);
-      }
-      .doc-check.on {
-        border-color: var(--brand-600);
-        background: var(--brand-50);
-        color: var(--brand-800);
-        font-weight: 600;
-      }
-      .doc-check .box {
-        width: 16px;
-        height: 16px;
-        border-radius: 4px;
-        border: 1px solid currentColor;
-        display: grid;
-        place-items: center;
-        font-size: 11px;
-        line-height: 1;
-      }
-      .doc-alert {
-        margin: 14px 18px 0;
-        padding: 10px 12px;
-        border-radius: 10px;
-        background: var(--danger-100);
-        color: var(--danger-700);
-        font-size: 12.5px;
-        font-weight: 500;
-      }
-      .doc-firmas {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 14px;
-        padding: 16px 18px 18px;
-        margin-top: 10px;
-        border-top: 1px dashed var(--ink-300);
-      }
-      .doc-firma {
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-        padding: 10px 12px;
-        border-radius: 10px;
-        background: var(--ink-50);
-      }
-      .doc-firma.ok {
-        background: var(--ok-100);
-      }
-      .doc-firma .rol {
-        font-size: 10.5px;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--ink-500);
-        font-weight: 700;
-      }
-      .doc-firma strong {
-        font-size: 13px;
-        color: var(--ink-900);
-      }
-      .doc-firma .cuando {
-        font-size: 11px;
-        color: var(--ink-500);
-      }
-      .doc-firma .pendiente {
-        font-size: 12px;
-        color: var(--warn-700);
-        font-style: italic;
-      }
-    `,
-  ],
+  styleUrl: './papeleta-list.component.scss',
 })
 export class PapeletaListComponent implements OnInit, OnDestroy {
   private readonly api = inject(ApiService);

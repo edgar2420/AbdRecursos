@@ -113,7 +113,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
                   <tr class="fila-clickeable" (click)="verDetalle(request)">
                     <td>
                       <span class="strong">{{ request.employeeName }}</span>
-                      <div class="muted" style="font-size:11.5px">{{ request.departmentName ?? '-' }}</div>
+                      <div class="muted text-sm">{{ request.departmentName ?? '-' }}</div>
                     </td>
                     <td class="nowrap">{{ request.startDate | fecha }}</td>
                     <td class="nowrap">{{ request.endDate | fecha }}</td>
@@ -121,24 +121,24 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
                     <td>
                       <span [class]="request.status | badgeClase">{{ request.status | etiqueta }}</span>
                       @if (request.supervisorApprovedByName) {
-                        <div class="muted" style="font-size:11px">
+                        <div class="muted text-sm">
                           Supervisor: {{ request.supervisorApprovedByName }}
                           @if (request.supervisorApprovalIsEmergency) {
-                            <span class="badge badge-warn" style="margin-left:4px">Emergencia RRHH</span>
+                            <span class="badge badge-warn ml-xs">Emergencia RRHH</span>
                           }
                         </div>
                         @if (request.emergencyReason) {
-                          <div class="muted" style="font-size:11px">Motivo: {{ request.emergencyReason }}</div>
+                          <div class="muted text-sm">Motivo: {{ request.emergencyReason }}</div>
                         }
                       }
                       @if (request.hrApprovedByName) {
-                        <div class="muted" style="font-size:11px">RRHH: {{ request.hrApprovedByName }}</div>
+                        <div class="muted text-sm">RRHH: {{ request.hrApprovedByName }}</div>
                       }
                       @if (request.rejectedByName) {
-                        <div class="muted" style="font-size:11px">Rechazado por {{ request.rejectedByName }}</div>
+                        <div class="muted text-sm">Rechazado por {{ request.rejectedByName }}</div>
                       }
                       @if (request.rejectionReason) {
-                        <div class="muted" style="font-size:11px">{{ request.rejectionReason }}</div>
+                        <div class="muted text-sm">{{ request.rejectionReason }}</div>
                       }
                     </td>
                     <td>
@@ -167,7 +167,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
     @if (formOpen()) {
       <app-modal title="Solicitar vacaciones" (closed)="formOpen.set(false)">
         <form [formGroup]="form" class="stack">
-          <div class="row" style="gap:14px">
+          <div class="row gap-md">
             <div class="field flex-1">
               <label>Fecha de inicio *</label>
               <input type="date" formControlName="startDate" />
@@ -181,7 +181,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
             <label>Motivo (opcional)</label>
             <textarea formControlName="reason" placeholder="Vacaciones anuales, viaje familiar..."></textarea>
           </div>
-          <p class="muted" style="font-size:12px;margin:0">
+          <p class="muted text-sm m-0">
             Solo se descuentan dias habiles: no se cuentan domingos ni feriados nacionales.
             La solicitud pasa primero por su supervisor y luego por Recursos Humanos.
           </p>
@@ -195,7 +195,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
 
     @if (approvingEmergency()) {
       <app-modal title="Aprobacion de emergencia" (closed)="approvingEmergency.set(null)">
-        <p class="muted" style="font-size:12.5px;margin:0 0 4px">
+        <p class="muted text-md m-0 mb-xs">
           El supervisor del equipo no cerro este paso. Al aprobar en su lugar como Recursos Humanos,
           debe indicar el motivo: por que se aprueba de emergencia.
         </p>
@@ -250,7 +250,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
           <div class="detalle-estado">
             <span [class]="d.status | badgeClase">{{ d.status | etiqueta }}</span>
             @if (d.reason) {
-              <span class="muted" style="font-size:12.5px">{{ d.reason }}</span>
+              <span class="muted text-md">{{ d.reason }}</span>
             }
           </div>
 
@@ -269,12 +269,12 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
                 }
               </div>
               @if (c.diasParaVolver > 0) {
-                <p class="muted" style="font-size:12px;margin:0">
+                <p class="muted text-sm m-0">
                   Se reincorpora el {{ c.reincorporacion | fecha }}.
                 </p>
               }
             } @else if (d.status === 'PENDING_SUPERVISOR' || d.status === 'PENDING_HR') {
-              <p class="muted" style="font-size:12.5px;margin:0">
+              <p class="muted text-md m-0">
                 Todavia no esta aprobada. Si se aprueba tal cual esta pedida, se reincorporaria el
                 {{ c.reincorporacion | fecha }}.
               </p>
@@ -287,81 +287,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
       </app-modal>
     }
   `,
-  styles: [
-    `
-      .filters {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: flex-end;
-        padding: 16px 18px;
-        border-bottom: 1px solid var(--ink-200);
-      }
-      .filters .field {
-        min-width: 160px;
-      }
-      .fila-clickeable {
-        cursor: pointer;
-      }
-      .fila-clickeable:hover {
-        background: var(--brand-50, #eef4ff);
-      }
-      .detalle {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-      }
-      .detalle-fechas {
-        display: flex;
-        gap: 22px;
-        flex-wrap: wrap;
-      }
-      .detalle-fechas > div {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
-      .detalle-etiqueta {
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-        color: var(--ink-500);
-      }
-      .detalle-estado {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-      .contador {
-        display: flex;
-        flex-direction: column;
-        gap: 1px;
-        padding: 14px 16px;
-        border-radius: var(--radius-lg);
-        background: var(--brand-50);
-        border-top: 3px solid var(--brand-600);
-      }
-      .contador strong {
-        font-size: 26px;
-        line-height: 1.15;
-      }
-      .contador span {
-        font-size: 12px;
-        color: var(--ink-500);
-      }
-      .contador.critico {
-        background: var(--warn-100);
-        border-top-color: var(--warn-700);
-      }
-      .stack {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-      }
-    `,
-  ],
+  styleUrl: './vacation-list.component.scss',
 })
 export class VacationListComponent implements OnInit, OnDestroy {
   private readonly api = inject(ApiService);

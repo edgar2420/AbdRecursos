@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { pageQuerySchema } from '../../../../shared/infrastructure/http/query';
+import { fechaLocal } from '../../../../shared/infrastructure/http/fecha-local';
 
 export const listAttendanceSchema = pageQuerySchema.extend({
   employeeId: z.string().uuid().optional(),
@@ -18,14 +19,15 @@ export const punchSchema = z.object({
 });
 
 export const reportQuerySchema = z.object({
-  from: z.coerce.date(),
-  to: z.coerce.date(),
+  from: fechaLocal,
+  to: fechaLocal,
   employeeId: z.string().uuid().optional(),
   departmentId: z.string().uuid().optional(),
   search: z.string().trim().max(120).optional(),
   page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+  limit: z.coerce.number().int().min(1).max(500).default(20),
   includeDays: z.enum(['true', 'false']).transform((v) => v === 'true').optional(),
+  sortBy: z.enum(['name', 'late']).default('name'),
   format: z.enum(['json', 'excel', 'pdf']).default('json'),
 });
 

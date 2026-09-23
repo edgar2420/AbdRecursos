@@ -28,7 +28,7 @@ export function createApp(apiRouter: Router): Express {
         callback(new ForbiddenError('Origen no permitido por CORS'));
       },
       credentials: true,
-      exposedHeaders: ['Content-Disposition', 'x-request-id'],
+      exposedHeaders: ['Content-Disposition', 'x-request-id', 'RateLimit-Remaining', 'RateLimit-Reset'],
     }),
   );
   app.use(express.json({ limit: '2mb' }));

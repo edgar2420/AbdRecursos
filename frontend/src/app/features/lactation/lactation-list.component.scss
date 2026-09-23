@@ -1,0 +1,24 @@
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.alerts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13px;
+}
+.alerts li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.warn {
+  color: var(--warn-700);
+  font-weight: 600;
+}

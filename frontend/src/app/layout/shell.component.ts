@@ -9,24 +9,69 @@ import { EtiquetaPipe } from '../shared/pipes/format.pipes';
 interface NavItem {
   path: string;
   label: string;
-  icon: string;
+  /** Trazos SVG (viewBox 24x24, estilo lineal). */
+  icon: string[];
   roles?: Role[];
 }
 
 const NAV: NavItem[] = [
-  { path: '/dashboard', label: 'Panel', icon: '▦' },
-  { path: '/mi-perfil', label: 'Mi perfil', icon: '☺' },
-  { path: '/asistencia/marcar', label: 'Marcar asistencia', icon: '◷' },
-  { path: '/vacaciones', label: 'Vacaciones', icon: '☀' },
-  { path: '/papeletas', label: 'Papeletas', icon: '✎' },
-  { path: '/boletas', label: 'Boletas de pago', icon: '₿' },
-  { path: '/empleados', label: 'Empleados', icon: '≡', roles: ['SUPERVISOR', 'HR', 'ADMIN'] },
-  { path: '/asistencia', label: 'Asistencia', icon: '◴', roles: ['SUPERVISOR', 'HR', 'ADMIN'] },
-  { path: '/horarios', label: 'Horarios y turnos', icon: '◫', roles: ['HR', 'ADMIN'] },
-  { path: '/lactancia', label: 'Lactancia', icon: '♡', roles: ['HR', 'ADMIN'] },
-  { path: '/importaciones', label: 'Carga masiva', icon: '⇪', roles: ['HR', 'ADMIN'] },
-  { path: '/usuarios', label: 'Usuarios y roles', icon: '◎', roles: ['ADMIN'] },
-  { path: '/auditoria', label: 'Auditoria', icon: '⌕', roles: ['ADMIN'] },
+  { path: '/dashboard', label: 'Panel', icon: ['M3 3h7v9H3z', 'M14 3h7v5h-7z', 'M14 12h7v9h-7z', 'M3 16h7v5H3z'] },
+  { path: '/mi-perfil', label: 'Mi perfil', icon: ['M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z', 'M20 21a8 8 0 0 0-16 0'] },
+  { path: '/asistencia/marcar', label: 'Marcar asistencia', icon: ['M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z', 'M12 7v5l3 2'] },
+  {
+    path: '/vacaciones',
+    label: 'Vacaciones',
+    icon: [
+      'M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+      'M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41',
+    ],
+  },
+  {
+    path: '/papeletas',
+    label: 'Papeletas',
+    icon: [
+      'M9 3h6a1 1 0 0 1 1 1v1H8V4a1 1 0 0 1 1-1z',
+      'M16 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2',
+      'M8 12h8M8 16h5',
+    ],
+  },
+  { path: '/boletas', label: 'Boletas de pago', icon: ['M4 3h16v18l-3-2-2.5 2-2.5-2-2.5 2L7 19l-3 2z', 'M8 8h8M8 12h8M8 16h4'] },
+  {
+    path: '/empleados',
+    label: 'Empleados',
+    icon: [
+      'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2',
+      'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+      'M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
+    ],
+    roles: ['SUPERVISOR', 'HR', 'ADMIN'],
+  },
+  { path: '/asistencia', label: 'Asistencia', icon: ['M3 3v18h18', 'M7 16v-4M12 16V8M17 16v-7'], roles: ['SUPERVISOR', 'HR', 'ADMIN'] },
+  {
+    path: '/horarios',
+    label: 'Horarios y turnos',
+    icon: ['M8 2v4M16 2v4', 'M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z', 'M3 10h18'],
+    roles: ['HR', 'ADMIN'],
+  },
+  {
+    path: '/lactancia',
+    label: 'Lactancia',
+    icon: ['M20.5 8.5c0 4.5-8.5 10-8.5 10s-8.5-5.5-8.5-10a4.5 4.5 0 0 1 8.5-2 4.5 4.5 0 0 1 8.5 2z'],
+    roles: ['HR', 'ADMIN'],
+  },
+  {
+    path: '/importaciones',
+    label: 'Carga masiva',
+    icon: ['M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4', 'M17 8l-5-5-5 5', 'M12 3v12'],
+    roles: ['HR', 'ADMIN'],
+  },
+  {
+    path: '/usuarios',
+    label: 'Usuarios y roles',
+    icon: ['M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z', 'M9 12l2 2 4-4'],
+    roles: ['ADMIN'],
+  },
+  { path: '/auditoria', label: 'Auditoria', icon: ['M3 12a9 9 0 1 0 3-6.7L3 8', 'M3 3v5h5', 'M12 7v5l4 2'], roles: ['ADMIN'] },
 ];
 
 const SIDEBAR_COLLAPSED_KEY = 'sgrh.sidebar.collapsed';
@@ -37,8 +82,9 @@ const SIDEBAR_COLLAPSED_KEY = 'sgrh.sidebar.collapsed';
   imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, EtiquetaPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <a class="skip-link" href="#contenido" (click)="saltarAlContenido($event)">Saltar al contenido</a>
     <div class="shell" [class.nav-open]="menuOpen()" [class.collapsed]="collapsed()">
-      <aside class="sidebar">
+      <aside class="sidebar" id="menu-lateral">
         <div class="brand">
           @if (collapsed()) {
             <div class="brand-mark-crop">
@@ -55,16 +101,22 @@ const SIDEBAR_COLLAPSED_KEY = 'sgrh.sidebar.collapsed';
           }
         </div>
 
-        <nav>
+        <nav aria-label="Menu principal">
           @for (item of visibleNav(); track item.path) {
             <a
               [routerLink]="item.path"
               routerLinkActive="active"
-              [routerLinkActiveOptions]="{ exact: item.path === '/asistencia/marcar' }"
+              ariaCurrentWhenActive="page"
+              [routerLinkActiveOptions]="{ exact: item.path.startsWith('/asistencia') }"
               [title]="collapsed() ? item.label : ''"
+              [attr.aria-label]="collapsed() ? item.label : null"
               (click)="menuOpen.set(false)"
             >
-              <span class="nav-icon" aria-hidden="true">{{ item.icon }}</span>
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                @for (d of item.icon; track $index) {
+                  <path [attr.d]="d" />
+                }
+              </svg>
               @if (!collapsed()) {
                 <span class="nav-label">{{ item.label }}</span>
               }
@@ -74,7 +126,7 @@ const SIDEBAR_COLLAPSED_KEY = 'sgrh.sidebar.collapsed';
 
         @if (!collapsed()) {
           <div class="sidebar-foot">
-            <span class="muted">Bolivia · Ley General del Trabajo</span>
+            <span>Bolivia · Ley General del Trabajo</span>
             <span class="credit">Desarrollado por Ing. Edgar Rojas</span>
           </div>
         }
@@ -84,6 +136,9 @@ const SIDEBAR_COLLAPSED_KEY = 'sgrh.sidebar.collapsed';
         type="button"
         class="collapse-handle"
         [title]="collapsed() ? 'Expandir menu' : 'Contraer menu'"
+        [attr.aria-label]="collapsed() ? 'Expandir menu' : 'Contraer menu'"
+        [attr.aria-expanded]="!collapsed()"
+        aria-controls="menu-lateral"
         (click)="toggleCollapsed()"
       >
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
@@ -97,7 +152,19 @@ const SIDEBAR_COLLAPSED_KEY = 'sgrh.sidebar.collapsed';
 
       <div class="main">
         <header class="topbar">
-          <button class="btn btn-ghost btn-sm menu-btn" (click)="menuOpen.set(!menuOpen())">Menu</button>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm menu-btn"
+            aria-label="Abrir menu"
+            aria-controls="menu-lateral"
+            [attr.aria-expanded]="menuOpen()"
+            (click)="menuOpen.set(!menuOpen())"
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            Menu
+          </button>
           <div class="flex-1"></div>
           <div class="user">
             <div class="user-info hidden-sm">
@@ -109,256 +176,22 @@ const SIDEBAR_COLLAPSED_KEY = 'sgrh.sidebar.collapsed';
           </div>
         </header>
 
-        <main><router-outlet></router-outlet></main>
+        <main id="contenido" tabindex="-1"><router-outlet></router-outlet></main>
       </div>
     </div>
   `,
-  styles: [
-    `
-      .shell {
-        display: flex;
-        min-height: 100vh;
-      }
-
-      .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: var(--sidebar-width);
-        height: 100vh;
-        flex-shrink: 0;
-        background: linear-gradient(180deg, var(--brand-900), var(--brand-800));
-        color: #e0f2fe;
-        display: flex;
-        flex-direction: column;
-        transition: width 0.18s ease;
-        overflow: hidden;
-        z-index: 40;
-      }
-      .collapsed .sidebar {
-        width: 72px;
-      }
-
-      .collapse-handle {
-        position: fixed;
-        top: 22px;
-        left: calc(var(--sidebar-width) - 13px);
-        z-index: 45;
-        width: 26px;
-        height: 26px;
-        display: grid;
-        place-items: center;
-        border-radius: 999px;
-        background: var(--surface);
-        border: 1px solid var(--ink-200);
-        color: var(--ink-500);
-        box-shadow: var(--shadow-xs);
-        transition: left 0.18s ease, color 0.15s ease, border-color 0.15s ease;
-      }
-      .collapse-handle:hover {
-        color: var(--brand-700);
-        border-color: var(--brand-300);
-      }
-      .collapsed .collapse-handle {
-        left: 59px;
-      }
-      @media (max-width: 900px) {
-        .collapse-handle {
-          display: none;
-        }
-      }
-
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 11px;
-        padding: 18px 14px 16px;
-      }
-      .brand-mark-full {
-        flex-shrink: 0;
-        background: #fff;
-        border-radius: 8px;
-        padding: 5px 9px;
-        display: flex;
-        align-items: center;
-      }
-      .brand-mark-full img {
-        height: 22px;
-        width: auto;
-        display: block;
-      }
-      .brand-mark-crop {
-        width: 38px;
-        height: 38px;
-        flex-shrink: 0;
-        overflow: hidden;
-        border-radius: 10px;
-        background: #fff;
-      }
-      .brand-mark-crop img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: 0% 50%;
-      }
-      .brand-text {
-        flex: 1;
-        min-width: 0;
-      }
-      .brand strong {
-        display: block;
-        color: #fff;
-        font-size: 15px;
-      }
-      .brand small {
-        color: var(--brand-300);
-        font-size: 11.5px;
-      }
-      .collapsed .brand {
-        justify-content: center;
-        padding: 18px 0 16px;
-      }
-
-      nav {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        padding: 6px 10px;
-        overflow-y: auto;
-        flex: 1;
-      }
-
-      nav a {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 9px 12px;
-        border-radius: 10px;
-        color: #cbe9f5;
-        font-size: 13px;
-        font-weight: 500;
-        transition: background 0.15s ease, color 0.15s ease;
-      }
-      nav a:hover {
-        background: rgba(255, 255, 255, 0.08);
-        color: #fff;
-        text-decoration: none;
-      }
-      nav a.active {
-        background: var(--brand-600);
-        color: #fff;
-        font-weight: 600;
-      }
-      .nav-icon {
-        width: 24px;
-        font-size: 18px;
-        text-align: center;
-        opacity: 0.9;
-        flex-shrink: 0;
-      }
-      .collapsed nav a {
-        justify-content: center;
-        padding: 10px 0;
-      }
-
-      .sidebar-foot {
-        padding: 14px 18px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        font-size: 11px;
-        color: var(--brand-300);
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-      }
-      .sidebar-foot .credit {
-        font-size: 10.5px;
-        color: rgba(224, 242, 254, 0.45);
-      }
-
-      .main {
-        flex: 1;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        margin-left: var(--sidebar-width);
-        transition: margin-left 0.18s ease;
-      }
-      .collapsed .main {
-        margin-left: 72px;
-      }
-
-      .topbar {
-        height: var(--header-height);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 0 22px;
-        background: var(--surface);
-        border-bottom: 1px solid var(--ink-200);
-        position: sticky;
-        top: 0;
-        z-index: 20;
-      }
-
-      .user {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      .user-info {
-        text-align: right;
-        line-height: 1.25;
-      }
-      .user-info strong {
-        display: block;
-        font-size: 12.5px;
-      }
-      .user-info small {
-        color: var(--ink-500);
-        font-size: 11.5px;
-      }
-      .avatar {
-        width: 34px;
-        height: 34px;
-        display: grid;
-        place-items: center;
-        border-radius: 50%;
-        background: var(--brand-100);
-        color: var(--brand-800);
-        font-weight: 700;
-        font-size: 12.5px;
-      }
-
-      .menu-btn {
-        display: none;
-      }
-
-      @media (max-width: 900px) {
-        .sidebar {
-          z-index: 50;
-          transform: translateX(-100%);
-          transition: transform 0.2s ease;
-          box-shadow: var(--shadow-md);
-        }
-        .nav-open .sidebar {
-          transform: none;
-        }
-        .main,
-        .collapsed .main {
-          margin-left: 0;
-        }
-        .menu-btn {
-          display: inline-flex;
-        }
-      }
-    `,
-  ],
+  styleUrl: './shell.component.scss',
 })
 export class ShellComponent {
   readonly auth = inject(AuthService);
   private readonly idle = inject(IdleService);
   readonly menuOpen = signal(false);
   readonly collapsed = signal(leerColapsado());
+
+  saltarAlContenido(event: Event): void {
+    event.preventDefault();
+    document.getElementById('contenido')?.focus();
+  }
 
   toggleCollapsed(): void {
     const next = !this.collapsed();

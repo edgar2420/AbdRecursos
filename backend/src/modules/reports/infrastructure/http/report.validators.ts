@@ -1,8 +1,9 @@
 import { z } from 'zod';
+import { fechaLocal } from '../../../../shared/infrastructure/http/fecha-local';
 
 export const dashboardQuerySchema = z.object({
-  from: z.coerce.date().optional(),
-  to: z.coerce.date().optional(),
+  from: fechaLocal.optional(),
+  to: fechaLocal.optional(),
   departmentId: z.string().uuid().optional(),
 });
 

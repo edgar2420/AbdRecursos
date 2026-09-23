@@ -1,0 +1,106 @@
+:host {
+  display: block;
+}
+.kpi {
+  --tone: var(--brand-600);
+  --tone-bg: var(--brand-50);
+  --tone-ink: var(--brand-800);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--ink-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  border-top: 3px solid var(--tone);
+  color: var(--ink-900);
+}
+.tone-warn {
+  --tone: #d97706;
+  --tone-bg: var(--warn-100);
+  --tone-ink: var(--warn-700);
+}
+.tone-ok {
+  --tone: var(--ok-700);
+  --tone-bg: var(--ok-100);
+  --tone-ink: var(--ok-700);
+}
+.kpi-link {
+  text-decoration: none;
+  cursor: pointer;
+  transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+}
+.kpi-link:hover {
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--brand-300);
+  border-top-color: var(--tone);
+}
+.kpi-link:focus-visible {
+  outline: 2px solid var(--brand-600);
+  outline-offset: 2px;
+  box-shadow: var(--shadow-sm);
+}
+.kpi-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.kpi-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-500);
+  padding-top: 2px;
+}
+.kpi-icon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--tone-bg);
+  color: var(--tone-ink);
+}
+.kpi-value {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+.kpi-status {
+  align-self: flex-start;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--tone-bg);
+  color: var(--tone-ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+.kpi-hint {
+  font-size: 12.5px;
+  color: var(--ink-500);
+}
+.kpi-more {
+  margin-top: auto;
+  padding-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--brand-700);
+}
+.kpi-link:hover .kpi-more svg {
+  transform: translateX(2px);
+}
+.kpi-more svg {
+  transition: transform 0.18s ease;
+}

@@ -1,0 +1,375 @@
+.dash-grid {
+  display: grid;
+  gap: 16px;
+  align-items: start;
+
+  &.con-lateral {
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  }
+}
+
+@media (max-width: 1100px) {
+  .dash-grid.con-lateral {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+// ---- Selector Tardanzas / Minutos ----
+.segmentado {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--ink-100);
+
+  button {
+    height: 28px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink-700);
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover {
+      color: var(--ink-900);
+    }
+
+    &[aria-pressed='true'] {
+      background: var(--surface);
+      color: var(--brand-800);
+      box-shadow: var(--shadow-xs);
+    }
+  }
+}
+
+// ---- Carga y recarga ----
+.cargando-atrasos {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.skeleton-titulo {
+  height: 48px;
+  max-width: 280px;
+}
+.skeleton-grafico {
+  height: 240px;
+}
+
+.atrasos {
+  transition: opacity 0.2s ease;
+
+  &.recargando {
+    opacity: 0.55;
+  }
+}
+
+// ---- Ticker ----
+.ticker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 28px;
+  margin-bottom: 18px;
+}
+
+.ticker-principal {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ticker-etiqueta {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-500);
+}
+
+.ticker-linea {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 12px;
+}
+
+.ticker-valor {
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.ticker-vs {
+  font-size: 12.5px;
+  color: var(--ink-500);
+}
+
+.ticker-datos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  margin: 0;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  dt {
+    font-size: 12px;
+    color: var(--ink-500);
+  }
+
+  dd {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink-900);
+  }
+}
+
+// ---- Variacion (siempre flecha + texto, nunca solo color) ----
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.delta-mini {
+  padding: 2px 7px;
+  font-size: 12px;
+}
+
+.delta-peor {
+  background: var(--danger-100);
+  color: var(--danger-700);
+}
+
+.delta-mejor {
+  background: var(--ok-100);
+  color: var(--ok-700);
+}
+
+.delta-nuevo {
+  background: var(--warn-100);
+  color: var(--warn-700);
+}
+
+.delta-igual {
+  background: var(--ink-100);
+  color: var(--ink-700);
+}
+
+// ---- Tabla de dias ----
+.tabla-toggle {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.tabla-dias {
+  margin-top: 10px;
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--ink-200);
+
+  table.data {
+    min-width: 520px;
+  }
+}
+
+// ---- Ranking ----
+.ranking-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 22px 0 6px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ink-200);
+
+  h3 {
+    font-size: 14px;
+    font-weight: 700;
+  }
+}
+
+.ranking {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+
+  li {
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1.4fr) 96px minmax(110px, auto) 64px;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--ink-100);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .delta {
+    justify-self: end;
+  }
+}
+
+.pos {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ink-100);
+  color: var(--ink-700);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.quien {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  strong,
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    font-size: 13px;
+  }
+
+  span {
+    font-size: 12px;
+    color: var(--ink-500);
+  }
+}
+
+.cifras {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  white-space: nowrap;
+
+  strong {
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  span {
+    font-size: 12px;
+    color: var(--ink-500);
+  }
+}
+
+.ranking-pie {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: var(--ink-500);
+}
+
+@media (max-width: 720px) {
+  .ranking li {
+    grid-template-columns: 26px minmax(0, 1fr) auto;
+    grid-template-areas:
+      'pos quien delta'
+      'pos cifras cifras';
+    row-gap: 4px;
+  }
+  .pos {
+    grid-area: pos;
+  }
+  .quien {
+    grid-area: quien;
+  }
+  .cifras {
+    grid-area: cifras;
+    flex-direction: row;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+  .ranking .delta {
+    grid-area: delta;
+  }
+  .spark {
+    display: none;
+  }
+  .ticker-valor {
+    font-size: 36px;
+  }
+}
+
+// ---- Lactancia ----
+.lact-nums {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 14px;
+
+  div {
+    display: flex;
+    flex-direction: column;
+  }
+
+  strong {
+    font-size: 24px;
+    line-height: 1.2;
+  }
+
+  span {
+    font-size: 12px;
+    color: var(--ink-500);
+  }
+
+  .alerta strong {
+    color: var(--warn-700);
+  }
+}
+
+.expiring {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12.5px;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--ink-100);
+  }
+}
+
+.vacio {
+  font-size: 12.5px;
+  margin: 0;
+}

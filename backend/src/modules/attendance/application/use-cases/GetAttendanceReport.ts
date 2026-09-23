@@ -46,6 +46,8 @@ export class GetAttendanceReport {
       page?: number;
       limit?: number;
       includeDays?: boolean;
+      /** 'late': solo empleados con atrasos, ordenados de mas a menos. */
+      sortBy?: 'name' | 'late';
     },
   ): Promise<{ rows: AttendanceReportRow[]; total: number }> {
     if (daysBetween(input.from, input.to) > MAX_RANGE_DAYS) {
@@ -65,8 +67,9 @@ export class GetAttendanceReport {
     }
     if (roster.length === 0) return { rows: [], total: 0 };
 
-    const total = roster.length;
-    if (input.page && input.limit) {
+    const porAtrasos = input.sortBy === 'late';
+    let total = roster.length;
+    if (!porAtrasos && input.page && input.limit) {
       const start = (input.page - 1) * input.limit;
       roster = roster.slice(start, start + input.limit);
     }
@@ -81,6 +84,13 @@ export class GetAttendanceReport {
 
     const calculator = new AttendanceCalculator(params);
     const justifiedSet = new Set(justified.map((j) => `${j.employeeId}:${toDateOnlyString(j.date)}`));
+    const recordsByDay = new Map<string, typeof records>();
+    for (const record of records) {
+      const key = `${record.employeeId}:${toDateOnlyString(record.timestamp)}`;
+      const list = recordsByDay.get(key);
+      if (list) list.push(record);
+      else recordsByDay.set(key, [record]);
+    }
 
     const rows = roster.map((employee) => {
       const assignment = assignments.find((a) => a.employeeId === employee.id) ?? null;
@@ -99,9 +109,7 @@ export class GetAttendanceReport {
       const last = startOfDay(input.to);
       while (cursor <= last) {
         const key = toDateOnlyString(cursor);
-        const dayRecords = records.filter(
-          (r) => r.employeeId === employee.id && toDateOnlyString(r.timestamp) === key,
-        );
+        const dayRecords = recordsByDay.get(`${employee.id}:${key}`) ?? [];
         days.push(
           calculator.summarizeDay(new Date(cursor), dayRecords, schedule, {
             isJustified: justifiedSet.has(`${employee.id}:${key}`),
@@ -119,7 +127,7 @@ export class GetAttendanceReport {
         daysPresent: days.filter((d) => d.status === 'PRESENT' || d.status === 'LATE').length,
         daysAbsent: days.filter((d) => d.status === 'ABSENT').length,
         daysJustified: days.filter((d) => d.status === 'JUSTIFIED').length,
-        daysLate: days.filter((d) => d.status === 'LATE').length,
+        daysLate: days.filter((d) => d.lateMinutes > 0).length,
         totalLateMinutes: days.reduce((acc, d) => acc + d.lateMinutes, 0),
         workedHours: round2(days.reduce((acc, d) => acc + d.workedHours, 0)),
         overtimeHours: round2(days.reduce((acc, d) => acc + d.overtimeHours, 0)),
@@ -127,6 +135,16 @@ export class GetAttendanceReport {
       };
     });
 
-    return { rows, total };
+    if (!porAtrasos) return { rows, total };
+
+    const ranking = rows
+      .filter((row) => row.daysLate > 0)
+      .sort((a, b) => b.daysLate - a.daysLate || b.totalLateMinutes - a.totalLateMinutes);
+    total = ranking.length;
+    if (input.page && input.limit) {
+      const start = (input.page - 1) * input.limit;
+      return { rows: ranking.slice(start, start + input.limit), total };
+    }
+    return { rows: ranking, total };
   }
 }

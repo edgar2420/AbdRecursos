@@ -231,6 +231,8 @@ export interface AttendanceReportRow {
   totalLateMinutes: number;
   workedHours: number;
   overtimeHours: number;
+  /** Solo viene cuando se pide includeDays=true; un elemento por dia del rango, en orden. */
+  days?: { date: string; lateMinutes: number; status: string }[];
 }
 
 export interface AttendanceJustification {

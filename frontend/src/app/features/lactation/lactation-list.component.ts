@@ -89,7 +89,7 @@ import { FechaPipe } from '../../shared/pipes/format.pipes';
                   <tr>
                     <td>
                       <span class="strong">{{ permit.employeeName }}</span>
-                      <div class="muted" style="font-size:11.5px">{{ permit.departmentName ?? '-' }}</div>
+                      <div class="muted text-sm">{{ permit.departmentName ?? '-' }}</div>
                     </td>
                     <td>{{ permit.childName ?? '-' }}</td>
                     <td class="nowrap">{{ permit.birthDate | fecha }}</td>
@@ -137,7 +137,7 @@ import { FechaPipe } from '../../shared/pipes/format.pipes';
                 }
               </select>
             </div>
-            <div class="row" style="gap:14px">
+            <div class="row gap-md">
               <div class="field flex-1">
                 <label>Fecha de parto *</label>
                 <input type="date" formControlName="birthDate" />
@@ -153,7 +153,7 @@ import { FechaPipe } from '../../shared/pipes/format.pipes';
             <label>Nombre del hijo/a</label>
             <input formControlName="childName" />
           </div>
-          <div class="row" style="gap:14px">
+          <div class="row gap-md">
             <div class="field flex-1">
               <label>Tramo 1 desde</label>
               <input type="time" formControlName="slot1Start" />
@@ -163,7 +163,7 @@ import { FechaPipe } from '../../shared/pipes/format.pipes';
               <input type="time" formControlName="slot1End" />
             </div>
           </div>
-          <div class="row" style="gap:14px">
+          <div class="row gap-md">
             <div class="field flex-1">
               <label>Tramo 2 desde</label>
               <input type="time" formControlName="slot2Start" />
@@ -177,7 +177,7 @@ import { FechaPipe } from '../../shared/pipes/format.pipes';
             <label>Notas</label>
             <textarea formControlName="notes"></textarea>
           </div>
-          <p class="muted" style="font-size:12px;margin:0">
+          <p class="muted text-sm m-0">
             Al registrar el permiso se marca la inamovilidad laboral en el perfil de la empleada. Es un
             dato informativo para RRHH: no bloquea acciones por si solo.
           </p>
@@ -189,34 +189,7 @@ import { FechaPipe } from '../../shared/pipes/format.pipes';
       </app-modal>
     }
   `,
-  styles: [
-    `
-      .stack {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-      }
-      .alerts {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        font-size: 13px;
-      }
-      .alerts li {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-      .warn {
-        color: var(--warn-700);
-        font-weight: 600;
-      }
-    `,
-  ],
+  styleUrl: './lactation-list.component.scss',
 })
 export class LactationListComponent implements OnInit {
   private readonly api = inject(ApiService);

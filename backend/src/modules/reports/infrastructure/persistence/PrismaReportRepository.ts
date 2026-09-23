@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../../../shared/infrastructure/database/prisma';
-import { endOfDay, startOfDay } from '../../../../shared/domain/dates';
+import { endOfDay, startOfDay, toDateOnlyString } from '../../../../shared/domain/dates';
 import { round2 } from '../../../../shared/domain/money';
 import {
   DashboardCounters,
@@ -71,14 +71,17 @@ export class PrismaReportRepository implements ReportRepository {
           status: { not: 'CANCELLED' },
         },
       }),
-      prisma.attendanceRecord.count({
-        where: {
-          ...employeeFilter,
-          type: 'CHECK_IN',
-          lateMinutes: { gt: 0 },
-          timestamp: { gte: startOfDay(from), lte: endOfDay(to) },
-        },
-      }),
+      prisma.attendanceRecord
+        .findMany({
+          where: {
+            employee: scope,
+            type: 'CHECK_IN',
+            lateMinutes: { gt: 0 },
+            timestamp: { gte: startOfDay(from), lte: endOfDay(to) },
+          },
+          select: { employeeId: true, timestamp: true },
+        })
+        .then((rows) => new Set(rows.map((r) => `${r.employeeId}:${toDateOnlyString(r.timestamp)}`)).size),
       prisma.attendanceJustification.count({ where: { ...employeeFilter, status: 'PENDING' } }),
       prisma.attendanceJustification.count({
         where: {

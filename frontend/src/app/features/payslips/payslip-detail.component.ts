@@ -107,7 +107,7 @@ const MONTHS = [
           <strong>{{ p.netPay | bs }}</strong>
         </section>
 
-        <p class="muted" style="font-size:12px">
+        <p class="muted text-sm">
           El aporte laboral a la AFP y el RC-IVA se calculan con los parametros legales vigentes en
           el periodo de la boleta, que quedan guardados junto al documento para poder reconstruir el
           calculo en cualquier momento.
@@ -126,59 +126,7 @@ const MONTHS = [
       </app-modal>
     }
   `,
-  styles: [
-    `
-      dl {
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      dl > div {
-        display: flex;
-        justify-content: space-between;
-        font-size: 13px;
-      }
-      dt {
-        color: var(--ink-500);
-      }
-      dd {
-        margin: 0;
-      }
-      table.data {
-        min-width: 0;
-      }
-      tr.total td {
-        background: var(--brand-50);
-      }
-      .net {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-        padding: 18px 24px;
-        border-radius: var(--radius-lg);
-        background: linear-gradient(120deg, var(--brand-800), var(--brand-600));
-        color: #fff;
-      }
-      .net span {
-        font-size: 13px;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-      }
-      .net strong {
-        font-size: 27px;
-        color: #fff;
-      }
-      .pdf-frame {
-        width: 100%;
-        height: 68vh;
-        border: 0;
-        border-radius: 8px;
-        background: var(--ink-100);
-      }
-    `,
-  ],
+  styleUrl: './payslip-detail.component.scss',
 })
 export class PayslipDetailComponent implements OnInit, OnDestroy {
   private readonly api = inject(ApiService);

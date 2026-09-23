@@ -1,0 +1,12 @@
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+td.yes {
+  color: var(--ok-700);
+  font-weight: 600;
+}
+td.no {
+  color: var(--ink-300);
+}

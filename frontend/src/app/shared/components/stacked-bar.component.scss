@@ -1,0 +1,39 @@
+.stacked-track {
+  display: flex;
+  height: 28px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--ink-100);
+  gap: 2px;
+}
+.stacked-fill {
+  height: 100%;
+  min-width: 3px;
+  transition: width 0.4s ease;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  margin-top: 14px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+}
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex: none;
+}
+.legend-label {
+  color: var(--ink-700);
+}
+.legend-value {
+  font-weight: 600;
+  color: var(--ink-900);
+  font-variant-numeric: tabular-nums;
+}

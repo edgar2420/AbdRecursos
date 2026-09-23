@@ -1,0 +1,41 @@
+.upload {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-end;
+}
+.upload .field {
+  min-width: 200px;
+}
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+}
+.summary > div {
+  display: flex;
+  flex-direction: column;
+}
+.summary span {
+  font-size: 12px;
+}
+.summary strong {
+  font-size: 18px;
+}
+tr.bad td {
+  background: #fff7f7;
+}
+.preview-data {
+  max-width: 420px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.col-fila {
+  width: 64px;
+}
+.col-estado {
+  width: 110px;
+}

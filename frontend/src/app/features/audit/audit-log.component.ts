@@ -66,25 +66,7 @@ import { FechaPipe } from '../../shared/pipes/format.pipes';
       </app-card>
     </div>
   `,
-  styles: [
-    `
-      .filters {
-        display: flex;
-        gap: 12px;
-        padding: 16px 18px;
-        border-bottom: 1px solid var(--ink-200);
-      }
-      .filters .field {
-        min-width: 220px;
-      }
-      .detalle {
-        max-width: 360px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-    `,
-  ],
+  styleUrl: './audit-log.component.scss',
 })
 export class AuditLogComponent implements OnInit {
   private readonly api = inject(ApiService);

@@ -96,14 +96,14 @@ import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../s
 
         @if (balance(); as bal) {
           <app-card heading="Saldo de vacaciones">
-            <div class="row" style="gap:34px">
+            <div class="row gap-xl">
               <div><span class="muted">Antiguedad</span><strong>{{ bal.yearsOfService }} años</strong></div>
               <div><span class="muted">Le corresponden</span><strong>{{ bal.entitledDays }} dias</strong></div>
               <div><span class="muted">Tomados</span><strong>{{ bal.takenDays }} dias</strong></div>
               <div><span class="muted">En tramite</span><strong>{{ bal.pendingDays }} dias</strong></div>
               <div>
                 <span class="muted">Disponibles</span>
-                <strong style="color:var(--brand-700)">{{ bal.availableDays }} dias</strong>
+                <strong class="text-brand">{{ bal.availableDays }} dias</strong>
               </div>
             </div>
           </app-card>
@@ -166,39 +166,7 @@ import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../s
       </app-modal>
     }
   `,
-  styles: [
-    `
-      dl {
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 9px;
-      }
-      dl > div {
-        display: flex;
-        justify-content: space-between;
-        gap: 14px;
-        font-size: 13px;
-      }
-      dt {
-        color: var(--ink-500);
-      }
-      dd {
-        margin: 0;
-        text-align: right;
-      }
-      .row > div {
-        display: flex;
-        flex-direction: column;
-      }
-      .row > div span {
-        font-size: 11.5px;
-      }
-      .row > div strong {
-        font-size: 17px;
-      }
-    `,
-  ],
+  styleUrl: './employee-detail.component.scss',
 })
 export class EmployeeDetailComponent implements OnInit {
   private readonly api = inject(ApiService);

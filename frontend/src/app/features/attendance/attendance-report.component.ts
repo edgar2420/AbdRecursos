@@ -70,7 +70,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
             <select [value]="departmentId()" (change)="departmentId.set($any($event.target).value)">
               <option value="">Todos</option>
               @for (dep of departments(); track dep.id) {
-                <option [value]="dep.id">{{ dep.name }}</option>
+                <option [value]="dep.id" [selected]="dep.id === departmentId()">{{ dep.name }}</option>
               }
             </select>
           </div>
@@ -107,7 +107,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
                   <tr>
                     <td>
                       <span class="strong">{{ row.employeeName }}</span>
-                      <div class="muted" style="font-size:11.5px">{{ row.employeeCode }}</div>
+                      <div class="muted text-sm">{{ row.employeeCode }}</div>
                     </td>
                     <td>{{ row.departmentName ?? '-' }}</td>
                     <td class="muted">{{ row.scheduleName ?? 'Sin horario' }}</td>
@@ -173,56 +173,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
       </app-card>
     </div>
   `,
-  styles: [
-    `
-      .filters {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: flex-end;
-        padding: 16px 18px;
-        border-bottom: 1px solid var(--ink-200);
-      }
-      .filters .field {
-        min-width: 160px;
-      }
-      .warn {
-        color: var(--warn-700);
-        font-weight: 600;
-      }
-      .danger {
-        color: var(--danger-700);
-        font-weight: 600;
-      }
-      .btn-export {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 16px;
-        font-size: 13.5px;
-        font-weight: 600;
-        border-radius: var(--radius-md, 10px);
-        border: 1px solid transparent;
-        cursor: pointer;
-      }
-      .btn-excel {
-        color: #1b7a3d;
-        background: #e6f6ec;
-        border-color: #bfe8cd;
-      }
-      .btn-excel:hover {
-        background: #d7f0e0;
-      }
-      .btn-pdf {
-        color: #b3261e;
-        background: #fbe9e8;
-        border-color: #f3c6c3;
-      }
-      .btn-pdf:hover {
-        background: #f7dad8;
-      }
-    `,
-  ],
+  styleUrl: './attendance-report.component.scss',
 })
 export class AttendanceReportComponent implements OnInit {
   private readonly api = inject(ApiService);

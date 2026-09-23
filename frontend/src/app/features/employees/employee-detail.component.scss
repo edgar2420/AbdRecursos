@@ -1,0 +1,29 @@
+dl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  font-size: 13px;
+}
+dt {
+  color: var(--ink-500);
+}
+dd {
+  margin: 0;
+  text-align: right;
+}
+.row > div {
+  display: flex;
+  flex-direction: column;
+}
+.row > div span {
+  font-size: 12px;
+}
+.row > div strong {
+  font-size: 17px;
+}

@@ -1,0 +1,36 @@
+.bar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bar-row {
+  display: grid;
+  grid-template-columns: 132px 1fr 34px;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+}
+.bar-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ink-700);
+}
+.bar-track {
+  height: 10px;
+  background: var(--ink-100);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--brand-700), var(--brand-500));
+  transition: width 0.4s ease;
+}
+.bar-value {
+  text-align: right;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-900);
+}

@@ -41,17 +41,17 @@ const ROLES: Role[] = ['EMPLOYEE', 'SUPERVISOR', 'HR', 'ADMIN'];
       </app-page-header>
 
       <app-card>
-        <div class="row" style="align-items:flex-end;gap:12px">
+        <div class="row items-end">
           <div class="field flex-1">
             <label>Buscar por correo</label>
             <input type="search" [value]="search()" (input)="setSearch($any($event.target).value)" />
           </div>
           <div class="field">
             <label>Rol</label>
-            <select [value]="role()" (change)="setRole($any($event.target).value)">
+            <select (change)="setRole($any($event.target).value)">
               <option value="">Todos</option>
               @for (item of roles; track item) {
-                <option [value]="item">{{ item | etiqueta }}</option>
+                <option [value]="item" [selected]="item === role()">{{ item | etiqueta }}</option>
               }
             </select>
           </div>
@@ -82,14 +82,13 @@ const ROLES: Role[] = ['EMPLOYEE', 'SUPERVISOR', 'HR', 'ADMIN'];
                     <td class="strong">{{ user.email }}</td>
                     <td class="muted">{{ user.employeeName ?? 'Sin vincular' }}</td>
                     <td>
-                      <select
-                        [value]="user.role"
+                      <select class="select-compact"
                         (change)="changeRole(user, $any($event.target).value)"
                         [disabled]="user.id === auth.user()?.id"
-                        style="width:auto;height:31px"
+                        [attr.aria-label]="'Rol de ' + user.email"
                       >
                         @for (item of roles; track item) {
-                          <option [value]="item">{{ item | etiqueta }}</option>
+                          <option [value]="item" [selected]="item === user.role">{{ item | etiqueta }}</option>
                         }
                       </select>
                     </td>
@@ -155,7 +154,7 @@ const ROLES: Role[] = ['EMPLOYEE', 'SUPERVISOR', 'HR', 'ADMIN'];
           <div class="field">
             <label>Contraseña inicial *</label>
             <div class="password-field">
-              <input [type]="verNueva() ? 'text' : 'password'" formControlName="password" />
+              <input [type]="verNueva() ? 'text' : 'password'" formControlName="password" maxlength="8" autocomplete="new-password" />
               <app-eye-toggle [visible]="verNueva()" (toggled)="verNueva.set($event)" />
             </div>
             <span class="hint">Entre 4 y 8 caracteres. El empleado debera cambiarla en su primer ingreso.</span>
@@ -195,6 +194,8 @@ const ROLES: Role[] = ['EMPLOYEE', 'SUPERVISOR', 'HR', 'ADMIN'];
               [type]="verReset() ? 'text' : 'password'"
               [value]="newPassword()"
               (input)="newPassword.set($any($event.target).value)"
+              maxlength="8"
+              autocomplete="new-password"
             />
             <app-eye-toggle [visible]="verReset()" (toggled)="verReset.set($event)" />
           </div>
@@ -207,22 +208,7 @@ const ROLES: Role[] = ['EMPLOYEE', 'SUPERVISOR', 'HR', 'ADMIN'];
       </app-modal>
     }
   `,
-  styles: [
-    `
-      .stack {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-      }
-      td.yes {
-        color: var(--ok-700);
-        font-weight: 600;
-      }
-      td.no {
-        color: var(--ink-300);
-      }
-    `,
-  ],
+  styleUrl: './user-list.component.scss',
 })
 export class UserListComponent implements OnInit {
   private readonly api = inject(ApiService);
@@ -394,8 +380,9 @@ export class UserListComponent implements OnInit {
   }
 
   resetPassword(user: SystemUser): void {
-    if (this.newPassword().length < 10) {
-      this.toast.warn('Contraseña muy corta', 'Debe tener al menos 10 caracteres');
+    const largo = this.newPassword().length;
+    if (largo < 4 || largo > 8) {
+      this.toast.warn('Contraseña invalida', `Debe tener entre 4 y 8 caracteres (ahora tiene ${largo})`);
       return;
     }
     this.api.post(`/auth/users/${user.id}/reset-password`, { newPassword: this.newPassword() }).subscribe({

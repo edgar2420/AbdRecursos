@@ -109,77 +109,7 @@ export function diferenciaEnDias(desde: Date, hasta: Date): number {
       </app-card>
     }
   `,
-  styles: [
-    `
-      .contadores {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 26px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid var(--ink-100);
-      }
-      .contador {
-        display: flex;
-        flex-direction: column;
-        gap: 1px;
-      }
-      .contador strong {
-        font-size: 24px;
-        line-height: 1.1;
-        font-variant-numeric: tabular-nums;
-      }
-      .contador span {
-        font-size: 11.5px;
-        color: var(--ink-500);
-      }
-      .contador.alerta strong {
-        color: var(--warn-700);
-      }
-      .bloque {
-        margin: 14px 0 6px;
-        font-size: 11.5px;
-        font-weight: 600;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        color: var(--ink-500);
-      }
-      .lista {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      .lista li {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-        flex-wrap: wrap;
-        font-size: 12.5px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid var(--ink-100);
-      }
-      .lista li:last-child {
-        border-bottom: 0;
-        padding-bottom: 0;
-      }
-      .quien {
-        display: flex;
-        flex-direction: column;
-        gap: 1px;
-      }
-      .quien .muted {
-        font-size: 11px;
-      }
-      .cuando {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-    `,
-  ],
+  styleUrl: './vacation-returns.component.scss',
 })
 export class VacationReturnsComponent implements OnInit, OnDestroy {
   private readonly api = inject(ApiService);

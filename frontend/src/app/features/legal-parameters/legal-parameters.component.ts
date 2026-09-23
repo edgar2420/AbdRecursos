@@ -60,7 +60,7 @@ const GROUPS: { title: string; prefix: string[]; note: string }[] = [
       </app-page-header>
 
       <app-card>
-        <p class="muted" style="margin:0;font-size:12.5px">
+        <p class="muted text-md m-0">
           Cada cambio crea una <strong>nueva version con fecha de vigencia</strong>: las boletas ya
           emitidas conservan los valores con los que fueron calculadas. Verifique cada gestion el
           salario minimo nacional y la tasa de aporte laboral vigente.
@@ -181,21 +181,7 @@ const GROUPS: { title: string; prefix: string[]; note: string }[] = [
       </app-modal>
     }
   `,
-  styles: [
-    `
-      tr.historic td {
-        color: var(--ink-500);
-        background: var(--ink-50);
-      }
-      .group-note {
-        margin: 0;
-        padding: 10px 16px;
-        font-size: 12px;
-        color: var(--ink-500);
-        border-top: 1px solid var(--ink-200);
-      }
-    `,
-  ],
+  styleUrl: './legal-parameters.component.scss',
 })
 export class LegalParametersComponent implements OnInit {
   private readonly api = inject(ApiService);

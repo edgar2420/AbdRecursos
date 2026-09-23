@@ -53,7 +53,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
               <select [value]="hrEmployeeId()" (change)="onHrEmployeeChange($any($event.target).value)">
                 <option value="">Seleccione...</option>
                 @for (option of options(); track option.id) {
-                  <option [value]="option.id">{{ option.label }}</option>
+                  <option [value]="option.id" [selected]="option.id === hrEmployeeId()">{{ option.label }}</option>
                 }
               </select>
             </div>
@@ -209,72 +209,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
       </app-modal>
     }
   `,
-  styles: [
-    `
-      .clock-card {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 22px;
-        padding: 26px 28px;
-        border-radius: var(--radius-lg);
-        background: linear-gradient(120deg, var(--brand-800), var(--brand-600));
-        color: #fff;
-        box-shadow: var(--shadow-md);
-      }
-      .clock {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
-      .clock .date {
-        font-size: 12.5px;
-        opacity: 0.85;
-        text-transform: capitalize;
-      }
-      .clock strong {
-        font-size: 44px;
-        color: #fff;
-        letter-spacing: -0.03em;
-        font-variant-numeric: tabular-nums;
-      }
-      .clock .muted {
-        color: #cfeefb;
-        font-size: 12.5px;
-      }
-      .actions {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-      .late {
-        color: var(--danger-700);
-        font-weight: 600;
-      }
-      .hr-form {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: flex-end;
-      }
-      .hr-form .field {
-        min-width: 220px;
-      }
-      .hr-actions {
-        display: flex;
-        gap: 10px;
-      }
-      @media (max-width: 620px) {
-        .actions {
-          width: 100%;
-        }
-        .actions .btn {
-          flex: 1;
-        }
-      }
-    `,
-  ],
+  styleUrl: './attendance-clock.component.scss',
 })
 export class AttendanceClockComponent implements OnInit, OnDestroy {
   private readonly api = inject(ApiService);

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { apiErrorMessage } from '../../core/interceptors/auth.interceptor';
@@ -28,7 +29,10 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
           </div>
 
           <h1>Ingrese a su cuenta</h1>
-          <p class="muted">Use su codigo de empleado seguido de su apellido, tal como se lo asigno Recursos Humanos.</p>
+          <p class="muted">
+            Escriba su codigo de empleado seguido de sus apellidos completos. No importan los espacios, guiones,
+            tildes ni mayusculas.
+          </p>
 
           <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
             <div class="field">
@@ -43,7 +47,7 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
                   type="text"
                   formControlName="username"
                   autocomplete="username"
-                  placeholder="EMP0001Rojas"
+                  placeholder="Ej.: ABD-0000 Perez Lopez"
                 />
               </div>
               @if (form.controls.username.touched && form.controls.username.invalid) {
@@ -73,7 +77,7 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
             </div>
 
             @if (error()) {
-              <div class="alert">
+              <div class="alert" role="alert">
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="9" />
                   <path d="M12 8v5M12 16h.01" />
@@ -84,7 +88,7 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
 
             <button class="btn btn-primary btn-block" type="submit" [disabled]="loading()">
               @if (loading()) {
-                <span class="spinner" style="width:16px;height:16px;border-width:2px"></span>
+                <span class="spinner spinner-sm"></span>
               }
               {{ loading() ? 'Verificando...' : 'Ingresar' }}
             </button>
@@ -150,320 +154,7 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
       </footer>
     </div>
   `,
-  styles: [
-    `
-      .login {
-        font-family: 'Montserrat', var(--font);
-        position: relative;
-        min-height: 100vh;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 18px;
-        padding: 32px 20px;
-        background: linear-gradient(160deg, var(--brand-900) 0%, var(--brand-800) 42%, #082a38 100%);
-      }
-      .credit {
-        position: relative;
-        z-index: 1;
-        font-size: 11.5px;
-        color: rgba(224, 242, 254, 0.55);
-        text-align: center;
-      }
-      .credit strong {
-        color: rgba(224, 242, 254, 0.85);
-        font-weight: 600;
-      }
-
-      .blob {
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(60px);
-        opacity: 0.55;
-        pointer-events: none;
-      }
-      .blob-a {
-        width: 520px;
-        height: 520px;
-        top: -180px;
-        left: -140px;
-        background: radial-gradient(circle, var(--brand-500), transparent 70%);
-        animation: float-a 16s ease-in-out infinite;
-      }
-      .blob-b {
-        width: 420px;
-        height: 420px;
-        bottom: -160px;
-        right: -100px;
-        background: radial-gradient(circle, var(--brand-300), transparent 70%);
-        animation: float-b 20s ease-in-out infinite;
-      }
-      .blob-c {
-        width: 300px;
-        height: 300px;
-        top: 30%;
-        right: 12%;
-        background: radial-gradient(circle, #fde68a, transparent 72%);
-        opacity: 0.18;
-        animation: float-c 24s ease-in-out infinite;
-      }
-      @keyframes float-a {
-        0%, 100% { transform: translate(0, 0) scale(1); }
-        50% { transform: translate(40px, 30px) scale(1.08); }
-      }
-      @keyframes float-b {
-        0%, 100% { transform: translate(0, 0) scale(1); }
-        50% { transform: translate(-30px, -24px) scale(1.05); }
-      }
-      @keyframes float-c {
-        0%, 100% { transform: translate(0, 0); }
-        50% { transform: translate(-20px, 26px); }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .blob { animation: none; }
-      }
-
-      .stage {
-        position: relative;
-        z-index: 1;
-        width: 100%;
-        max-width: 940px;
-        display: flex;
-        align-items: stretch;
-        animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-      }
-      @keyframes rise {
-        from { opacity: 0; transform: translateY(18px) scale(0.98); }
-        to { opacity: 1; transform: none; }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        .stage { animation: none; }
-      }
-
-      .card {
-        position: relative;
-        z-index: 2;
-        flex: none;
-        width: min(400px, 100%);
-        margin-right: -58px;
-        background: var(--surface);
-        border-radius: 26px;
-        box-shadow: 0 26px 60px -18px rgba(3, 22, 34, 0.5);
-        padding: 44px 40px;
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        justify-content: center;
-      }
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 11px;
-        margin-bottom: 14px;
-      }
-      .brand-logo {
-        height: 42px;
-        width: auto;
-        filter: drop-shadow(0 4px 10px rgba(15, 23, 42, 0.12));
-      }
-      .brand strong {
-        display: block;
-        font-size: 16px;
-      }
-      .brand small {
-        color: var(--ink-500);
-        font-size: 11.5px;
-      }
-      h1 {
-        font-size: 22px;
-        margin-bottom: 2px;
-      }
-      form {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        margin-top: 8px;
-      }
-
-      .input-icon {
-        position: relative;
-      }
-      .input-icon > svg {
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--ink-300);
-        pointer-events: none;
-        transition: color 0.15s ease;
-        z-index: 1;
-      }
-      .input-icon input {
-        padding-left: 36px;
-      }
-      .input-icon:focus-within > svg {
-        color: var(--brand-600);
-      }
-      .input-icon .password-field {
-        position: relative;
-      }
-
-      input,
-      select {
-        transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
-      }
-      input:focus,
-      select:focus {
-        transform: translateY(-1px);
-      }
-
-      .btn-primary {
-        background: linear-gradient(135deg, var(--brand-700), var(--brand-600));
-        border: 0;
-        box-shadow: 0 10px 24px -10px rgba(8, 145, 178, 0.55);
-        transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
-      }
-      .btn-primary:hover:not(:disabled) {
-        transform: translateY(-1px);
-        box-shadow: 0 14px 28px -10px rgba(8, 145, 178, 0.6);
-        filter: brightness(1.04);
-      }
-      .btn-primary:active:not(:disabled) {
-        transform: translateY(0);
-      }
-
-      .alert {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 12px;
-        border-radius: 10px;
-        background: var(--danger-100);
-        color: var(--danger-700);
-        font-size: 12.5px;
-        font-weight: 500;
-      }
-      .alert svg {
-        flex: none;
-      }
-      .foot {
-        font-size: 11.5px;
-        margin-top: 4px;
-      }
-
-      .art {
-        position: relative;
-        flex: 1;
-        min-width: 0;
-        border-radius: 26px;
-        background: linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 55%),
-          linear-gradient(150deg, var(--brand-700), var(--brand-800) 60%, var(--brand-900));
-        color: #e0f2fe;
-        padding: 52px 48px 52px 104px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 20px;
-        overflow: hidden;
-        box-shadow: 0 26px 60px -18px rgba(3, 22, 34, 0.5);
-      }
-      .art::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px);
-        background-size: 22px 22px;
-        opacity: 0.5;
-        pointer-events: none;
-      }
-      .art-glow {
-        position: absolute;
-        width: 480px;
-        height: 480px;
-        right: -160px;
-        top: -120px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(125, 211, 252, 0.35), transparent 70%);
-        pointer-events: none;
-      }
-      .art-kicker {
-        position: relative;
-        font-size: 11.5px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--brand-300);
-      }
-      .art h2 {
-        position: relative;
-        color: #fff;
-        font-size: 30px;
-        max-width: 420px;
-        line-height: 1.24;
-        margin: 0;
-      }
-      .art-lead {
-        position: relative;
-        margin: -8px 0 0;
-        max-width: 400px;
-        font-size: 14px;
-        line-height: 1.5;
-        color: rgba(224, 242, 254, 0.82);
-      }
-
-      .feature-grid {
-        position: relative;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        max-width: 400px;
-        margin-top: 4px;
-      }
-      .feature {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 12px 14px;
-        border-radius: 14px;
-        background: rgba(255, 255, 255, 0.07);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        font-size: 13px;
-        font-weight: 500;
-        backdrop-filter: blur(2px);
-      }
-      .feature-icon {
-        flex: none;
-        display: grid;
-        place-items: center;
-        width: 32px;
-        height: 32px;
-        border-radius: 10px;
-        background: rgba(125, 211, 252, 0.16);
-        color: var(--brand-300);
-      }
-      .art-legal {
-        position: relative;
-        margin: 4px 0 0;
-        font-size: 11.5px;
-        color: rgba(224, 242, 254, 0.55);
-        max-width: 400px;
-      }
-
-      @media (max-width: 900px) {
-        .art {
-          display: none;
-        }
-        .card {
-          width: 100%;
-          margin-right: 0;
-          border-radius: 22px;
-          padding: 34px 26px;
-        }
-      }
-    `,
-  ],
+  styleUrl: './login.component.scss',
 })
 export class LoginComponent {
   private readonly fb = inject(FormBuilder);
@@ -499,10 +190,30 @@ export class LoginComponent {
         const redirect = this.route.snapshot.queryParamMap.get('redirect') ?? '/dashboard';
         void this.router.navigateByUrl(redirect);
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         this.loading.set(false);
-        this.error.set(apiErrorMessage(err, 'No se pudo iniciar sesion'));
+        this.error.set(mensajeDeLogin(err));
       },
     });
   }
+}
+
+function mensajeDeLogin(err: HttpErrorResponse): string {
+  const restantes = Number(err.headers?.get('RateLimit-Remaining'));
+  const reinicio = Number(err.headers?.get('RateLimit-Reset'));
+
+  if (err.status === 429) {
+    const minutos = Number.isFinite(reinicio) && reinicio > 0 ? Math.ceil(reinicio / 60) : 15;
+    return `Demasiados intentos fallidos. Por seguridad el acceso queda bloqueado; intente de nuevo en ${minutos} minuto${minutos === 1 ? '' : 's'}.`;
+  }
+  if (err.status === 401) {
+    const base =
+      'Usuario o contraseña incorrectos. Si aun no cambio su contraseña, use la que le entrego Recursos Humanos.';
+    if (err.headers?.has('RateLimit-Remaining') && Number.isFinite(restantes)) {
+      if (restantes === 0) return `${base} Este fue su ultimo intento: el proximo error bloqueara el acceso por unos minutos.`;
+      return `${base} Le queda${restantes === 1 ? '' : 'n'} ${restantes} intento${restantes === 1 ? '' : 's'} antes de un bloqueo temporal.`;
+    }
+    return base;
+  }
+  return apiErrorMessage(err, 'No se pudo iniciar sesion');
 }

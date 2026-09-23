@@ -1,0 +1,28 @@
+:host {
+  display: inline-block;
+  line-height: 0;
+}
+
+.base {
+  stroke: var(--ink-200);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.area {
+  fill: var(--chart-serie-bg);
+}
+
+.linea {
+  fill: none;
+  stroke: var(--chart-serie);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.fin {
+  fill: var(--chart-serie);
+  stroke: var(--surface);
+  stroke-width: 1.5;
+}

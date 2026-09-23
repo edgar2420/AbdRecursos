@@ -1,0 +1,70 @@
+table.calendar {
+  border-collapse: collapse;
+  font-size: 11px;
+  width: 100%;
+}
+table.calendar th,
+table.calendar td {
+  border: 1px solid var(--ink-100);
+  text-align: center;
+  min-width: 24px;
+  height: 30px;
+}
+table.calendar thead th {
+  background: var(--brand-50);
+  color: var(--brand-800);
+  font-weight: 700;
+}
+.sticky {
+  position: sticky;
+  left: 0;
+  background: var(--surface);
+  text-align: left !important;
+  min-width: 190px;
+  padding: 6px 10px;
+  z-index: 2;
+}
+thead .sticky {
+  background: var(--brand-50);
+}
+.weekend {
+  background: var(--ink-50);
+}
+td.on {
+  background: var(--brand-600);
+}
+td.on.pending {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--brand-300),
+    var(--brand-300) 4px,
+    var(--brand-100) 4px,
+    var(--brand-100) 8px
+  );
+}
+.legend {
+  display: flex;
+  gap: 18px;
+  padding: 12px 16px;
+  font-size: 12px;
+  color: var(--ink-500);
+  border-top: 1px solid var(--ink-200);
+}
+.dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 5px;
+  vertical-align: -2px;
+}
+.dot.on {
+  background: var(--brand-600);
+}
+.dot.pending {
+  background: var(--brand-300);
+}
+.dot.weekend {
+  background: var(--ink-100);
+  border: 1px solid var(--ink-200);
+}

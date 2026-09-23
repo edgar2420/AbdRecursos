@@ -24,7 +24,11 @@ function toDomainWithSecret(row: Row): UserWithSecret {
 }
 
 function normalizeLoginId(value: string): string {
-  return value.trim().toLowerCase().replace(/\s+/g, '');
+  return value
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[\s\-_.]+/g, '');
 }
 
 export class PrismaUserRepository implements UserRepository {

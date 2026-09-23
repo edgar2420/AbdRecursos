@@ -35,46 +35,7 @@ export interface BarListRow {
       }
     </div>
   `,
-  styles: [
-    `
-      .bar-list {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      .bar-row {
-        display: grid;
-        grid-template-columns: 132px 1fr 34px;
-        align-items: center;
-        gap: 10px;
-        font-size: 12.5px;
-      }
-      .bar-label {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        color: var(--ink-700);
-      }
-      .bar-track {
-        height: 10px;
-        background: var(--ink-100);
-        border-radius: 999px;
-        overflow: hidden;
-      }
-      .bar-fill {
-        height: 100%;
-        border-radius: 999px;
-        background: linear-gradient(90deg, var(--brand-700), var(--brand-500));
-        transition: width 0.4s ease;
-      }
-      .bar-value {
-        text-align: right;
-        font-weight: 600;
-        font-variant-numeric: tabular-nums;
-        color: var(--ink-900);
-      }
-    `,
-  ],
+  styleUrl: './bar-list.component.scss',
 })
 export class BarListComponent {
   @Input({ required: true }) set rows(value: BarListRow[]) {
@@ -130,49 +91,7 @@ export interface StackedSegment {
       </div>
     </div>
   `,
-  styles: [
-    `
-      .stacked-track {
-        display: flex;
-        height: 28px;
-        border-radius: 8px;
-        overflow: hidden;
-        background: var(--ink-100);
-        gap: 2px;
-      }
-      .stacked-fill {
-        height: 100%;
-        min-width: 3px;
-        transition: width 0.4s ease;
-      }
-      .legend {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px 18px;
-        margin-top: 14px;
-      }
-      .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 12.5px;
-      }
-      .dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 999px;
-        flex: none;
-      }
-      .legend-label {
-        color: var(--ink-700);
-      }
-      .legend-value {
-        font-weight: 600;
-        color: var(--ink-900);
-        font-variant-numeric: tabular-nums;
-      }
-    `,
-  ],
+  styleUrl: './stacked-bar.component.scss',
 })
 export class StackedBarComponent {
   @Input({ required: true }) set segments(value: StackedSegment[]) {
@@ -248,90 +167,7 @@ export interface DonutSlice {
       </div>
     </div>
   `,
-  styles: [
-    `
-      .donut-wrap {
-        display: flex;
-        align-items: center;
-        gap: 22px;
-        flex-wrap: wrap;
-      }
-      .donut {
-        width: 148px;
-        height: 148px;
-        flex: none;
-      }
-      .donut-slice {
-        transition: stroke-dasharray 0.4s ease, transform 0.15s ease, opacity 0.15s ease, stroke-width 0.15s ease;
-        transform-box: fill-box;
-        transform-origin: center;
-        cursor: pointer;
-      }
-      .donut-slice.hovered {
-        transform: translate(var(--tx), var(--ty));
-        stroke-width: 20;
-      }
-      .donut-slice.dimmed {
-        opacity: 0.35;
-      }
-      .legend-item {
-        transition: opacity 0.15s ease, background 0.15s ease;
-        border-radius: 6px;
-        padding: 3px 4px;
-        margin: -3px -4px;
-        cursor: default;
-      }
-      .legend-item.hovered {
-        background: var(--ink-100);
-      }
-      .legend-item.dimmed {
-        opacity: 0.45;
-      }
-      .donut-total {
-        font-size: 22px;
-        font-weight: 700;
-        fill: var(--ink-900);
-      }
-      .donut-caption {
-        font-size: 8.5px;
-        fill: var(--ink-500);
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-      }
-      .legend {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        min-width: 160px;
-        flex: 1;
-      }
-      .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 7px;
-        font-size: 12.5px;
-      }
-      .dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 999px;
-        flex: none;
-      }
-      .legend-label {
-        color: var(--ink-700);
-        flex: 1;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .legend-value {
-        font-weight: 600;
-        color: var(--ink-900);
-        font-variant-numeric: tabular-nums;
-        white-space: nowrap;
-      }
-    `,
-  ],
+  styleUrl: './donut-chart.component.scss',
 })
 export class DonutChartComponent {
   @Input() centerLabel = 'Total';
@@ -406,61 +242,7 @@ export class DonutChartComponent {
       }
     </div>
   `,
-  styles: [
-    `
-      .meter {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-      .meter-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-      .meter-label {
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--ink-500);
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-      }
-      .meter-state {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 11.5px;
-        font-weight: 600;
-      }
-      .meter-value {
-        font-size: 26px;
-        font-weight: 700;
-        color: var(--ink-900);
-      }
-      .meter-unit {
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--ink-500);
-        margin-left: 2px;
-      }
-      .meter-track {
-        height: 8px;
-        background: var(--ink-100);
-        border-radius: 999px;
-        overflow: hidden;
-      }
-      .meter-fill {
-        height: 100%;
-        border-radius: 999px;
-        transition: width 0.4s ease;
-      }
-      .meter-hint {
-        margin: 0;
-        font-size: 11.5px;
-        color: var(--ink-500);
-      }
-    `,
-  ],
+  styleUrl: './meter.component.scss',
 })
 export class MeterComponent {
   @Input({ required: true }) label = '';

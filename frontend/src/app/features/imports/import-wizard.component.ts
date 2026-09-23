@@ -60,23 +60,23 @@ type ImportType = 'EMPLOYEES' | 'ATTENDANCE' | 'SCHEDULES';
           <div class="summary">
             <div><span class="muted">Archivo</span><strong>{{ prev.fileName }}</strong></div>
             <div><span class="muted">Filas leidas</span><strong>{{ prev.totalRows }}</strong></div>
-            <div><span class="muted">Validas</span><strong style="color:var(--ok-700)">{{ prev.validRows }}</strong></div>
-            <div><span class="muted">Con error</span><strong style="color:var(--danger-700)">{{ prev.errorRows }}</strong></div>
+            <div><span class="muted">Validas</span><strong class="text-ok">{{ prev.validRows }}</strong></div>
+            <div><span class="muted">Con error</span><strong class="text-danger">{{ prev.errorRows }}</strong></div>
           </div>
 
           @if (prev.errorRows > 0) {
-            <p class="muted" style="font-size:12.5px">
+            <p class="muted text-md">
               Solo se procesaran las filas validas. Corrija las filas con error en el archivo y vuelva a
               subirlo si necesita cargarlas.
             </p>
           }
 
-          <div class="table-wrap" style="margin-top:12px">
+          <div class="table-wrap mt-md">
             <table class="data">
               <thead>
                 <tr>
-                  <th style="width:64px">Fila</th>
-                  <th style="width:110px">Estado</th>
+                  <th class="col-fila">Fila</th>
+                  <th class="col-estado">Estado</th>
                   <th>Errores</th>
                   <th>Datos</th>
                 </tr>
@@ -100,8 +100,8 @@ type ImportType = 'EMPLOYEES' | 'ATTENDANCE' | 'SCHEDULES';
         </app-card>
 
         <app-card heading="3. Confirmar">
-          <div class="row" style="justify-content:space-between">
-            <p class="muted" style="margin:0;font-size:12.5px">
+          <div class="row justify-between">
+            <p class="muted text-md m-0">
               Se crearan {{ prev.validRows }} registro(s). Esta accion queda en la auditoria.
             </p>
             <div class="row">
@@ -160,44 +160,7 @@ type ImportType = 'EMPLOYEES' | 'ATTENDANCE' | 'SCHEDULES';
       </app-card>
     </div>
   `,
-  styles: [
-    `
-      .upload {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 14px;
-        align-items: flex-end;
-      }
-      .upload .field {
-        min-width: 200px;
-      }
-      .summary {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 28px;
-      }
-      .summary > div {
-        display: flex;
-        flex-direction: column;
-      }
-      .summary span {
-        font-size: 11.5px;
-      }
-      .summary strong {
-        font-size: 18px;
-      }
-      tr.bad td {
-        background: #fff7f7;
-      }
-      .preview-data {
-        max-width: 420px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-size: 11.5px;
-      }
-    `,
-  ],
+  styleUrl: './import-wizard.component.scss',
 })
 export class ImportWizardComponent implements OnInit {
   private readonly api = inject(ApiService);

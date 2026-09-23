@@ -53,7 +53,7 @@ const MONTHS = [
             <label>Gestion</label>
             <select [value]="filters().periodYear" (change)="setFilter('periodYear', $any($event.target).value)">
               @for (year of years; track year) {
-                <option [value]="year">{{ year }}</option>
+                <option [value]="year" [selected]="year == filters().periodYear">{{ year }}</option>
               }
             </select>
           </div>
@@ -62,7 +62,7 @@ const MONTHS = [
             <select [value]="filters().periodMonth" (change)="setFilter('periodMonth', $any($event.target).value)">
               <option value="">Todos</option>
               @for (month of months; track month.value) {
-                <option [value]="month.value">{{ month.label }}</option>
+                <option [value]="month.value" [selected]="month.value == filters().periodMonth">{{ month.label }}</option>
               }
             </select>
           </div>
@@ -115,7 +115,7 @@ const MONTHS = [
               <thead>
                 <tr>
                   @if (auth.isHr()) {
-                    <th style="width:34px">
+                    <th class="col-check">
                       <input type="checkbox" [checked]="allSelected()" (change)="toggleAll($any($event.target).checked)" />
                     </th>
                   }
@@ -148,12 +148,12 @@ const MONTHS = [
                     @if (auth.isHr()) {
                       <td>
                         {{ payslip.employeeName }}
-                        <div class="muted" style="font-size:11.5px">{{ payslip.employeeCode }}</div>
+                        <div class="muted text-sm">{{ payslip.employeeCode }}</div>
                       </td>
                     }
                     <td class="num">{{ payslip.workedDays }}</td>
                     <td class="num">{{ payslip.totalEarnings | bs }}</td>
-                    <td class="num" style="color:var(--danger-700)">{{ payslip.totalDeductions | bs }}</td>
+                    <td class="num text-danger">{{ payslip.totalDeductions | bs }}</td>
                     <td class="num strong">{{ payslip.netPay | bs }}</td>
                     <td><span [class]="payslip.status | badgeClase">{{ payslip.status | etiqueta }}</span></td>
                     <td class="nowrap text-right">
@@ -173,12 +173,12 @@ const MONTHS = [
 
     @if (generateOpen()) {
       <app-modal title="Generar boletas del periodo" (closed)="generateOpen.set(false)">
-        <div class="row" style="gap:14px">
+        <div class="row gap-md">
           <div class="field flex-1">
             <label>Gestion</label>
             <select [value]="genYear()" (change)="genYear.set(+$any($event.target).value)">
               @for (year of years; track year) {
-                <option [value]="year">{{ year }}</option>
+                <option [value]="year" [selected]="year === genYear()">{{ year }}</option>
               }
             </select>
           </div>
@@ -186,16 +186,16 @@ const MONTHS = [
             <label>Mes</label>
             <select [value]="genMonth()" (change)="genMonth.set(+$any($event.target).value)">
               @for (month of months; track month.value) {
-                <option [value]="month.value">{{ month.label }}</option>
+                <option [value]="month.value" [selected]="month.value === genMonth()">{{ month.label }}</option>
               }
             </select>
           </div>
         </div>
-        <label class="row" style="gap:8px;margin-top:12px">
+        <label class="row gap-sm mt-md">
           <input type="checkbox" [checked]="includeAguinaldo()" (change)="includeAguinaldo.set($any($event.target).checked)" />
           <span>Incluir aguinaldo en esta planilla</span>
         </label>
-        <p class="muted" style="font-size:12px">
+        <p class="muted text-sm">
           Se generan boletas en borrador para el personal activo. Las que ya fueron emitidas no se
           sobrescriben. El calculo usa los parametros legales vigentes en el periodo (AFP, RC-IVA,
           salario minimo) y queda registrado junto a la boleta.
@@ -249,43 +249,7 @@ const MONTHS = [
       </app-modal>
     }
   `,
-  styles: [
-    `
-      .filters {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: flex-end;
-      }
-      .filters .field {
-        min-width: 150px;
-      }
-      .bulk {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 12px 16px;
-        border-bottom: 1px solid var(--ink-200);
-        font-size: 12.5px;
-        font-weight: 500;
-      }
-      .bulk.activa {
-        background: var(--brand-50);
-      }
-      .bulk .row {
-        display: flex;
-        gap: 8px;
-      }
-      .pdf-frame {
-        width: 100%;
-        height: 68vh;
-        border: 0;
-        border-radius: 8px;
-        background: var(--ink-100);
-      }
-    `,
-  ],
+  styleUrl: './payslip-list.component.scss',
 })
 export class PayslipListComponent implements OnInit, OnDestroy {
   private readonly api = inject(ApiService);

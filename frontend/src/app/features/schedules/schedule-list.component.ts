@@ -149,7 +149,7 @@ const WEEK_DAYS = [
             <label>Nombre *</label>
             <input formControlName="name" placeholder="Administrativo 08:30-17:00" />
           </div>
-          <div class="row" style="gap:14px">
+          <div class="row gap-md">
             <div class="field flex-1">
               <label>Hora de entrada *</label>
               <input type="time" formControlName="startTime" />
@@ -159,7 +159,7 @@ const WEEK_DAYS = [
               <input type="time" formControlName="endTime" />
             </div>
           </div>
-          <div class="row" style="gap:14px">
+          <div class="row gap-md">
             <div class="field flex-1">
               <label>Tolerancia (min)</label>
               <input type="number" min="0" max="120" formControlName="toleranceMinutes" />
@@ -184,7 +184,7 @@ const WEEK_DAYS = [
               }
             </div>
           </div>
-          <label class="row" style="gap:8px">
+          <label class="row gap-sm">
             <input type="checkbox" formControlName="isNightShift" />
             <span>Turno nocturno (la salida cae al dia siguiente)</span>
           </label>
@@ -203,7 +203,7 @@ const WEEK_DAYS = [
           <select [value]="assignScheduleId()" (change)="assignScheduleId.set($any($event.target).value)">
             <option value="">Seleccione...</option>
             @for (schedule of schedules(); track schedule.id) {
-              <option [value]="schedule.id">{{ schedule.name }}</option>
+              <option [value]="schedule.id" [selected]="schedule.id === assignScheduleId()">{{ schedule.name }}</option>
             }
           </select>
         </div>
@@ -216,7 +216,7 @@ const WEEK_DAYS = [
           </select>
           <span class="hint">Use Ctrl (o Cmd) para seleccionar varios empleados.</span>
         </div>
-        <div class="row" style="gap:14px">
+        <div class="row gap-md">
           <div class="field flex-1">
             <label>Vigente desde *</label>
             <input type="date" [value]="assignFrom()" (change)="assignFrom.set($any($event.target).value)" />
@@ -233,41 +233,7 @@ const WEEK_DAYS = [
       </app-modal>
     }
   `,
-  styles: [
-    `
-      .days {
-        display: flex;
-        gap: 4px;
-      }
-      .day {
-        padding: 3px 7px;
-        border-radius: 6px;
-        background: var(--ink-100);
-        color: var(--ink-500);
-        font-size: 11px;
-        font-weight: 600;
-        border: 1px solid transparent;
-      }
-      .day.on {
-        background: var(--brand-100);
-        color: var(--brand-800);
-      }
-      .days.selectable .day {
-        cursor: pointer;
-        padding: 7px 12px;
-        font-size: 12px;
-      }
-      .stack {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-      }
-      select[multiple] {
-        height: auto;
-        padding: 8px;
-      }
-    `,
-  ],
+  styleUrl: './schedule-list.component.scss',
 })
 export class ScheduleListComponent implements OnInit {
   private readonly api = inject(ApiService);

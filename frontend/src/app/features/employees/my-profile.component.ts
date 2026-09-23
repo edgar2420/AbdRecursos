@@ -127,6 +127,7 @@ import { BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
                     [type]="verNueva() ? 'text' : 'password'"
                     formControlName="newPassword"
                     autocomplete="new-password"
+                    maxlength="8"
                   />
                   <app-eye-toggle [visible]="verNueva()" (toggled)="verNueva.set($event)" />
                 </div>
@@ -135,7 +136,7 @@ import { BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
               <button class="btn btn-secondary" type="submit" [disabled]="changingPassword()">
                 Cambiar contraseña
               </button>
-              <p class="muted" style="font-size:11.5px;margin:0">
+              <p class="muted text-sm m-0">
                 Al cambiar la contraseña se cierran las demas sesiones abiertas.
               </p>
             </form>
@@ -145,49 +146,7 @@ import { BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
       }
     </div>
   `,
-  styles: [
-    `
-      dl {
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 9px;
-      }
-      dl > div {
-        display: flex;
-        justify-content: space-between;
-        gap: 14px;
-        font-size: 13px;
-      }
-      dt {
-        color: var(--ink-500);
-      }
-      dd {
-        margin: 0;
-        text-align: right;
-      }
-      .stack {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-      .balance {
-        display: flex;
-        gap: 22px;
-        align-items: stretch;
-        flex-wrap: wrap;
-      }
-      .balance app-flame-gauge {
-        flex: none;
-        min-width: 210px;
-      }
-      .balance dl {
-        flex: 1;
-        min-width: 200px;
-        align-self: center;
-      }
-    `,
-  ],
+  styleUrl: './my-profile.component.scss',
 })
 export class MyProfileComponent implements OnInit {
   private readonly api = inject(ApiService);
