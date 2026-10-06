@@ -60,7 +60,7 @@ tocaría una sola regla de negocio — solo el adaptador correspondiente.
 
 - **Protocolo:** REST sobre HTTPS (certificados autofirmados en desarrollo), payloads JSON.
 - **Descubrimiento de la API:** el frontend resuelve la URL del backend en tiempo de ejecución a
-  partir del host desde el que se abrió (`protocol://hostname:3000/api/v1`) — la misma build sirve
+  partir del host desde el que se abrió (`protocol://hostname:3100/api/v1`) — la misma build sirve
   para `localhost` o para una IP de red, sin recompilar.
 - **Autenticación:** JWT de acceso corto (15 min) enviado como `Authorization: Bearer`, más un
   *refresh token* en cookie `httpOnly`/`secure`/`sameSite=strict` con rotación y detección de reúso.
@@ -199,10 +199,10 @@ cp .env.example .env          # ajuste DATABASE_URL y los secretos JWT
 npm install
 npm run prisma:migrate        # crea el esquema
 npm run seed                  # parámetros legales, catálogos, feriados y datos de prueba
-npm run dev                   # http://localhost:3000
+npm run dev                   # https://localhost:3100
 ```
 
-Documentación interactiva de la API: **http://localhost:3000/docs** (Swagger UI).
+Documentación interactiva de la API: **https://localhost:3100/docs** (Swagger UI).
 
 ### 2. Frontend
 

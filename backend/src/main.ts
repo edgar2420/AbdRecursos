@@ -163,6 +163,10 @@ import { GetHeadcountReport, GetPayrollReport } from './modules/reports/applicat
 import { ReportController } from './modules/reports/infrastructure/http/report.controller';
 import { reportRoutes } from './modules/reports/infrastructure/http/report.routes';
 
+import { ZkBioTimeClient } from './modules/integrations/zkbio/infrastructure/ZkBioTimeClient';
+import { ZkBioSync } from './modules/integrations/zkbio/infrastructure/ZkBioSync';
+import { zkbioRoutes } from './modules/integrations/zkbio/infrastructure/zkbio.routes';
+
 export function buildApiRouter(): Router {
   const tokens = new JwtService();
   const hasher = new BcryptPasswordHasher();
@@ -331,7 +335,36 @@ export function buildApiRouter(): Router {
   ));
   router.use('/audit-logs', auth, auditRoutes(new AuditController(new ListAuditLogs(new PrismaAuditLogRepository()))));
 
+  zkSync =
+    env.ZKBIO_URL && env.ZKBIO_USER && env.ZKBIO_PASSWORD
+      ? new ZkBioSync(
+          new ZkBioTimeClient({ url: env.ZKBIO_URL, usuario: env.ZKBIO_USER, clave: env.ZKBIO_PASSWORD }),
+          schedules,
+          parameters,
+          audit,
+        )
+      : null;
+  router.use('/integrations/zkbio', auth, zkbioRoutes(zkSync));
+
   return router;
+}
+
+let zkSync: ZkBioSync | null = null;
+
+function iniciarSincronizacionZk(): void {
+  if (!zkSync) return;
+  const sync = zkSync;
+  const correr = async (): Promise<void> => {
+    try {
+      const r = await sync.sincronizarMarcaciones();
+      if (r && r.nuevas > 0) logger.info({ ...r }, 'Marcaciones de ZKBio Time importadas');
+    } catch (error) {
+      logger.warn({ err: error }, 'No se pudo sincronizar con ZKBio Time');
+    }
+  };
+  setInterval(() => void correr(), env.ZKBIO_SYNC_MINUTES * 60_000).unref();
+  void correr();
+  logger.info({ minutos: env.ZKBIO_SYNC_MINUTES }, 'Sincronizacion automatica con ZKBio Time activa');
 }
 
 function crearServidor(app: ReturnType<typeof createApp>) {
@@ -353,6 +386,7 @@ async function bootstrap(): Promise<void> {
       { port: env.PORT, env: env.NODE_ENV, docs: `${protocolo}://localhost:${env.PORT}/docs` },
       `SGRH API iniciada por ${protocolo.toUpperCase()}`,
     );
+    iniciarSincronizacionZk();
   });
 
   const shutdown = async (signal: string): Promise<void> => {

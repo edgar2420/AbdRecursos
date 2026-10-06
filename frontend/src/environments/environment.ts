@@ -1,4 +1,4 @@
-const API_PORT = 3000;
+const API_PORT = 3100;
 
 function resolveApiUrl(): string {
   const { protocol, hostname } = window.location;

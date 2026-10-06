@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ZkSyncButtonComponent } from '../../shared/components/zk-sync-button.component';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -20,6 +21,7 @@ import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../s
   selector: 'app-employee-list',
   standalone: true,
   imports: [
+    ZkSyncButtonComponent,
     CommonModule,
     ReactiveFormsModule,
     RouterLink,
@@ -38,6 +40,7 @@ import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../s
     <div class="page">
       <app-page-header title="Empleados" subtitle="Nomina, datos laborales y carga masiva">
         @if (auth.isHr()) {
+          <app-zk-sync modo="personal" etiqueta="Traer personal de ZKBio" (completado)="load()" />
           <button class="btn btn-ghost btn-sm" (click)="downloadTemplate()">Plantilla Excel</button>
         }
         <button class="btn btn-ghost btn-sm" (click)="export('excel')">Exportar Excel</button>

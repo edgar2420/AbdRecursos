@@ -35,6 +35,12 @@ const schema = z.object({
   COMPANY_NAME: z.string().default('Empresa S.R.L.'),
   COMPANY_NIT: z.string().default('0000000000'),
   COMPANY_CITY: z.string().default('La Paz - Bolivia'),
+
+  // Integracion con ZKBio Time (opcional: sin URL no se sincroniza nada)
+  ZKBIO_URL: z.preprocess((v) => (v === '' ? undefined : v), z.string().url().optional()),
+  ZKBIO_USER: z.preprocess((v) => (v === '' ? undefined : v), z.string().optional()),
+  ZKBIO_PASSWORD: z.preprocess((v) => (v === '' ? undefined : v), z.string().optional()),
+  ZKBIO_SYNC_MINUTES: z.coerce.number().int().min(1).max(1440).default(5),
 });
 
 const parsed = schema.safeParse(process.env);

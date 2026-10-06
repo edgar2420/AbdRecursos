@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ZkSyncButtonComponent } from '../../shared/components/zk-sync-button.component';
 import { CommonModule } from '@angular/common';
 import { ApiService, saveBlob } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -22,6 +23,7 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
   selector: 'app-attendance-report',
   standalone: true,
   imports: [
+    ZkSyncButtonComponent,
     CommonModule,
     PageHeaderComponent,
     CardComponent,
@@ -35,6 +37,9 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
   template: `
     <div class="page">
       <app-page-header title="Asistencia" subtitle="Tardanzas, horas trabajadas y justificaciones del equipo">
+        @if (auth.isHr()) {
+          <app-zk-sync modo="marcaciones" etiqueta="Traer marcaciones del reloj" (completado)="load()" />
+        }
         <button class="btn btn-export btn-excel" (click)="export('excel')">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />

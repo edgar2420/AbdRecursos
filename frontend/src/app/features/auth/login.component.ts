@@ -144,8 +144,6 @@ import { EyeToggleComponent } from '../../shared/components/ui.components';
               <span>Asistencia</span>
             </div>
           </div>
-
-          <p class="art-legal">Conforme a la Ley General del Trabajo y normativa boliviana vigente.</p>
         </aside>
       </div>
 

@@ -126,7 +126,6 @@ const SIDEBAR_COLLAPSED_KEY = 'sgrh.sidebar.collapsed';
 
         @if (!collapsed()) {
           <div class="sidebar-foot">
-            <span>Bolivia · Ley General del Trabajo</span>
             <span class="credit">Desarrollado por Ing. Edgar Rojas</span>
           </div>
         }
