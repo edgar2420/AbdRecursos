@@ -29,3 +29,75 @@ select[multiple] {
   height: auto;
   padding: 8px;
 }
+
+// ---- Asignar horario: modo en bloque ----
+.modo {
+  display: inline-flex;
+  padding: 3px;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  background: var(--ink-100);
+
+  button {
+    height: 30px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink-700);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &[aria-pressed='true'] {
+      background: var(--surface);
+      color: var(--brand-800);
+      box-shadow: var(--shadow-xs);
+    }
+  }
+}
+
+.bloque {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.lista-check {
+  margin: 0;
+  padding: 8px 10px;
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid var(--ink-300);
+  border-radius: var(--radius-sm);
+
+  legend {
+    padding: 0 4px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--ink-700);
+  }
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 2px;
+  font-size: 13px;
+  cursor: pointer;
+
+  input {
+    flex: none;
+  }
+}
+
+.reemplazar {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--warn-100);
+  color: var(--warn-700);
+  font-weight: 600;
+}

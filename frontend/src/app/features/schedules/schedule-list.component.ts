@@ -1,10 +1,10 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { ToastService } from '../../core/services/toast.service';
 import { apiErrorMessage } from '../../core/interceptors/auth.interceptor';
-import { EmployeeOption, PageMeta, Schedule, ScheduleAssignment } from '../../core/models/api.models';
+import { CatalogItem, EmployeeOption, PageMeta, Schedule, ScheduleAssignment } from '../../core/models/api.models';
 import {
   CardComponent,
   ModalComponent,
@@ -207,28 +207,67 @@ const WEEK_DAYS = [
             }
           </select>
         </div>
-        <div class="field">
-          <label>Empleados *</label>
-          <select multiple size="8" (change)="pickEmployees($event)">
-            @for (option of options(); track option.id) {
-              <option [value]="option.id">{{ option.label }}</option>
-            }
-          </select>
-          <span class="hint">Use Ctrl (o Cmd) para seleccionar varios empleados.</span>
+        <div class="modo" role="group" aria-label="A quien asignar">
+          <button type="button" [attr.aria-pressed]="modoAsignacion() === 'bloque'" (click)="modoAsignacion.set('bloque')">
+            Por departamento o cargo
+          </button>
+          <button type="button" [attr.aria-pressed]="modoAsignacion() === 'empleados'" (click)="modoAsignacion.set('empleados')">
+            Empleados sueltos
+          </button>
         </div>
+
+        @if (modoAsignacion() === 'bloque') {
+          <div class="bloque">
+            <fieldset class="lista-check">
+              <legend>Departamentos <span class="muted">({{ depsElegidos().length }})</span></legend>
+              @for (dep of departamentos(); track dep.id) {
+                <label class="check">
+                  <input type="checkbox" [checked]="depsElegidos().includes(dep.id)" (change)="alternar(depsElegidos, dep.id)" />
+                  {{ dep.name }}
+                </label>
+              }
+            </fieldset>
+            <fieldset class="lista-check">
+              <legend>Cargos <span class="muted">({{ cargosElegidos().length }})</span></legend>
+              @for (cargo of cargos(); track cargo.id) {
+                <label class="check">
+                  <input type="checkbox" [checked]="cargosElegidos().includes(cargo.id)" (change)="alternar(cargosElegidos, cargo.id)" />
+                  {{ cargo.name }}
+                </label>
+              }
+            </fieldset>
+          </div>
+          <span class="hint">Se asigna a todos los empleados activos de los departamentos y cargos marcados.</span>
+          <label class="check reemplazar">
+            <input type="checkbox" [checked]="reemplazar()" (change)="reemplazar.set(!reemplazar())" />
+            Reemplazar el horario actual de quienes ya tengan uno (se cierra el dia anterior)
+          </label>
+        } @else {
+          <div class="field">
+            <label>Empleados *</label>
+            <select multiple size="8" (change)="pickEmployees($event)">
+              @for (option of options(); track option.id) {
+                <option [value]="option.id">{{ option.label }}</option>
+              }
+            </select>
+            <span class="hint">Use Ctrl (o Cmd) para seleccionar varios empleados.</span>
+          </div>
+        }
         <div class="row gap-md">
           <div class="field flex-1">
             <label>Vigente desde *</label>
             <input type="date" [value]="assignFrom()" (change)="assignFrom.set($any($event.target).value)" />
           </div>
-          <div class="field flex-1">
-            <label>Hasta (opcional)</label>
-            <input type="date" [value]="assignUntil()" (change)="assignUntil.set($any($event.target).value)" />
-          </div>
+          @if (modoAsignacion() === 'empleados') {
+            <div class="field flex-1">
+              <label>Hasta (opcional)</label>
+              <input type="date" [value]="assignUntil()" (change)="assignUntil.set($any($event.target).value)" />
+            </div>
+          }
         </div>
         <div footer>
           <button class="btn btn-ghost" (click)="assignOpen.set(false)">Cancelar</button>
-          <button class="btn btn-primary" (click)="assign()">Asignar</button>
+          <button class="btn btn-primary" [disabled]="saving()" (click)="assign()">{{ saving() ? 'Asignando...' : 'Asignar' }}</button>
         </div>
       </app-modal>
     }
@@ -258,6 +297,12 @@ export class ScheduleListComponent implements OnInit {
   readonly assignFrom = signal(new Date().toISOString().slice(0, 10));
   readonly assignUntil = signal('');
   readonly assignmentsPage = signal(1);
+  readonly modoAsignacion = signal<'bloque' | 'empleados'>('bloque');
+  readonly departamentos = signal<CatalogItem[]>([]);
+  readonly cargos = signal<CatalogItem[]>([]);
+  readonly depsElegidos = signal<string[]>([]);
+  readonly cargosElegidos = signal<string[]>([]);
+  readonly reemplazar = signal(true);
 
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(3)]],
@@ -271,6 +316,12 @@ export class ScheduleListComponent implements OnInit {
   ngOnInit(): void {
     this.load();
     this.loadAssignments();
+    this.api.list<CatalogItem>('/employees/departments', { limit: 100 }).subscribe({
+      next: (page) => this.departamentos.set(page.data),
+    });
+    this.api.list<CatalogItem>('/employees/positions', { limit: 100 }).subscribe({
+      next: (page) => this.cargos.set(page.data),
+    });
     this.api.get<EmployeeOption[]>('/employees/options').subscribe({
       next: (response) => this.options.set(response.data),
       error: () => this.options.set([]),
@@ -377,7 +428,52 @@ export class ScheduleListComponent implements OnInit {
   openAssign(): void {
     this.assignScheduleId.set('');
     this.assignEmployeeIds.set([]);
+    this.depsElegidos.set([]);
+    this.cargosElegidos.set([]);
+    this.reemplazar.set(true);
     this.assignOpen.set(true);
+  }
+
+  alternar(lista: WritableSignal<string[]>, id: string): void {
+    lista.update((actual) => (actual.includes(id) ? actual.filter((x) => x !== id) : [...actual, id]));
+  }
+
+  private asignarEnBloque(): void {
+    if (!this.assignScheduleId() || (this.depsElegidos().length === 0 && this.cargosElegidos().length === 0)) {
+      this.toast.warn('Datos incompletos', 'Elija un horario y al menos un departamento o cargo');
+      return;
+    }
+    this.saving.set(true);
+    this.api
+      .post<{ empleados: number; asignados: number; reemplazados: number; yaLoTenian: number; omitidos: number }>(
+        '/schedules/assignments/bulk',
+        {
+          scheduleId: this.assignScheduleId(),
+          departmentIds: this.depsElegidos(),
+          positionIds: this.cargosElegidos(),
+          validFrom: this.assignFrom(),
+          reemplazar: this.reemplazar(),
+        },
+      )
+      .subscribe({
+        next: (r) => {
+          this.saving.set(false);
+          this.assignOpen.set(false);
+          const d = r.data;
+          const extra = [
+            d.reemplazados ? `${d.reemplazados} reemplazados` : '',
+            d.yaLoTenian ? `${d.yaLoTenian} ya lo tenian` : '',
+            d.omitidos ? `${d.omitidos} omitidos por tener otro horario` : '',
+          ].filter(Boolean);
+          this.toast.success(`Horario asignado a ${d.asignados} de ${d.empleados} empleados`, extra.join(' · '));
+          this.loadAssignments();
+          this.load();
+        },
+        error: (error) => {
+          this.saving.set(false);
+          this.toast.error('No se pudo asignar', apiErrorMessage(error));
+        },
+      });
   }
 
   pickEmployees(event: Event): void {
@@ -386,6 +482,10 @@ export class ScheduleListComponent implements OnInit {
   }
 
   assign(): void {
+    if (this.modoAsignacion() === 'bloque') {
+      this.asignarEnBloque();
+      return;
+    }
     if (!this.assignScheduleId() || this.assignEmployeeIds().length === 0) {
       this.toast.warn('Datos incompletos', 'Seleccione un horario y al menos un empleado');
       return;

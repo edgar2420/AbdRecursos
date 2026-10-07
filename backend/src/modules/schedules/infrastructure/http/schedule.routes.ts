@@ -4,6 +4,7 @@ import { requireRole } from '../../../../shared/infrastructure/http/middlewares/
 import { validate } from '../../../../shared/infrastructure/http/middlewares/validate';
 import { ScheduleController } from './schedule.controller';
 import {
+  assignBulkSchema,
   assignScheduleSchema,
   createScheduleSchema,
   endAssignmentSchema,
@@ -22,6 +23,12 @@ export function scheduleRoutes(controller: ScheduleController): Router {
     requireRole('HR', 'ADMIN'),
     validate(assignScheduleSchema),
     asyncHandler(controller.assign),
+  );
+  router.post(
+    '/assignments/bulk',
+    requireRole('HR', 'ADMIN'),
+    validate(assignBulkSchema),
+    asyncHandler(controller.assignBulk),
   );
   router.patch(
     '/assignments/:id/end',

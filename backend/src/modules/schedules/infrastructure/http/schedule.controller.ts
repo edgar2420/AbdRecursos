@@ -10,7 +10,8 @@ import {
   ListSchedules,
   UpdateSchedule,
 } from '../../application/use-cases/ManageSchedules';
-import { listAssignmentsSchema, listSchedulesSchema } from './schedule.validators';
+import { AssignScheduleBulk } from '../../application/use-cases/AssignScheduleBulk';
+import { assignBulkSchema, listAssignmentsSchema, listSchedulesSchema } from './schedule.validators';
 
 export class ScheduleController {
   constructor(
@@ -20,7 +21,13 @@ export class ScheduleController {
     private readonly assignUseCase: AssignSchedule,
     private readonly listAssignmentsUseCase: ListScheduleAssignments,
     private readonly endAssignmentUseCase: EndScheduleAssignment,
+    private readonly assignBulkUseCase: AssignScheduleBulk,
   ) {}
+
+  assignBulk = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    const body = validated<z.infer<typeof assignBulkSchema>>(req, 'body');
+    res.json({ data: await this.assignBulkUseCase.execute(requireActor(req), body) });
+  };
 
   list = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     const query = validated<z.infer<typeof listSchedulesSchema>>(req, 'query');

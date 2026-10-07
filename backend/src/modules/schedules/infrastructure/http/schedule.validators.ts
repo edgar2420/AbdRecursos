@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { fechaLocal } from '../../../../shared/infrastructure/http/fecha-local';
 import { pageQuerySchema } from '../../../../shared/infrastructure/http/query';
 
 const timeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Formato de hora invalido (HH:mm)');
@@ -33,6 +34,14 @@ export const assignScheduleSchema = z.object({
   employeeIds: z.array(z.string().uuid()).min(1, 'Seleccione al menos un empleado'),
   validFrom: z.coerce.date(),
   validUntil: z.coerce.date().optional(),
+});
+
+export const assignBulkSchema = z.object({
+  scheduleId: z.string().uuid(),
+  departmentIds: z.array(z.string().uuid()).default([]),
+  positionIds: z.array(z.string().uuid()).default([]),
+  validFrom: fechaLocal,
+  reemplazar: z.boolean().default(false),
 });
 
 export const endAssignmentSchema = z.object({ validUntil: z.coerce.date() });

@@ -124,6 +124,7 @@ import {
   ListSchedules,
   UpdateSchedule,
 } from './modules/schedules/application/use-cases/ManageSchedules';
+import { AssignScheduleBulk } from './modules/schedules/application/use-cases/AssignScheduleBulk';
 import { ScheduleController } from './modules/schedules/infrastructure/http/schedule.controller';
 import { scheduleRoutes } from './modules/schedules/infrastructure/http/schedule.routes';
 import { ScheduleImportProcessor } from './modules/schedules/infrastructure/import/ScheduleImportProcessor';
@@ -280,6 +281,7 @@ export function buildApiRouter(): Router {
     new AssignSchedule(schedules, policy, audit, tardanzas),
     new ListScheduleAssignments(schedules, policy),
     new EndScheduleAssignment(schedules, policy, audit, tardanzas),
+    new AssignScheduleBulk(schedules, employees, policy, audit, tardanzas),
   );
 
   const processors = new Map<ImportType, ImportProcessor>([
