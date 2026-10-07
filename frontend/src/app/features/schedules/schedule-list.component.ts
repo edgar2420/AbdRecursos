@@ -61,7 +61,7 @@ const WEEK_DAYS = [
                   <th>Jornada</th>
                   <th>Dias</th>
                   <th class="num">Tolerancia</th>
-                  <th class="num">Descanso</th>
+                  <th>Almuerzo</th>
                   <th class="num">Asignados</th>
                   <th>Estado</th>
                   <th></th>
@@ -80,7 +80,17 @@ const WEEK_DAYS = [
                       </div>
                     </td>
                     <td class="num">{{ schedule.toleranceMinutes }} min</td>
-                    <td class="num">{{ schedule.breakMinutes }} min</td>
+                    <td class="nowrap">
+                      @if (schedule.lunchStart && schedule.lunchEnd) {
+                        {{ schedule.lunchStart }} – {{ schedule.lunchEnd }}
+                        <div class="muted text-sm">{{ schedule.breakMinutes }} min</div>
+                      } @else if (schedule.breakMinutes > 0) {
+                        {{ schedule.breakMinutes }} min
+                        <div class="muted text-sm">sin hora fija</div>
+                      } @else {
+                        <span class="muted">Sin almuerzo</span>
+                      }
+                    </td>
                     <td class="num">{{ schedule.assignedCount ?? 0 }}</td>
                     <td>
                       <span class="badge" [class.badge-ok]="schedule.isActive" [class.badge-neutral]="!schedule.isActive">
@@ -164,11 +174,18 @@ const WEEK_DAYS = [
               <label>Tolerancia (min)</label>
               <input type="number" min="0" max="120" formControlName="toleranceMinutes" />
             </div>
+          </div>
+          <div class="row gap-md">
             <div class="field flex-1">
-              <label>Descanso (min)</label>
-              <input type="number" min="0" max="240" formControlName="breakMinutes" />
+              <label for="almuerzo-desde">Almuerzo desde</label>
+              <input id="almuerzo-desde" type="time" formControlName="lunchStart" />
+            </div>
+            <div class="field flex-1">
+              <label for="almuerzo-hasta">Almuerzo hasta</label>
+              <input id="almuerzo-hasta" type="time" formControlName="lunchEnd" />
             </div>
           </div>
+          <span class="hint almuerzo-hint">{{ textoAlmuerzo() }}</span>
           <div class="field">
             <label>Dias de la semana *</label>
             <div class="days selectable">
@@ -310,6 +327,8 @@ export class ScheduleListComponent implements OnInit {
     endTime: ['17:00', Validators.required],
     toleranceMinutes: [5],
     breakMinutes: [60],
+    lunchStart: ['12:00'],
+    lunchEnd: ['13:00'],
     isNightShift: [false],
   });
 
@@ -371,6 +390,8 @@ export class ScheduleListComponent implements OnInit {
         endTime: schedule.endTime,
         toleranceMinutes: schedule.toleranceMinutes,
         breakMinutes: schedule.breakMinutes,
+        lunchStart: schedule.lunchStart ?? '',
+        lunchEnd: schedule.lunchEnd ?? '',
         isNightShift: schedule.isNightShift,
       });
       this.selectedDays.set([...schedule.weekDays]);
@@ -381,6 +402,8 @@ export class ScheduleListComponent implements OnInit {
         endTime: '17:00',
         toleranceMinutes: 5,
         breakMinutes: 60,
+        lunchStart: '12:00',
+        lunchEnd: '13:00',
         isNightShift: false,
       });
       this.selectedDays.set([1, 2, 3, 4, 5]);
@@ -395,7 +418,21 @@ export class ScheduleListComponent implements OnInit {
       return;
     }
     this.saving.set(true);
-    const payload = { ...this.form.getRawValue(), weekDays: this.selectedDays() };
+    const valores = this.form.getRawValue();
+    const lunchStart = valores.lunchStart || null;
+    const lunchEnd = valores.lunchEnd || null;
+    if (!!lunchStart !== !!lunchEnd) {
+      this.saving.set(false);
+      this.toast.warn('Almuerzo incompleto', 'Indique la hora de inicio y de fin del almuerzo, o deje ambas vacias');
+      return;
+    }
+    const payload = {
+      ...valores,
+      lunchStart,
+      lunchEnd,
+      breakMinutes: lunchStart && lunchEnd ? minutosEntre(lunchStart, lunchEnd) : 0,
+      weekDays: this.selectedDays(),
+    };
     const editing = this.editing();
     const request = editing
       ? this.api.patch<Schedule>(`/schedules/${editing.id}`, payload)
@@ -413,6 +450,15 @@ export class ScheduleListComponent implements OnInit {
         this.toast.error('No se pudo guardar', apiErrorMessage(error));
       },
     });
+  }
+
+  textoAlmuerzo(): string {
+    const { lunchStart, lunchEnd } = this.form.getRawValue();
+    if (!lunchStart && !lunchEnd) return 'Sin almuerzo: no se descuenta nada de las horas trabajadas.';
+    if (!lunchStart || !lunchEnd) return 'Complete la hora de inicio y de fin.';
+    const minutos = minutosEntre(lunchStart, lunchEnd);
+    if (minutos <= 0) return 'El fin del almuerzo debe ser posterior al inicio.';
+    return `Se descuentan ${minutos} min por dia de las horas trabajadas.`;
   }
 
   toggleActive(schedule: Schedule): void {
@@ -521,4 +567,12 @@ export class ScheduleListComponent implements OnInit {
         error: (error) => this.toast.error('No se pudo finalizar', apiErrorMessage(error)),
       });
   }
+}
+
+function minutosEntre(inicio: string, fin: string): number {
+  const aMin = (h: string) => {
+    const [hh, mm] = h.split(':').map(Number);
+    return hh * 60 + mm;
+  };
+  return aMin(fin) - aMin(inicio);
 }

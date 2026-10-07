@@ -101,7 +101,7 @@ export class GetAttendanceReport {
             startTime: assignment.startTime,
             endTime: assignment.endTime,
             toleranceMinutes: assignment.toleranceMinutes,
-            breakMinutes: 0,
+            breakMinutes: assignment.breakMinutes,
             weekDays: assignment.weekDays,
           }
         : null;

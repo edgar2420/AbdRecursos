@@ -65,7 +65,9 @@ export class AttendanceCalculator {
     }
 
     const grossMinutes = (lastOut.getTime() - firstIn.getTime()) / 60000;
-    const workedMinutes = Math.max(0, grossMinutes - (schedule?.breakMinutes ?? 0));
+    // Si marco la salida y el regreso del almuerzo se descuenta la pausa real; si no, la del horario.
+    const pausaMarcada = this.pausaMarcada(ordered, firstIn, lastOut);
+    const workedMinutes = Math.max(0, grossMinutes - (pausaMarcada > 0 ? pausaMarcada : (schedule?.breakMinutes ?? 0)));
     const expectedMinutes = schedule
       ? this.scheduledMinutes(schedule)
       : this.params.number(LEGAL_KEYS.WORK_HOURS_PER_DAY, 8) * 60;
@@ -79,6 +81,24 @@ export class AttendanceCalculator {
       overtimeHours: round2(Math.max(0, workedMinutes - expectedMinutes) / 60),
       status: lateMinutes > 0 ? 'LATE' : 'PRESENT',
     };
+  }
+
+  /** Minutos entre cada salida y la entrada siguiente, dentro de la jornada (p. ej. el almuerzo marcado). */
+  private pausaMarcada(ordered: AttendanceRecord[], firstIn: Date, lastOut: Date): number {
+    let total = 0;
+    for (let i = 0; i < ordered.length - 1; i++) {
+      const actual = ordered[i];
+      const siguiente = ordered[i + 1];
+      if (
+        actual.type === 'CHECK_OUT' &&
+        siguiente.type === 'CHECK_IN' &&
+        actual.timestamp > firstIn &&
+        siguiente.timestamp < lastOut
+      ) {
+        total += (siguiente.timestamp.getTime() - actual.timestamp.getTime()) / 60000;
+      }
+    }
+    return total;
   }
 
   private scheduledMinutes(schedule: DaySchedule): number {

@@ -9,7 +9,7 @@ import {
 } from '../../domain/entities/Schedule';
 import { ScheduleRepository } from '../../domain/repositories/ScheduleRepository';
 
-type ScheduleRow = Prisma.ScheduleGetPayload<{ include: { _count: { select: { assignments: true } } } }>;
+type ScheduleRow = Prisma.ScheduleGetPayload<{ include: { _count: { select: { assignments: { where: { isActive: true } } } } } }>;
 
 const assignmentInclude = {
   schedule: true,
@@ -27,6 +27,8 @@ function toSchedule(row: ScheduleRow): Schedule {
     startTime: row.startTime,
     endTime: row.endTime,
     breakMinutes: row.breakMinutes,
+    lunchStart: row.lunchStart,
+    lunchEnd: row.lunchEnd,
     toleranceMinutes: row.toleranceMinutes,
     weekDays: row.weekDays,
     isNightShift: row.isNightShift,
@@ -42,6 +44,7 @@ function toAssignment(row: AssignmentRow): ScheduleAssignment {
     scheduleName: row.schedule.name,
     startTime: row.schedule.startTime,
     endTime: row.schedule.endTime,
+    breakMinutes: row.schedule.breakMinutes,
     toleranceMinutes: row.schedule.toleranceMinutes,
     weekDays: row.schedule.weekDays,
     employeeId: row.employeeId,
@@ -57,7 +60,7 @@ export class PrismaScheduleRepository implements ScheduleRepository {
   async findById(id: string): Promise<Schedule | null> {
     const row = await prisma.schedule.findUnique({
       where: { id },
-      include: { _count: { select: { assignments: true } } },
+      include: { _count: { select: { assignments: { where: { isActive: true } } } } },
     });
     return row ? toSchedule(row) : null;
   }
@@ -70,7 +73,7 @@ export class PrismaScheduleRepository implements ScheduleRepository {
     const [rows, total] = await Promise.all([
       prisma.schedule.findMany({
         where,
-        include: { _count: { select: { assignments: true } } },
+        include: { _count: { select: { assignments: { where: { isActive: true } } } } },
         orderBy: { name: 'asc' },
         skip: (query.page - 1) * query.limit,
         take: query.limit,
@@ -87,11 +90,13 @@ export class PrismaScheduleRepository implements ScheduleRepository {
         startTime: data.startTime,
         endTime: data.endTime,
         breakMinutes: data.breakMinutes,
+        lunchStart: data.lunchStart ?? null,
+        lunchEnd: data.lunchEnd ?? null,
         toleranceMinutes: data.toleranceMinutes,
         weekDays: data.weekDays,
         isNightShift: data.isNightShift ?? false,
       },
-      include: { _count: { select: { assignments: true } } },
+      include: { _count: { select: { assignments: { where: { isActive: true } } } } },
     });
     return toSchedule(row);
   }
@@ -104,12 +109,14 @@ export class PrismaScheduleRepository implements ScheduleRepository {
         ...(data.startTime !== undefined ? { startTime: data.startTime } : {}),
         ...(data.endTime !== undefined ? { endTime: data.endTime } : {}),
         ...(data.breakMinutes !== undefined ? { breakMinutes: data.breakMinutes } : {}),
+        ...(data.lunchStart !== undefined ? { lunchStart: data.lunchStart } : {}),
+        ...(data.lunchEnd !== undefined ? { lunchEnd: data.lunchEnd } : {}),
         ...(data.toleranceMinutes !== undefined ? { toleranceMinutes: data.toleranceMinutes } : {}),
         ...(data.weekDays !== undefined ? { weekDays: data.weekDays } : {}),
         ...(data.isNightShift !== undefined ? { isNightShift: data.isNightShift } : {}),
         ...(data.isActive !== undefined ? { isActive: data.isActive } : {}),
       },
-      include: { _count: { select: { assignments: true } } },
+      include: { _count: { select: { assignments: { where: { isActive: true } } } } },
     });
     return toSchedule(row);
   }

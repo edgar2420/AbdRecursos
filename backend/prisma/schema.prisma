@@ -437,6 +437,9 @@ model Schedule {
   startTime        String  @map("start_time")
   endTime          String  @map("end_time")
   breakMinutes     Int     @default(0) @map("break_minutes")
+  /// Ventana de almuerzo (HH:mm). Si existe, breakMinutes se calcula a partir de ella.
+  lunchStart       String? @map("lunch_start")
+  lunchEnd         String? @map("lunch_end")
   toleranceMinutes Int     @default(5) @map("tolerance_minutes")
   // Dias de la semana: 1=lunes ... 7=domingo
   weekDays         Int[]   @map("week_days")

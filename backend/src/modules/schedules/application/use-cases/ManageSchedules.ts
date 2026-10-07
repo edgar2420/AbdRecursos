@@ -10,6 +10,7 @@ import {
 } from '../../domain/entities/Schedule';
 import { ScheduleRepository } from '../../domain/repositories/ScheduleRepository';
 import { TardanzaRecalculator } from '../ports/TardanzaRecalculator';
+import { minutosDeAlmuerzo, problemaConAlmuerzo } from '../../domain/almuerzo';
 
 export class ListSchedules {
   constructor(private readonly schedules: ScheduleRepository) {}
@@ -31,7 +32,10 @@ export class CreateSchedule {
     if (data.weekDays.length === 0) {
       throw new BusinessRuleError('Seleccione al menos un dia de la semana');
     }
-    const schedule = await this.schedules.create(data);
+    const problema = problemaConAlmuerzo(data, data.lunchStart, data.lunchEnd);
+    if (problema) throw new BusinessRuleError(problema);
+    const minutos = minutosDeAlmuerzo(data.lunchStart, data.lunchEnd);
+    const schedule = await this.schedules.create({ ...data, breakMinutes: minutos ?? data.breakMinutes });
     await this.audit.log({
       userId: actor.userId,
       action: 'SCHEDULE_CREATED',
@@ -57,8 +61,13 @@ export class UpdateSchedule {
     data: Partial<NewSchedule> & { isActive?: boolean },
   ): Promise<Schedule> {
     this.policy.assertCanManage(actor);
-    if (!(await this.schedules.findById(id))) throw new NotFoundError('Horario');
-    const updated = await this.schedules.update(id, data);
+    const actual = await this.schedules.findById(id);
+    if (!actual) throw new NotFoundError('Horario');
+    const final = { ...actual, ...data };
+    const problema = problemaConAlmuerzo(final, final.lunchStart, final.lunchEnd);
+    if (problema) throw new BusinessRuleError(problema);
+    const minutos = minutosDeAlmuerzo(final.lunchStart, final.lunchEnd);
+    const updated = await this.schedules.update(id, minutos !== null ? { ...data, breakMinutes: minutos } : data);
     await this.tardanzas?.recalcularHorario(id);
     await this.audit.log({
       userId: actor.userId,

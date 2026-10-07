@@ -267,6 +267,8 @@ export interface Schedule {
   startTime: string;
   endTime: string;
   breakMinutes: number;
+  lunchStart: string | null;
+  lunchEnd: string | null;
   toleranceMinutes: number;
   weekDays: number[];
   isNightShift: boolean;

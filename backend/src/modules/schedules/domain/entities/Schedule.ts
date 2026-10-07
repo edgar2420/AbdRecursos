@@ -4,6 +4,8 @@ export interface Schedule {
   startTime: string;
   endTime: string;
   breakMinutes: number;
+  lunchStart: string | null;
+  lunchEnd: string | null;
   toleranceMinutes: number;
   weekDays: number[];
   isNightShift: boolean;
@@ -16,6 +18,8 @@ export interface NewSchedule {
   startTime: string;
   endTime: string;
   breakMinutes: number;
+  lunchStart?: string | null;
+  lunchEnd?: string | null;
   toleranceMinutes: number;
   weekDays: number[];
   isNightShift?: boolean;
@@ -27,6 +31,7 @@ export interface ScheduleAssignment {
   scheduleName: string;
   startTime: string;
   endTime: string;
+  breakMinutes: number;
   toleranceMinutes: number;
   weekDays: number[];
   employeeId: string;

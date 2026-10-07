@@ -13,6 +13,8 @@ export const createScheduleSchema = z.object({
   startTime: timeSchema,
   endTime: timeSchema,
   breakMinutes: z.coerce.number().int().min(0).max(240).default(0),
+  lunchStart: timeSchema.nullable().optional(),
+  lunchEnd: timeSchema.nullable().optional(),
   toleranceMinutes: z.coerce.number().int().min(0).max(120).default(5),
   weekDays: z.array(z.coerce.number().int().min(1).max(7)).min(1, 'Seleccione al menos un dia'),
   isNightShift: z.boolean().default(false),
