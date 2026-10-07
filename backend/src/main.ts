@@ -113,6 +113,7 @@ import { UpdateAttendanceRecord } from './modules/attendance/application/use-cas
 import { AttendanceController } from './modules/attendance/infrastructure/http/attendance.controller';
 import { attendanceRoutes } from './modules/attendance/infrastructure/http/attendance.routes';
 import { AttendanceImportProcessor } from './modules/attendance/infrastructure/import/AttendanceImportProcessor';
+import { PrismaTardanzaRecalculator } from './modules/attendance/infrastructure/persistence/PrismaTardanzaRecalculator';
 
 import { PrismaScheduleRepository } from './modules/schedules/infrastructure/persistence/PrismaScheduleRepository';
 import {
@@ -166,6 +167,9 @@ import { reportRoutes } from './modules/reports/infrastructure/http/report.route
 import { ZkBioTimeClient } from './modules/integrations/zkbio/infrastructure/ZkBioTimeClient';
 import { ZkBioSync } from './modules/integrations/zkbio/infrastructure/ZkBioSync';
 import { zkbioRoutes } from './modules/integrations/zkbio/infrastructure/zkbio.routes';
+import { IclockServer } from './modules/integrations/iclock/infrastructure/IclockServer';
+import { iclockRoutes } from './modules/integrations/iclock/infrastructure/iclock.routes';
+import { RegistradorMarcacionesBiometrico } from './modules/attendance/infrastructure/persistence/RegistradorMarcacionesBiometrico';
 
 export function buildApiRouter(): Router {
   const tokens = new JwtService();
@@ -196,6 +200,7 @@ export function buildApiRouter(): Router {
   const policy = new EmployeeAccessPolicy(employees);
   const parameters = new GetLegalParameters(legalParameters);
   const notifier = new LogNotifier();
+  const tardanzas = new PrismaTardanzaRecalculator(parameters);
 
   const authController = new AuthController(
     new Login(users, refreshTokens, hasher, tokens, audit),
@@ -271,10 +276,10 @@ export function buildApiRouter(): Router {
   const scheduleController = new ScheduleController(
     new ListSchedules(schedules),
     new CreateSchedule(schedules, policy, audit),
-    new UpdateSchedule(schedules, policy, audit),
-    new AssignSchedule(schedules, policy, audit),
+    new UpdateSchedule(schedules, policy, audit, tardanzas),
+    new AssignSchedule(schedules, policy, audit, tardanzas),
     new ListScheduleAssignments(schedules, policy),
-    new EndScheduleAssignment(schedules, policy, audit),
+    new EndScheduleAssignment(schedules, policy, audit, tardanzas),
   );
 
   const processors = new Map<ImportType, ImportProcessor>([
@@ -335,21 +340,35 @@ export function buildApiRouter(): Router {
   ));
   router.use('/audit-logs', auth, auditRoutes(new AuditController(new ListAuditLogs(new PrismaAuditLogRepository()))));
 
+  const registrador = new RegistradorMarcacionesBiometrico(schedules, parameters);
   zkSync =
     env.ZKBIO_URL && env.ZKBIO_USER && env.ZKBIO_PASSWORD
       ? new ZkBioSync(
           new ZkBioTimeClient({ url: env.ZKBIO_URL, usuario: env.ZKBIO_USER, clave: env.ZKBIO_PASSWORD }),
-          schedules,
-          parameters,
+          registrador,
           audit,
         )
       : null;
   router.use('/integrations/zkbio', auth, zkbioRoutes(zkSync));
 
+  iclock = env.ICLOCK_PORT
+    ? new IclockServer(
+        {
+          puerto: env.ICLOCK_PORT,
+          seriesPermitidas: env.ICLOCK_SERIALS.split(',').map((x) => x.trim()).filter(Boolean),
+          relayUrl: env.ICLOCK_RELAY_URL,
+          zonaHoraria: env.ICLOCK_TIMEZONE,
+        },
+        registrador,
+      )
+    : null;
+  router.use('/integrations/iclock', auth, iclockRoutes(iclock));
+
   return router;
 }
 
 let zkSync: ZkBioSync | null = null;
+let iclock: IclockServer | null = null;
 
 function iniciarSincronizacionZk(): void {
   if (!zkSync) return;
@@ -387,10 +406,12 @@ async function bootstrap(): Promise<void> {
       `SGRH API iniciada por ${protocolo.toUpperCase()}`,
     );
     iniciarSincronizacionZk();
+    iclock?.iniciar();
   });
 
   const shutdown = async (signal: string): Promise<void> => {
     logger.info({ signal }, 'Cerrando la API');
+    iclock?.detener();
     server.close(async () => {
       await disconnectPrisma();
       process.exit(0);

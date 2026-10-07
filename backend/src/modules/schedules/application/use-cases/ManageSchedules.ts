@@ -9,6 +9,7 @@ import {
   ScheduleAssignment,
 } from '../../domain/entities/Schedule';
 import { ScheduleRepository } from '../../domain/repositories/ScheduleRepository';
+import { TardanzaRecalculator } from '../ports/TardanzaRecalculator';
 
 export class ListSchedules {
   constructor(private readonly schedules: ScheduleRepository) {}
@@ -47,6 +48,7 @@ export class UpdateSchedule {
     private readonly schedules: ScheduleRepository,
     private readonly policy: EmployeeAccessPolicy,
     private readonly audit: AuditLoggerPort,
+    private readonly tardanzas?: TardanzaRecalculator,
   ) {}
 
   async execute(
@@ -57,6 +59,7 @@ export class UpdateSchedule {
     this.policy.assertCanManage(actor);
     if (!(await this.schedules.findById(id))) throw new NotFoundError('Horario');
     const updated = await this.schedules.update(id, data);
+    await this.tardanzas?.recalcularHorario(id);
     await this.audit.log({
       userId: actor.userId,
       action: 'SCHEDULE_UPDATED',
@@ -73,6 +76,7 @@ export class AssignSchedule {
     private readonly schedules: ScheduleRepository,
     private readonly policy: EmployeeAccessPolicy,
     private readonly audit: AuditLoggerPort,
+    private readonly tardanzas?: TardanzaRecalculator,
   ) {}
 
   async execute(
@@ -103,6 +107,7 @@ export class AssignSchedule {
       };
       created.push(await this.schedules.assign(assignment));
     }
+    await this.tardanzas?.recalcularEmpleados(input.employeeIds, input.validFrom);
 
     await this.audit.log({
       userId: actor.userId,
@@ -140,11 +145,13 @@ export class EndScheduleAssignment {
     private readonly schedules: ScheduleRepository,
     private readonly policy: EmployeeAccessPolicy,
     private readonly audit: AuditLoggerPort,
+    private readonly tardanzas?: TardanzaRecalculator,
   ) {}
 
   async execute(actor: AccessActor, id: string, validUntil: Date): Promise<ScheduleAssignment> {
     this.policy.assertCanManage(actor);
     const updated = await this.schedules.endAssignment(id, validUntil);
+    await this.tardanzas?.recalcularEmpleados([updated.employeeId], updated.validFrom);
     await this.audit.log({
       userId: actor.userId,
       action: 'SCHEDULE_ASSIGNMENT_ENDED',

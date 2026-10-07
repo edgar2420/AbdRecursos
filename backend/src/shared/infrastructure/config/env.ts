@@ -41,6 +41,12 @@ const schema = z.object({
   ZKBIO_USER: z.preprocess((v) => (v === '' ? undefined : v), z.string().optional()),
   ZKBIO_PASSWORD: z.preprocess((v) => (v === '' ? undefined : v), z.string().optional()),
   ZKBIO_SYNC_MINUTES: z.coerce.number().int().min(1).max(1440).default(5),
+
+  // Receptor directo del reloj (protocolo PUSH / iclock, HTTP plano). Sin puerto no se inicia.
+  ICLOCK_PORT: z.preprocess((v) => (v === '' ? undefined : v), z.coerce.number().int().min(1).max(65535).optional()),
+  ICLOCK_SERIALS: z.string().default(''),
+  ICLOCK_RELAY_URL: z.preprocess((v) => (v === '' ? undefined : v), z.string().url().optional()),
+  ICLOCK_TIMEZONE: z.coerce.number().default(-4),
 });
 
 const parsed = schema.safeParse(process.env);

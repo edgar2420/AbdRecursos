@@ -40,7 +40,7 @@ import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../s
         </app-state>
       } @else {
       @if (employee(); as e) {
-        <app-page-header [title]="e.fullName" [subtitle]="e.positionName + ' · ' + (e.departmentName ?? 'Sin departamento')">
+        <app-page-header [title]="e.fullName" [subtitle]="(e.positionName ?? 'Sin cargo') + ' · ' + (e.departmentName ?? 'Sin departamento')">
           <a class="btn btn-ghost btn-sm" routerLink="/empleados">Volver</a>
           @if (auth.isHr() && e.isActive) {
             <button class="btn btn-danger btn-sm" (click)="confirmOpen.set(true)">Dar de baja</button>

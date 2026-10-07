@@ -3,9 +3,7 @@ import { prisma } from '../../../../shared/infrastructure/database/prisma';
 import { FieldCipher } from '../../../../shared/infrastructure/security/FieldCipher';
 import { startOfDay, toDateOnlyString } from '../../../../shared/domain/dates';
 import { AuditLoggerPort } from '../../../../shared/application/AuditLogger';
-import { ScheduleRepository } from '../../../schedules/domain/repositories/ScheduleRepository';
-import { GetLegalParameters } from '../../../legal-parameters/application/use-cases/GetLegalParameters';
-import { AttendanceCalculator } from '../../../attendance/domain/services/AttendanceCalculator';
+import { RegistradorMarcacionesBiometrico } from '../../../attendance/infrastructure/persistence/RegistradorMarcacionesBiometrico';
 import { fechaHoraLocal, nombreDesdeZk, tipoDeMarcacion } from '../domain/nombres';
 import { ZkBioTimeClient } from './ZkBioTimeClient';
 
@@ -42,8 +40,7 @@ export class ZkBioSync {
 
   constructor(
     private readonly client: ZkBioTimeClient,
-    private readonly schedules: ScheduleRepository,
-    private readonly parameters: GetLegalParameters,
+    private readonly registrador: RegistradorMarcacionesBiometrico,
     private readonly audit: AuditLoggerPort,
   ) {}
 
@@ -134,67 +131,25 @@ export class ZkBioSync {
       const desde = rango.desde ?? (await this.desdeUltimaImportada(hasta));
       const marcaciones = await this.client.marcaciones(texto(desde), texto(hasta));
 
-      const empleados = new Map(
-        (await prisma.employee.findMany({ select: { id: true, employeeCode: true } })).map((e) => [e.employeeCode, e.id]),
+      const r = await this.registrador.registrar(
+        marcaciones.map((m) => ({
+          codigo: String(m.emp_code),
+          timestamp: fechaHoraLocal(m.punch_time),
+          type: tipoDeMarcacion(m.punch_state),
+          origen: `${PREFIJO_ID}${m.id}`,
+          nota: m.terminal_alias ? `Reloj ${m.terminal_alias}` : null,
+        })),
       );
-      const ids = marcaciones.map((m) => `${PREFIJO_ID}${m.id}`);
-      const yaGuardadas = new Set(
-        (
-          await prisma.attendanceRecord.findMany({
-            where: { source: 'BIOMETRIC', deviceId: { in: ids } },
-            select: { deviceId: true },
-          })
-        ).map((r) => r.deviceId),
-      );
-
-      const pendientes = marcaciones.filter((m) => !yaGuardadas.has(`${PREFIJO_ID}${m.id}`));
-      const conEmpleado = pendientes.filter((m) => empleados.has(String(m.emp_code).trim()));
-
-      const empleadoIds = [...new Set(conEmpleado.map((m) => empleados.get(String(m.emp_code).trim())!))];
-      const horarios = new Map(
-        (await this.schedules.findActiveForEmployees(empleadoIds, hasta)).map((a) => [a.employeeId, a]),
-      );
-      const calculadora = new AttendanceCalculator(await this.parameters.execute(hasta));
-
-      const filas: Prisma.AttendanceRecordCreateManyInput[] = conEmpleado.map((m) => {
-        const employeeId = empleados.get(String(m.emp_code).trim())!;
-        const timestamp = fechaHoraLocal(m.punch_time);
-        const type = tipoDeMarcacion(m.punch_state);
-        const h = horarios.get(employeeId);
-        const lateMinutes =
-          type === 'CHECK_IN' && h
-            ? calculadora.lateMinutesFor(timestamp, {
-                startTime: h.startTime,
-                endTime: h.endTime,
-                toleranceMinutes: h.toleranceMinutes,
-                breakMinutes: 0,
-                weekDays: h.weekDays,
-              })
-            : 0;
-        return {
-          employeeId,
-          timestamp,
-          type,
-          source: 'BIOMETRIC',
-          deviceId: `${PREFIJO_ID}${m.id}`,
-          notes: m.terminal_alias ? `Reloj ${m.terminal_alias}` : null,
-          lateMinutes,
-        };
-      });
-
-      for (let i = 0; i < filas.length; i += 1000) {
-        await prisma.attendanceRecord.createMany({ data: filas.slice(i, i + 1000) });
-      }
 
       const resultado: ResultadoMarcaciones = {
         desde: texto(desde),
         hasta: texto(hasta),
-        leidas: marcaciones.length,
-        nuevas: filas.length,
-        repetidas: marcaciones.length - pendientes.length,
-        sinEmpleado: pendientes.length - conEmpleado.length,
+        leidas: r.recibidas,
+        nuevas: r.nuevas,
+        repetidas: r.repetidas,
+        sinEmpleado: r.sinEmpleado,
       };
-      if (filas.length > 0 || actorId) {
+      if (r.nuevas > 0 || actorId) {
         await this.audit.log({
           userId: actorId,
           action: 'ZKBIO_SYNC_ATTENDANCE',
