@@ -6,8 +6,8 @@ export const listAttendanceSchema = pageQuerySchema.extend({
   employeeId: z.string().uuid().optional(),
   departmentId: z.string().uuid().optional(),
   type: z.enum(['CHECK_IN', 'CHECK_OUT']).optional(),
-  dateFrom: z.coerce.date().optional(),
-  dateTo: z.coerce.date().optional(),
+  dateFrom: fechaLocal.optional(),
+  dateTo: fechaLocal.optional(),
 });
 
 export const punchSchema = z.object({
@@ -40,8 +40,8 @@ export const createJustificationSchema = z.object({
 
 export const listJustificationsSchema = pageQuerySchema.extend({
   status: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional(),
-  dateFrom: z.coerce.date().optional(),
-  dateTo: z.coerce.date().optional(),
+  dateFrom: fechaLocal.optional(),
+  dateTo: fechaLocal.optional(),
 });
 
 export const reviewJustificationSchema = z.object({

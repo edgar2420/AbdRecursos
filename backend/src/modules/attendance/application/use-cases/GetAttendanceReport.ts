@@ -18,6 +18,8 @@ export interface AttendanceReportRow {
   daysAbsent: number;
   daysJustified: number;
   daysLate: number;
+  /** Dias con marcacion pero sin entrada o sin salida. */
+  daysIncomplete: number;
   totalLateMinutes: number;
   workedHours: number;
   overtimeHours: number;
@@ -128,6 +130,7 @@ export class GetAttendanceReport {
         daysAbsent: days.filter((d) => d.status === 'ABSENT').length,
         daysJustified: days.filter((d) => d.status === 'JUSTIFIED').length,
         daysLate: days.filter((d) => d.lateMinutes > 0).length,
+        daysIncomplete: days.filter((d) => d.status === 'INCOMPLETE').length,
         totalLateMinutes: days.reduce((acc, d) => acc + d.lateMinutes, 0),
         workedHours: round2(days.reduce((acc, d) => acc + d.workedHours, 0)),
         overtimeHours: round2(days.reduce((acc, d) => acc + d.overtimeHours, 0)),

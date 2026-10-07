@@ -471,6 +471,8 @@ table.data tbody tr:last-child td { border-bottom: none; }
   animation: rise 0.2s ease;
 }
 
+.modal.modal-lg { width: min(980px, 100%); }
+
 .modal-head,
 .modal-foot {
   display: flex;

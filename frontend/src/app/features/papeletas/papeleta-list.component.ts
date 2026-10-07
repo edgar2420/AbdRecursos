@@ -598,6 +598,7 @@ export class PapeletaListComponent implements OnInit, OnDestroy {
       this.toast.warn('Indique el motivo', 'Escriba al menos 5 caracteres');
       return;
     }
+
     this.api.post(`/papeletas/${p.id}/rechazar`, { motivo: this.motivoRechazo() }).subscribe({
       next: () => {
         this.rechazando.set(null);
@@ -638,6 +639,8 @@ export class PapeletaListComponent implements OnInit, OnDestroy {
     this.docObjectUrl = URL.createObjectURL(blob);
     this.docPreview.set({ titulo, url: this.sanitizer.bypassSecurityTrustResourceUrl(this.docObjectUrl) });
   }
+
+
 
   cerrarDocPreview(): void {
     if (this.docObjectUrl) {

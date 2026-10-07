@@ -233,7 +233,7 @@ export class PaginatorComponent {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="modal-backdrop" (click)="closed.emit()">
-      <div class="modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" [attr.aria-labelledby]="tituloId">
+      <div class="modal" [class.modal-lg]="size === 'lg'" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" [attr.aria-labelledby]="tituloId">
         <div class="modal-head">
           <h2 [id]="tituloId">{{ title }}</h2>
           <button class="btn btn-ghost btn-sm" type="button" (click)="closed.emit()" aria-label="Cerrar">
@@ -248,6 +248,7 @@ export class PaginatorComponent {
 })
 export class ModalComponent {
   @Input({ required: true }) title = '';
+  @Input() size: 'md' | 'lg' = 'md';
   @Output() closed = new EventEmitter<void>();
   readonly tituloId = `modal-titulo-${++modalSeq}`;
 

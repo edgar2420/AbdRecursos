@@ -1,0 +1,151 @@
+.resumen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border-radius: var(--radius);
+  background: var(--ink-50);
+  border: 1px solid var(--ink-200);
+  font-size: 13px;
+  color: var(--ink-700);
+
+  strong {
+    color: var(--ink-900);
+    font-size: 15px;
+  }
+
+  .alerta strong {
+    color: var(--warn-700);
+  }
+
+  .peligro strong {
+    color: var(--danger-700);
+  }
+
+  .horario {
+    margin-left: auto;
+    color: var(--ink-500);
+  }
+}
+
+.ayuda {
+  margin: 0 0 10px;
+  font-size: 12.5px;
+  color: var(--ink-500);
+}
+
+.dias {
+  min-width: 640px;
+
+  tbody td {
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+
+  tr.descanso td {
+    color: var(--ink-400);
+    background: var(--ink-50);
+  }
+}
+
+.celda-hora {
+  white-space: nowrap;
+}
+
+.hora {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+
+  &.manual {
+    color: var(--brand-700);
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+  }
+}
+
+.tarde {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--warn-100);
+  color: var(--warn-700);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.vacio {
+  color: var(--ink-400);
+}
+
+.link {
+  margin-left: 8px;
+  padding: 2px 4px;
+  border: 0;
+  background: none;
+  color: var(--brand-700);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 210px;
+
+  input {
+    height: 32px;
+    font-size: 13px;
+  }
+}
+
+.editor-acciones {
+  display: flex;
+  gap: 6px;
+}
+
+.estado {
+  display: inline-flex;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--ink-100);
+  color: var(--ink-700);
+}
+
+.estado-PRESENT {
+  background: var(--ok-100);
+  color: var(--ok-700);
+}
+
+.estado-LATE,
+.estado-INCOMPLETE {
+  background: var(--warn-100);
+  color: var(--warn-700);
+}
+
+.estado-ABSENT {
+  background: var(--danger-100);
+  color: var(--danger-700);
+}
+
+.estado-JUSTIFIED {
+  background: var(--info-100);
+  color: var(--info-700);
+}
+
+.otras {
+  margin-left: 6px;
+  font-size: 12px;
+  color: var(--ink-500);
+  cursor: help;
+}

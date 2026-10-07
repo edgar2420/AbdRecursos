@@ -228,11 +228,12 @@ export interface AttendanceReportRow {
   daysAbsent: number;
   daysJustified: number;
   daysLate: number;
+  daysIncomplete: number;
   totalLateMinutes: number;
   workedHours: number;
   overtimeHours: number;
   /** Solo viene cuando se pide includeDays=true; un elemento por dia del rango, en orden. */
-  days?: { date: string; lateMinutes: number; status: string }[];
+  days?: { date: string; firstIn: string | null; lastOut: string | null; workedHours: number; lateMinutes: number; status: string }[];
 }
 
 export interface AttendanceJustification {

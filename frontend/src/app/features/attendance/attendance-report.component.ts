@@ -12,12 +12,13 @@ import {
   PageMeta,
 } from '../../core/models/api.models';
 import {
-  CardComponent,
   PageHeaderComponent,
   PaginatorComponent,
   StateComponent,
 } from '../../shared/components/ui.components';
 import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/format.pipes';
+import { MarcacionesEmpleadoComponent } from './marcaciones-empleado.component';
+import { formatoHoras, formatoMinutos } from './asistencia-formato';
 
 @Component({
   selector: 'app-attendance-report',
@@ -26,8 +27,8 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
     ZkSyncButtonComponent,
     CommonModule,
     PageHeaderComponent,
-    CardComponent,
     PaginatorComponent,
+    MarcacionesEmpleadoComponent,
     StateComponent,
     FechaPipe,
     EtiquetaPipe,
@@ -60,122 +61,174 @@ import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
         </button>
       </app-page-header>
 
-      <app-card heading="Resumen por empleado" [padded]="false">
-        <div class="filters">
-          <div class="field">
-            <label>Desde</label>
-            <input type="date" [value]="from()" (change)="from.set($any($event.target).value)" />
-          </div>
-          <div class="field">
-            <label>Hasta</label>
-            <input type="date" [value]="to()" (change)="to.set($any($event.target).value)" />
-          </div>
-          <div class="field">
-            <label>Departamento</label>
-            <select [value]="departmentId()" (change)="departmentId.set($any($event.target).value)">
-              <option value="">Todos</option>
-              @for (dep of departments(); track dep.id) {
-                <option [value]="dep.id" [selected]="dep.id === departmentId()">{{ dep.name }}</option>
-              }
-            </select>
-          </div>
-          <div class="field flex-1">
-            <label>Buscar</label>
-            <input type="search" placeholder="Nombre y apellido, codigo o departamento" [value]="search()" (input)="setSearch($any($event.target).value)" />
-          </div>
-          <button class="btn btn-primary btn-sm" (click)="load()">Aplicar</button>
+      <section class="card">
+        <div class="pestanas" role="tablist" aria-label="Secciones de asistencia">
+          <button type="button" role="tab" [attr.aria-selected]="pestana() === 'resumen'" (click)="pestana.set('resumen')">
+            Resumen por empleado
+          </button>
+          <button type="button" role="tab" [attr.aria-selected]="pestana() === 'justificaciones'" (click)="pestana.set('justificaciones')">
+            Justificaciones
+            @if (pendientes() > 0) {
+              <span class="contador" [attr.aria-label]="pendientes() + ' pendientes'">{{ pendientes() }}</span>
+            }
+          </button>
         </div>
 
-        @if (loading()) {
-          <app-state mode="loading" title="Calculando asistencia"></app-state>
-        } @else if (rows().length === 0) {
-          <app-state title="Sin datos en el rango" message="Ajuste los filtros o la busqueda."></app-state>
-        } @else {
-          <div class="table-wrap">
-            <table class="data">
-              <thead>
-                <tr>
-                  <th>Empleado</th>
-                  <th>Departamento</th>
-                  <th>Horario</th>
-                  <th class="num">Asistidos</th>
-                  <th class="num">Tardanzas</th>
-                  <th class="num">Min. tarde</th>
-                  <th class="num">Faltas</th>
-                  <th class="num">Justificadas</th>
-                  <th class="num">Horas</th>
-                  <th class="num">H. extra</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (row of rows(); track row.employeeId) {
-                  <tr>
-                    <td>
-                      <span class="strong">{{ row.employeeName }}</span>
-                      <div class="muted text-sm">{{ row.employeeCode }}</div>
-                    </td>
-                    <td>{{ row.departmentName ?? '-' }}</td>
-                    <td class="muted">{{ row.scheduleName ?? 'Sin horario' }}</td>
-                    <td class="num">{{ row.daysPresent }}</td>
-                    <td class="num" [class.warn]="row.daysLate > 0">{{ row.daysLate }}</td>
-                    <td class="num">{{ row.totalLateMinutes }}</td>
-                    <td class="num" [class.danger]="row.daysAbsent > 0">{{ row.daysAbsent }}</td>
-                    <td class="num">{{ row.daysJustified }}</td>
-                    <td class="num">{{ row.workedHours }}</td>
-                    <td class="num strong">{{ row.overtimeHours }}</td>
-                  </tr>
+        @if (pestana() === 'resumen') {
+          <div class="filters">
+            <div class="field">
+              <label for="desde">Desde</label>
+              <input id="desde" type="date" [value]="from()" (change)="from.set($any($event.target).value); page.set(1); load()" />
+            </div>
+            <div class="field">
+              <label for="hasta">Hasta</label>
+              <input id="hasta" type="date" [value]="to()" (change)="to.set($any($event.target).value); page.set(1); load()" />
+            </div>
+            <div class="field">
+              <label for="departamento">Departamento</label>
+              <select id="departamento" (change)="departmentId.set($any($event.target).value); page.set(1); load()">
+                <option value="">Todos</option>
+                @for (dep of departments(); track dep.id) {
+                  <option [value]="dep.id" [selected]="dep.id === departmentId()">{{ dep.name }}</option>
                 }
-              </tbody>
-            </table>
+              </select>
+            </div>
+            <div class="field flex-1">
+              <label for="buscar">Buscar</label>
+              <input id="buscar" type="search" placeholder="Nombre, apellido o codigo" [value]="search()" (input)="setSearch($any($event.target).value)" />
+            </div>
           </div>
-          <app-paginator [meta]="meta()" (pageChange)="goToPage($event)" (limitChange)="setLimit($event)" />
-        }
-      </app-card>
+          <p class="ayuda">
+            Haga clic en un empleado para ver sus entradas y salidas dia por dia{{ auth.isHr() ? ' y corregirlas' : '' }}.
+          </p>
 
-      <app-card heading="Justificaciones por revisar" [padded]="false">
-        @if (justifications().length === 0) {
-          <app-state title="No hay justificaciones pendientes" message="Las solicitudes del equipo apareceran aqui."></app-state>
-        } @else {
-          <div class="table-wrap">
-            <table class="data">
-              <thead>
-                <tr>
-                  <th>Empleado</th>
-                  <th>Fecha</th>
-                  <th>Motivo</th>
-                  <th>Respaldo</th>
-                  <th>Estado</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (item of justifications(); track item.id) {
+          @if (loading()) {
+            <app-state mode="loading" title="Calculando asistencia"></app-state>
+          } @else if (rows().length === 0) {
+            <app-state title="Sin datos en el rango" message="Ajuste las fechas, el departamento o la busqueda."></app-state>
+          } @else {
+            <div class="table-wrap">
+              <table class="data resumen">
+                <thead>
                   <tr>
-                    <td class="strong">{{ item.employeeName }}</td>
-                    <td class="nowrap">{{ item.date | fecha }}</td>
-                    <td>{{ item.reason }}</td>
-                    <td>
-                      @if (item.attachmentUrl) {
-                        <a [href]="item.attachmentUrl" target="_blank" rel="noopener">Ver adjunto</a>
-                      } @else {
-                        <span class="muted">-</span>
-                      }
-                    </td>
-                    <td><span [class]="item.status | badgeClase">{{ item.status | etiqueta }}</span></td>
-                    <td class="nowrap text-right">
-                      @if (item.status === 'PENDING') {
-                        <button class="btn btn-secondary btn-sm" (click)="review(item, 'APPROVED')">Aprobar</button>
-                        <button class="btn btn-ghost btn-sm" (click)="review(item, 'REJECTED')">Rechazar</button>
-                      }
-                    </td>
+                    <th>Empleado</th>
+                    <th>Horario</th>
+                    <th class="num">Dias trabajados</th>
+                    <th class="num">Llegadas tarde</th>
+                    <th class="num">Faltas</th>
+                    <th class="num">Horas trabajadas</th>
+                    <th class="num">Horas extra</th>
+                    <th><span class="visually-hidden">Detalle</span></th>
                   </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-          <app-paginator [meta]="justificationsMeta()" (pageChange)="goToJustificationsPage($event)" />
+                </thead>
+                <tbody>
+                  @for (row of rows(); track row.employeeId) {
+                    <tr class="fila" tabindex="0" (click)="seleccionado.set(row)" (keydown.enter)="seleccionado.set(row)">
+                      <td>
+                        <span class="strong">{{ row.employeeName }}</span>
+                        <div class="muted text-sm">{{ row.employeeCode }} · {{ row.departmentName ?? 'Sin departamento' }}</div>
+                      </td>
+                      <td>
+                        @if (row.scheduleName) {
+                          <span class="horario">{{ row.scheduleName }}</span>
+                        } @else {
+                          <span class="sin-horario" title="Sin horario no se calculan tardanzas. Asignelo en Horarios y turnos.">Sin horario</span>
+                        }
+                      </td>
+                      <td class="num">
+                        {{ row.daysPresent || '—' }}
+                        @if (row.daysIncomplete > 0) {
+                          <div class="incompletos" title="Dias con entrada sin salida, o salida sin entrada">
+                            {{ row.daysIncomplete }} incompleto{{ row.daysIncomplete === 1 ? '' : 's' }}
+                          </div>
+                        }
+                      </td>
+                      <td class="num">
+                        @if (row.daysLate > 0) {
+                          <span class="warn">{{ row.daysLate }}</span>
+                          <div class="muted text-sm">{{ minutos(row.totalLateMinutes) }}</div>
+                        } @else {
+                          <span class="muted">—</span>
+                        }
+                      </td>
+                      <td class="num">
+                        @if (row.daysAbsent > 0) {
+                          <span class="danger">{{ row.daysAbsent }}</span>
+                        } @else {
+                          <span class="muted">—</span>
+                        }
+                        @if (row.daysJustified > 0) {
+                          <div class="muted text-sm">{{ row.daysJustified }} justificada{{ row.daysJustified === 1 ? '' : 's' }}</div>
+                        }
+                      </td>
+                      <td class="num">{{ horas(row.workedHours) }}</td>
+                      <td class="num" [class.strong]="row.overtimeHours > 0">{{ horas(row.overtimeHours) }}</td>
+                      <td class="ver" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <app-paginator [meta]="meta()" (pageChange)="goToPage($event)" (limitChange)="setLimit($event)" />
+          }
+        } @else {
+          @if (justifications().length === 0) {
+            <app-state title="No hay justificaciones" message="Las solicitudes del equipo apareceran aqui."></app-state>
+          } @else {
+            <div class="table-wrap">
+              <table class="data">
+                <thead>
+                  <tr>
+                    <th>Empleado</th>
+                    <th>Fecha</th>
+                    <th>Motivo</th>
+                    <th>Respaldo</th>
+                    <th>Estado</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of justifications(); track item.id) {
+                    <tr>
+                      <td class="strong">{{ item.employeeName }}</td>
+                      <td class="nowrap">{{ item.date | fecha }}</td>
+                      <td>{{ item.reason }}</td>
+                      <td>
+                        @if (item.attachmentUrl) {
+                          <a [href]="item.attachmentUrl" target="_blank" rel="noopener">Ver adjunto</a>
+                        } @else {
+                          <span class="muted">-</span>
+                        }
+                      </td>
+                      <td><span [class]="item.status | badgeClase">{{ item.status | etiqueta }}</span></td>
+                      <td class="nowrap text-right">
+                        @if (item.status === 'PENDING') {
+                          <button class="btn btn-secondary btn-sm" (click)="review(item, 'APPROVED')">Aprobar</button>
+                          <button class="btn btn-ghost btn-sm" (click)="review(item, 'REJECTED')">Rechazar</button>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <app-paginator [meta]="justificationsMeta()" (pageChange)="goToJustificationsPage($event)" />
+          }
         }
-      </app-card>
+      </section>
+
+      @if (seleccionado(); as fila) {
+        <app-marcaciones-empleado
+          [fila]="fila"
+          [desde]="from()"
+          [hasta]="to()"
+          [puedeEditar]="auth.isHr()"
+          (cerrado)="seleccionado.set(null)"
+          (cambiado)="load()"
+        />
+      }
     </div>
   `,
   styleUrl: './attendance-report.component.scss',
@@ -199,6 +252,11 @@ export class AttendanceReportComponent implements OnInit {
   readonly page = signal(1);
   readonly limit = signal(20);
   readonly justificationsPage = signal(1);
+  readonly pestana = signal<'resumen' | 'justificaciones'>('resumen');
+  readonly pendientes = signal(0);
+  readonly seleccionado = signal<AttendanceReportRow | null>(null);
+  readonly horas = formatoHoras;
+  readonly minutos = formatoMinutos;
 
   private searchTimer?: ReturnType<typeof setTimeout>;
 
@@ -265,6 +323,12 @@ export class AttendanceReportComponent implements OnInit {
           this.justificationsMeta.set(page.meta);
         },
         error: () => this.justifications.set([]),
+      });
+    this.api
+      .list<AttendanceJustification>('/attendance/justifications', { status: 'PENDING', page: 1, limit: 1 })
+      .subscribe({
+        next: (page) => this.pendientes.set(page.meta.total),
+        error: () => this.pendientes.set(0),
       });
   }
 
