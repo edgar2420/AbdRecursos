@@ -128,6 +128,7 @@ export class IclockServer {
   }
 
   private registrarVisita(serie: string, ip: string | null): EstadoReloj {
+    if (!this.relojes.has(serie)) logger.info({ serie, ip }, 'Reloj conectado al receptor');
     const actual = this.relojes.get(serie) ?? {
       serie,
       ip,
