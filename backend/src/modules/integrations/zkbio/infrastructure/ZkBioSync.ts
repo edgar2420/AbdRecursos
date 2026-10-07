@@ -16,6 +16,7 @@ export interface ResultadoPersonal {
   actualizados: number;
   nombresACorregir: number;
   departamentosCreados: number;
+  cargosCreados: number;
 }
 
 export interface ResultadoMarcaciones {
@@ -58,8 +59,32 @@ export class ZkBioSync {
       departamentosCreados++;
     }
 
+    const cargos = new Map(
+      (await prisma.position.findMany({ select: { id: true, name: true } })).map((p) => [p.name, p.id]),
+    );
+    let cargosCreados = 0;
+    for (const nombre of new Set(zk.map((e) => e.position?.position_name?.trim()).filter((n): n is string => !!n))) {
+      if (cargos.has(nombre)) continue;
+      const nuevo = await prisma.position.create({ data: { name: nombre } });
+      cargos.set(nombre, nuevo.id);
+      cargosCreados++;
+    }
+
     const existentes = new Map(
-      (await prisma.employee.findMany({ select: { id: true, employeeCode: true, firstName: true, departmentId: true } })).map((e) => [
+      (
+        await prisma.employee.findMany({
+          select: {
+            id: true,
+            employeeCode: true,
+            firstName: true,
+            departmentId: true,
+            positionId: true,
+            birthDate: true,
+            gender: true,
+            email: true,
+          },
+        })
+      ).map((e) => [
         e.employeeCode,
         e,
       ]),
@@ -75,6 +100,8 @@ export class ZkBioSync {
       const nombre = nombreDesdeZk(codigo, e.first_name, e.last_name);
       if (nombre.aCorregir) nombresACorregir++;
       const departmentId = departamentos.get(e.department?.dept_name?.trim() ?? '') ?? null;
+      const positionId = cargos.get(e.position?.position_name?.trim() ?? '') ?? null;
+      const birthDate = e.birthday ? fechaHoraLocal(e.birthday) : null;
       const actual = existentes.get(codigo);
 
       if (!actual) {
@@ -88,7 +115,9 @@ export class ZkBioSync {
             baseSalary: new Prisma.Decimal(0),
             gender: e.gender || null,
             email: e.email || null,
+            birthDate,
             departmentId,
+            positionId,
           },
         });
         creados++;
@@ -103,13 +132,17 @@ export class ZkBioSync {
         data.lastName = nombre.lastName;
       }
       if (!actual.departmentId && departmentId) data.department = { connect: { id: departmentId } };
+      if (!actual.positionId && positionId) data.position = { connect: { id: positionId } };
+      if (!actual.birthDate && birthDate) data.birthDate = birthDate;
+      if (!actual.gender && e.gender) data.gender = e.gender;
+      if (!actual.email && e.email) data.email = e.email;
       if (Object.keys(data).length > 0) {
         await prisma.employee.update({ where: { id: actual.id }, data });
         actualizados++;
       }
     }
 
-    const resultado = { leidos: zk.length, creados, actualizados, nombresACorregir, departamentosCreados };
+    const resultado = { leidos: zk.length, creados, actualizados, nombresACorregir, departamentosCreados, cargosCreados };
     await this.audit.log({
       userId: actorId,
       action: 'ZKBIO_SYNC_EMPLOYEES',

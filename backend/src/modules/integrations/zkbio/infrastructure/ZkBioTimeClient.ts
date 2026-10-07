@@ -3,6 +3,8 @@ export interface ZkEmpleado {
   first_name: string | null;
   last_name: string | null;
   department?: { dept_name?: string | null } | null;
+  position?: { position_name?: string | null } | null;
+  birthday?: string | null;
   hire_date?: string | null;
   gender?: string | null;
   email?: string | null;
