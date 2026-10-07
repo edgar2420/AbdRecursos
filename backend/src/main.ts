@@ -168,6 +168,9 @@ import { reportRoutes } from './modules/reports/infrastructure/http/report.route
 import { ZkBioTimeClient } from './modules/integrations/zkbio/infrastructure/ZkBioTimeClient';
 import { ZkBioSync } from './modules/integrations/zkbio/infrastructure/ZkBioSync';
 import { zkbioRoutes } from './modules/integrations/zkbio/infrastructure/zkbio.routes';
+import { ConsultarBancoHoras, RegistrarAjusteBanco } from './modules/banco-horas/application/BancoHoras';
+import { PrismaBancoHorasRepository } from './modules/banco-horas/infrastructure/PrismaBancoHorasRepository';
+import { bancoHorasRoutes } from './modules/banco-horas/infrastructure/banco-horas.routes';
 import { IclockServer } from './modules/integrations/iclock/infrastructure/IclockServer';
 import { iclockRoutes } from './modules/integrations/iclock/infrastructure/iclock.routes';
 import { RegistradorMarcacionesBiometrico } from './modules/attendance/infrastructure/persistence/RegistradorMarcacionesBiometrico';
@@ -340,6 +343,12 @@ export function buildApiRouter(): Router {
       parameters,
     ),
   ));
+  const bancoHoras = new PrismaBancoHorasRepository();
+  router.use(
+    '/banco-horas',
+    auth,
+    bancoHorasRoutes(new ConsultarBancoHoras(bancoHoras, policy), new RegistrarAjusteBanco(bancoHoras, policy, audit)),
+  );
   router.use('/audit-logs', auth, auditRoutes(new AuditController(new ListAuditLogs(new PrismaAuditLogRepository()))));
 
   const registrador = new RegistradorMarcacionesBiometrico(schedules, parameters);

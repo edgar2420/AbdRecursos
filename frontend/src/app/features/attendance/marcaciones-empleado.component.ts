@@ -5,6 +5,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { apiErrorMessage } from '../../core/interceptors/auth.interceptor';
 import { AttendanceRecord, AttendanceReportRow, Paginated } from '../../core/models/api.models';
 import { ModalComponent, StateComponent } from '../../shared/components/ui.components';
+import { BancoHorasComponent } from '../../shared/components/banco-horas.component';
 import {
   ETIQUETA_ESTADO,
   EstadoDia,
@@ -39,10 +40,18 @@ const POR_PAGINA = 100;
 @Component({
   selector: 'app-marcaciones-empleado',
   standalone: true,
-  imports: [ModalComponent, StateComponent],
+  imports: [ModalComponent, StateComponent, BancoHorasComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-modal size="lg" [title]="fila.employeeName + ' · ' + fila.employeeCode" (closed)="cerrado.emit()">
+      <div class="vistas" role="tablist" aria-label="Detalle del empleado">
+        <button type="button" role="tab" [attr.aria-selected]="vista() === 'marcaciones'" (click)="vista.set('marcaciones')">Marcaciones</button>
+        <button type="button" role="tab" [attr.aria-selected]="vista() === 'banco'" (click)="vista.set('banco')">Banco de horas</button>
+      </div>
+
+      @if (vista() === 'banco') {
+        <app-banco-horas [employeeId]="fila.employeeId" [puedeAjustar]="puedeEditar" (cambiado)="cambiado.emit()" />
+      } @else {
       <div class="resumen">
         <span><strong>{{ fila.daysPresent }}</strong> dias trabajados</span>
         @if (fila.daysIncomplete > 0) {
@@ -121,6 +130,7 @@ const POR_PAGINA = 100;
           </table>
         </div>
       }
+      }
       <div footer>
         <button class="btn btn-ghost" type="button" (click)="cerrado.emit()">Cerrar</button>
       </div>
@@ -140,6 +150,7 @@ export class MarcacionesEmpleadoComponent implements OnInit {
   @Output() cambiado = new EventEmitter<void>();
 
   readonly tipos: Array<'CHECK_IN' | 'CHECK_OUT'> = ['CHECK_IN', 'CHECK_OUT'];
+  readonly vista = signal<'marcaciones' | 'banco'>('marcaciones');
   readonly horaLocal = horaLocal;
   readonly horas = formatoHoras;
   readonly minutos = formatoMinutos;

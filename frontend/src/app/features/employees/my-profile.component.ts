@@ -13,6 +13,7 @@ import {
   StateComponent,
 } from '../../shared/components/ui.components';
 import { FlameGaugeComponent } from '../../shared/components/flame-gauge.component';
+import { BancoHorasComponent } from '../../shared/components/banco-horas.component';
 import { BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/format.pipes';
 
 @Component({
@@ -26,6 +27,7 @@ import { BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
     StateComponent,
     EyeToggleComponent,
     FlameGaugeComponent,
+    BancoHorasComponent,
     BolivianosPipe,
     FechaPipe,
     EtiquetaPipe,
@@ -142,6 +144,10 @@ import { BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/form
             </form>
           </app-card>
         </div>
+
+        <app-card heading="Banco de horas">
+          <app-banco-horas [employeeId]="e.id" />
+        </app-card>
       }
       }
     </div>

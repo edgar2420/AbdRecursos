@@ -98,15 +98,15 @@ enum EmployeeChangeType {
 // ---------------------------------------------------------------- auth
 
 model User {
-  id           String    @id @default(uuid()) @db.Uuid
-  email        String    @unique
-  passwordHash String    @map("password_hash")
-  role         Role      @default(EMPLOYEE)
-  isActive     Boolean   @default(true) @map("is_active")
-  mustChangePassword Boolean @default(true) @map("must_change_password")
-  lastLoginAt  DateTime? @map("last_login_at")
-  employeeId   String?   @unique @map("employee_id") @db.Uuid
-  employee     Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  id                 String    @id @default(uuid()) @db.Uuid
+  email              String    @unique
+  passwordHash       String    @map("password_hash")
+  role               Role      @default(EMPLOYEE)
+  isActive           Boolean   @default(true) @map("is_active")
+  mustChangePassword Boolean   @default(true) @map("must_change_password")
+  lastLoginAt        DateTime? @map("last_login_at")
+  employeeId         String?   @unique @map("employee_id") @db.Uuid
+  employee           Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
 
   refreshTokens RefreshToken[]
   auditLogs     AuditLog[]
@@ -224,6 +224,7 @@ model Employee {
   scheduleAssignments ScheduleAssignment[]
   bonuses             EmployeeBonus[]
   papeletas           Papeleta[]
+  bancoHorasAjustes   BancoHorasAjuste[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -634,4 +635,20 @@ model Papeleta {
   @@index([tipo, estado])
   @@index([fecha])
   @@map("papeletas")
+}
+
+/// Ajuste manual del banco de horas (pago de horas extra, compensacion con dia libre, correccion).
+model BancoHorasAjuste {
+  id         String   @id @default(uuid()) @db.Uuid
+  employeeId String   @map("employee_id") @db.Uuid
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  /// Positivo suma horas a favor; negativo las descuenta.
+  minutos    Int
+  motivo     String
+  fecha      DateTime @default(now())
+  creadoPor  String?  @map("creado_por") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([employeeId])
+  @@map("banco_horas_ajustes")
 }

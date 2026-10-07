@@ -19,6 +19,7 @@ import {
 import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/format.pipes';
 import { MarcacionesEmpleadoComponent } from './marcaciones-empleado.component';
 import { formatoHoras, formatoMinutos } from './asistencia-formato';
+import { duracionConSigno } from '../../shared/components/banco-horas.component';
 
 @Component({
   selector: 'app-attendance-report',
@@ -117,7 +118,8 @@ import { formatoHoras, formatoMinutos } from './asistencia-formato';
                     <th class="num">Llegadas tarde</th>
                     <th class="num">Faltas</th>
                     <th class="num">Horas trabajadas</th>
-                    <th class="num">Horas extra</th>
+                    <th class="num" title="Detectadas por el reloj. Solo suman al banco si tienen papeleta aprobada.">Extra (reloj)</th>
+                    <th class="num">Banco de horas</th>
                     <th><span class="visually-hidden">Detalle</span></th>
                   </tr>
                 </thead>
@@ -163,6 +165,13 @@ import { formatoHoras, formatoMinutos } from './asistencia-formato';
                       </td>
                       <td class="num">{{ horas(row.workedHours) }}</td>
                       <td class="num" [class.strong]="row.overtimeHours > 0">{{ horas(row.overtimeHours) }}</td>
+                      <td class="num">
+                        @if (saldos().get(row.employeeId); as s) {
+                          <span [class.saldo-favor]="s > 0" [class.saldo-debe]="s < 0">{{ s < 0 ? 'Debe ' + duracion(-s) : duracion(s) }}</span>
+                        } @else {
+                          <span class="muted">—</span>
+                        }
+                      </td>
                       <td class="ver" aria-hidden="true">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
                       </td>
@@ -257,6 +266,8 @@ export class AttendanceReportComponent implements OnInit {
   readonly seleccionado = signal<AttendanceReportRow | null>(null);
   readonly horas = formatoHoras;
   readonly minutos = formatoMinutos;
+  readonly duracion = duracionConSigno;
+  readonly saldos = signal(new Map<string, number>());
 
   private searchTimer?: ReturnType<typeof setTimeout>;
 
@@ -302,6 +313,7 @@ export class AttendanceReportComponent implements OnInit {
           this.rows.set(response.data);
           this.meta.set(response.meta);
           this.loading.set(false);
+          this.cargarSaldos(response.data.map((r) => r.employeeId));
         },
         error: (error) => {
           this.rows.set([]);
@@ -309,6 +321,14 @@ export class AttendanceReportComponent implements OnInit {
           this.toast.error('No se pudo generar el reporte', apiErrorMessage(error));
         },
       });
+  }
+
+  private cargarSaldos(ids: string[]): void {
+    if (ids.length === 0) return;
+    this.api.get<Array<{ employeeId: string; saldoMinutos: number }>>('/banco-horas/saldos', { ids: ids.join(',') }).subscribe({
+      next: (r) => this.saldos.set(new Map(r.data.filter((s) => s.saldoMinutos !== 0).map((s) => [s.employeeId, s.saldoMinutos]))),
+      error: () => this.saldos.set(new Map()),
+    });
   }
 
   loadJustifications(): void {

@@ -149,3 +149,28 @@
   color: var(--ink-500);
   cursor: help;
 }
+
+.vistas {
+  display: flex;
+  gap: 4px;
+  margin: -6px 0 14px;
+  border-bottom: 1px solid var(--ink-200);
+
+  button {
+    padding: 8px 12px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    background: none;
+    color: var(--ink-500);
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &[aria-selected='true'] {
+      color: var(--brand-800);
+      border-bottom-color: var(--brand-600);
+    }
+  }
+}

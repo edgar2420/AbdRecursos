@@ -142,3 +142,13 @@
   color: var(--warn-700);
   cursor: help;
 }
+
+.saldo-favor {
+  color: var(--ok-700);
+  font-weight: 700;
+}
+
+.saldo-debe {
+  color: var(--danger-700);
+  font-weight: 700;
+}
