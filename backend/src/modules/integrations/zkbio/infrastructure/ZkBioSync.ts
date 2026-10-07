@@ -4,7 +4,7 @@ import { FieldCipher } from '../../../../shared/infrastructure/security/FieldCip
 import { startOfDay, toDateOnlyString } from '../../../../shared/domain/dates';
 import { AuditLoggerPort } from '../../../../shared/application/AuditLogger';
 import { RegistradorMarcacionesBiometrico } from '../../../attendance/infrastructure/persistence/RegistradorMarcacionesBiometrico';
-import { fechaHoraLocal, nombreDesdeZk, tipoDeMarcacion } from '../domain/nombres';
+import { NOMBRE_A_CORREGIR, fechaHoraLocal, nombreDesdeZk, tipoDeMarcacion } from '../domain/nombres';
 import { ZkBioTimeClient } from './ZkBioTimeClient';
 
 /** Codigo de la ficha tecnica del administrador del sistema: no existe en ZKBio Time y nunca se sincroniza. */
@@ -59,7 +59,7 @@ export class ZkBioSync {
     }
 
     const existentes = new Map(
-      (await prisma.employee.findMany({ select: { id: true, employeeCode: true, firstName: true } })).map((e) => [
+      (await prisma.employee.findMany({ select: { id: true, employeeCode: true, firstName: true, departmentId: true } })).map((e) => [
         e.employeeCode,
         e,
       ]),
@@ -95,17 +95,18 @@ export class ZkBioSync {
         continue;
       }
 
-      // Un nombre danado en ZKBio Time no pisa el que RRHH ya corrigio en el SGRH.
-      const data: Prisma.EmployeeUpdateInput = {
-        department: departmentId ? { connect: { id: departmentId } } : { disconnect: true },
-        isActive: true,
-      };
-      if (!nombre.aCorregir) {
+      // El SGRH manda sobre los empleados que ya existen: solo se completa lo que sigue vacio,
+      // nunca se pisa lo que RRHH edito ni se reactiva a quien se dio de baja.
+      const data: Prisma.EmployeeUpdateInput = {};
+      if (actual.firstName === NOMBRE_A_CORREGIR && !nombre.aCorregir) {
         data.firstName = nombre.firstName;
         data.lastName = nombre.lastName;
       }
-      await prisma.employee.update({ where: { id: actual.id }, data });
-      actualizados++;
+      if (!actual.departmentId && departmentId) data.department = { connect: { id: departmentId } };
+      if (Object.keys(data).length > 0) {
+        await prisma.employee.update({ where: { id: actual.id }, data });
+        actualizados++;
+      }
     }
 
     const resultado = { leidos: zk.length, creados, actualizados, nombresACorregir, departamentosCreados };
