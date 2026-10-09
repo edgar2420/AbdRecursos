@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { pageQuerySchema } from '../../../../shared/infrastructure/http/query';
+import { fechaLocal } from '../../../../shared/infrastructure/http/fecha-local';
+import { MOTIVOS_BAJA } from '../../domain/motivosBaja';
 
 export const contractTypes = ['INDEFINIDO', 'PLAZO_FIJO', 'EVENTUAL', 'CONSULTORIA'] as const;
 export const employeeStatuses = ['ACTIVE', 'ON_LEAVE', 'TERMINATED'] as const;
@@ -51,7 +53,12 @@ export const updateEmployeeSchema = createEmployeeSchema.partial().extend({
 });
 
 export const deactivateEmployeeSchema = z.object({
-  terminationDate: z.coerce.date().optional(),
+  terminationDate: fechaLocal.optional(),
+  motivo: z.enum(MOTIVOS_BAJA, { errorMap: () => ({ message: 'Elija el motivo de la baja' }) }),
+  notes: z.string().trim().max(300).optional(),
+});
+
+export const reactivateEmployeeSchema = z.object({
   notes: z.string().trim().max(300).optional(),
 });
 

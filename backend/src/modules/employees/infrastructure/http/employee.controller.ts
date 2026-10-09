@@ -13,7 +13,7 @@ import { GetEmployeeHistory } from '../../application/use-cases/GetEmployeeHisto
 import { EmployeeRepository } from '../../domain/repositories/EmployeeRepository';
 import { CatalogRepository } from '../../domain/repositories/CatalogRepository';
 import { EMPLOYEE_IMPORT_COLUMNS } from '../import/employee-import.columns';
-import { listEmployeesSchema } from './employee.validators';
+import { deactivateEmployeeSchema, listEmployeesSchema, reactivateEmployeeSchema } from './employee.validators';
 
 const EXPORT_COLUMNS = [
   { key: 'employeeCode', header: 'Codigo', width: 60 },
@@ -61,12 +61,13 @@ export class EmployeeController {
   };
 
   deactivate = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-    await this.deactivateUseCase.execute(requireActor(req), req.params.id, req.body ?? {});
-    res.status(204).send();
+    const body = validated<z.infer<typeof deactivateEmployeeSchema>>(req, 'body');
+    res.json({ data: await this.deactivateUseCase.execute(requireActor(req), req.params.id, body) });
   };
 
   reactivate = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-    res.json({ data: await this.reactivateUseCase.execute(requireActor(req), req.params.id) });
+    const body = validated<z.infer<typeof reactivateEmployeeSchema>>(req, 'body');
+    res.json({ data: await this.reactivateUseCase.execute(requireActor(req), req.params.id, body) });
   };
 
   history = async (req: AuthenticatedRequest, res: Response): Promise<void> => {

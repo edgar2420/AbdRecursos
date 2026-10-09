@@ -27,3 +27,35 @@ dd {
 .row > div strong {
   font-size: 17px;
 }
+
+.aviso-baja {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--danger-100);
+  border-left: 4px solid var(--danger-600);
+  background: var(--danger-100);
+  color: var(--danger-700);
+
+  div {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 12px;
+  }
+
+  span {
+    font-size: 13px;
+  }
+
+  p {
+    flex-basis: 100%;
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    color: var(--ink-700);
+  }
+}

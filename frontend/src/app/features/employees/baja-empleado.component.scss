@@ -1,0 +1,20 @@
+.baja {
+  display: grid;
+  gap: 14px;
+}
+
+.efectos {
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: var(--ink-50);
+  border: 1px solid var(--ink-200);
+  font-size: 12.5px;
+  color: var(--ink-700);
+
+  ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+    display: grid;
+    gap: 3px;
+  }
+}

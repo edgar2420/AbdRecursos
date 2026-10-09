@@ -8,6 +8,7 @@ import {
   catalogSchema,
   createEmployeeSchema,
   deactivateEmployeeSchema,
+  reactivateEmployeeSchema,
   employeeIdParamSchema,
   listEmployeesSchema,
   updateEmployeeSchema,
@@ -75,6 +76,7 @@ export function employeeRoutes(controller: EmployeeController): Router {
     '/:id/reactivate',
     requireRole('HR', 'ADMIN'),
     validate(employeeIdParamSchema, 'params'),
+    validate(reactivateEmployeeSchema),
     asyncHandler(controller.reactivate),
   );
 

@@ -173,6 +173,7 @@ import { PrismaBancoHorasRepository } from './modules/banco-horas/infrastructure
 import { bancoHorasRoutes } from './modules/banco-horas/infrastructure/banco-horas.routes';
 import { NominaBiometrico } from './modules/imports/application/NominaBiometrico';
 import { PrismaNominaRepository } from './modules/imports/infrastructure/nomina/PrismaNominaRepository';
+import { PrismaAccesoEmpleado } from './modules/employees/infrastructure/persistence/PrismaAccesoEmpleado';
 import { leerNomina } from './modules/imports/infrastructure/nomina/leerNomina';
 import { nominaRoutes } from './modules/imports/infrastructure/nomina/nomina.routes';
 import { IclockServer } from './modules/integrations/iclock/infrastructure/IclockServer';
@@ -206,6 +207,7 @@ export function buildApiRouter(): Router {
   const papeletas = new PrismaPapeletaRepository();
 
   const policy = new EmployeeAccessPolicy(employees);
+  const accesoEmpleado = new PrismaAccesoEmpleado();
   const parameters = new GetLegalParameters(legalParameters);
   const notifier = new LogNotifier();
   const tardanzas = new PrismaTardanzaRecalculator(parameters);
@@ -228,8 +230,8 @@ export function buildApiRouter(): Router {
     new GetEmployee(employees, policy),
     new CreateEmployee(employees, policy, audit),
     new UpdateEmployee(employees, policy, audit),
-    new DeactivateEmployee(employees, policy, audit),
-    new ReactivateEmployee(employees, policy, audit),
+    new DeactivateEmployee(employees, policy, audit, accesoEmpleado),
+    new ReactivateEmployee(employees, policy, audit, accesoEmpleado),
     new GetEmployeeHistory(employees, policy),
     employees,
     catalogs,

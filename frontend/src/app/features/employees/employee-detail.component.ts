@@ -3,15 +3,9 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
-import { ToastService } from '../../core/services/toast.service';
-import { apiErrorMessage } from '../../core/interceptors/auth.interceptor';
 import { Employee, EmployeeHistoryEntry, VacationBalance } from '../../core/models/api.models';
-import {
-  CardComponent,
-  ModalComponent,
-  PageHeaderComponent,
-  StateComponent,
-} from '../../shared/components/ui.components';
+import { CardComponent, PageHeaderComponent, StateComponent } from '../../shared/components/ui.components';
+import { BajaEmpleadoComponent, ReactivarEmpleadoComponent, etiquetaMotivoBaja } from './baja-empleado.component';
 import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/format.pipes';
 
 @Component({
@@ -23,7 +17,8 @@ import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../s
     PageHeaderComponent,
     CardComponent,
     StateComponent,
-    ModalComponent,
+    BajaEmpleadoComponent,
+    ReactivarEmpleadoComponent,
     BolivianosPipe,
     FechaPipe,
     EtiquetaPipe,
@@ -43,12 +38,24 @@ import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../s
         <app-page-header [title]="e.fullName" [subtitle]="(e.positionName ?? 'Sin cargo') + ' · ' + (e.departmentName ?? 'Sin departamento')">
           <a class="btn btn-ghost btn-sm" routerLink="/empleados">Volver</a>
           @if (auth.isHr() && e.isActive) {
-            <button class="btn btn-danger btn-sm" (click)="confirmOpen.set(true)">Dar de baja</button>
-          }
-          @if (auth.isHr() && !e.isActive) {
-            <button class="btn btn-secondary btn-sm" (click)="reactivate()">Reactivar</button>
+            <button class="btn btn-danger btn-sm" (click)="modal.set('baja')">Dar de baja</button>
           }
         </app-page-header>
+
+        @if (!e.isActive) {
+          <section class="aviso-baja" aria-label="Empleado dado de baja">
+            <div>
+              <strong>De baja desde el {{ e.terminationDate | fecha }}</strong>
+              <span>{{ motivoBaja(e.terminationReason) }}</span>
+              @if (e.terminationNotes) {
+                <p>{{ e.terminationNotes }}</p>
+              }
+            </div>
+            @if (auth.isHr()) {
+              <button class="btn btn-secondary btn-sm" (click)="modal.set('reactivar')">Reactivar</button>
+            }
+          </section>
+        }
 
         <div class="grid cols-3">
           <app-card heading="Datos personales">
@@ -66,6 +73,9 @@ import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../s
             <dl>
               <div><dt>Estado</dt><dd><span [class]="e.status | badgeClase">{{ e.status | etiqueta }}</span></dd></div>
               <div><dt>Ingreso</dt><dd>{{ e.hireDate | fecha }}</dd></div>
+              @if (e.terminationDate) {
+                <div><dt>Retiro</dt><dd>{{ e.terminationDate | fecha }}</dd></div>
+              }
               <div><dt>Contrato</dt><dd>{{ e.contractType | etiqueta }}</dd></div>
               <div><dt>Haber basico</dt><dd class="strong">{{ e.baseSalary | bs }}</dd></div>
               <div><dt>Supervisor</dt><dd>{{ e.supervisorName ?? 'Sin supervisor' }}</dd></div>
@@ -145,32 +155,19 @@ import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../s
       }
     </div>
 
-    @if (confirmOpen()) {
-      <app-modal title="Dar de baja al empleado" (closed)="confirmOpen.set(false)">
-        <p>
-          El empleado quedara inactivo pero se conserva todo su historial y sus boletas (baja logica).
-          Esta accion queda registrada en la auditoria.
-        </p>
-        <div class="field">
-          <label>Fecha de desvinculacion</label>
-          <input type="date" [value]="terminationDate()" (change)="terminationDate.set($any($event.target).value)" />
-        </div>
-        <div class="field">
-          <label>Motivo / notas</label>
-          <textarea [value]="terminationNotes()" (input)="terminationNotes.set($any($event.target).value)"></textarea>
-        </div>
-        <div footer>
-          <button class="btn btn-ghost" (click)="confirmOpen.set(false)">Cancelar</button>
-          <button class="btn btn-danger" (click)="deactivate()">Confirmar baja</button>
-        </div>
-      </app-modal>
+    @if (employee(); as e) {
+      @if (modal() === 'baja') {
+        <app-baja-empleado [empleado]="e" (cerrado)="modal.set(null)" (hecho)="trasCambio()" />
+      }
+      @if (modal() === 'reactivar') {
+        <app-reactivar-empleado [empleado]="e" (cerrado)="modal.set(null)" (hecho)="trasCambio()" />
+      }
     }
   `,
   styleUrl: './employee-detail.component.scss',
 })
 export class EmployeeDetailComponent implements OnInit {
   private readonly api = inject(ApiService);
-  private readonly toast = inject(ToastService);
   readonly auth = inject(AuthService);
 
   @Input() id = '';
@@ -179,9 +176,8 @@ export class EmployeeDetailComponent implements OnInit {
   readonly employee = signal<Employee | null>(null);
   readonly history = signal<EmployeeHistoryEntry[]>([]);
   readonly balance = signal<VacationBalance | null>(null);
-  readonly confirmOpen = signal(false);
-  readonly terminationDate = signal(new Date().toISOString().slice(0, 10));
-  readonly terminationNotes = signal('');
+  readonly modal = signal<'baja' | 'reactivar' | null>(null);
+  readonly motivoBaja = etiquetaMotivoBaja;
 
   ngOnInit(): void {
     this.load();
@@ -211,29 +207,8 @@ export class EmployeeDetailComponent implements OnInit {
     });
   }
 
-  deactivate(): void {
-    this.api
-      .delete(`/employees/${this.id}`, {
-        terminationDate: this.terminationDate(),
-        notes: this.terminationNotes() || undefined,
-      })
-      .subscribe({
-        next: () => {
-          this.confirmOpen.set(false);
-          this.toast.success('Empleado dado de baja');
-          this.load();
-        },
-        error: (error) => this.toast.error('No se pudo dar de baja', apiErrorMessage(error)),
-      });
-  }
-
-  reactivate(): void {
-    this.api.post(`/employees/${this.id}/reactivate`).subscribe({
-      next: () => {
-        this.toast.success('Empleado reactivado');
-        this.load();
-      },
-      error: (error) => this.toast.error('No se pudo reactivar', apiErrorMessage(error)),
-    });
+  trasCambio(): void {
+    this.modal.set(null);
+    this.load();
   }
 }

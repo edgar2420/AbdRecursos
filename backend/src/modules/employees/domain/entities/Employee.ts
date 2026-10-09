@@ -17,6 +17,8 @@ export interface Employee {
   photoUrl: string | null;
   hireDate: Date;
   terminationDate: Date | null;
+  terminationReason: string | null;
+  terminationNotes: string | null;
   contractType: ContractType;
   baseSalary: number;
   bankName: string | null;
@@ -71,6 +73,8 @@ export type UpdateEmployeeData = Partial<Omit<NewEmployee, 'employeeCode'>> & {
   jobProtection?: boolean;
   jobProtectionUntil?: Date | null;
   terminationDate?: Date | null;
+  terminationReason?: string | null;
+  terminationNotes?: string | null;
 };
 
 export type EmployeeChangeType =

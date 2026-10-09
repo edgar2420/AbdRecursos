@@ -3,6 +3,7 @@ import { ZkSyncButtonComponent } from '../../shared/components/zk-sync-button.co
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { ApiService, saveBlob } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -16,6 +17,9 @@ import {
   StateComponent,
 } from '../../shared/components/ui.components';
 import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/format.pipes';
+import { etiquetaMotivoBaja } from './baja-empleado.component';
+
+type Vista = 'activos' | 'bajas' | 'todos';
 
 @Component({
   selector: 'app-employee-list',
@@ -50,6 +54,16 @@ import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../s
         }
       </app-page-header>
 
+      <div class="pestanas pestanas-empleados" role="tablist" aria-label="Que empleados ver">
+        <button type="button" role="tab" [attr.aria-selected]="vista() === 'activos'" (click)="cambiarVista('activos')">
+          Activos @if (conteo(); as c) { <span class="conteo">{{ c.activos }}</span> }
+        </button>
+        <button type="button" role="tab" [attr.aria-selected]="vista() === 'bajas'" (click)="cambiarVista('bajas')">
+          De baja @if (conteo(); as c) { <span class="conteo">{{ c.bajas }}</span> }
+        </button>
+        <button type="button" role="tab" [attr.aria-selected]="vista() === 'todos'" (click)="cambiarVista('todos')">Todos</button>
+      </div>
+
       <app-card>
         <div class="filters">
           <div class="field flex-1">
@@ -71,15 +85,16 @@ import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../s
               }
             </select>
           </div>
+          @if (vista() !== 'bajas') {
           <div class="field">
             <label for="status">Estado</label>
             <select id="status" [value]="filters().status" (change)="setFilter('status', $any($event.target).value)">
               <option value="">Todos</option>
               <option value="ACTIVE">Activo</option>
               <option value="ON_LEAVE">Con licencia</option>
-              <option value="TERMINATED">Desvinculado</option>
             </select>
           </div>
+          }
           <div class="field">
             <label for="contract">Contrato</label>
             <select id="contract" [value]="filters().contractType" (change)="setFilter('contractType', $any($event.target).value)">
@@ -99,8 +114,8 @@ import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../s
           <app-state mode="loading" title="Cargando empleados"></app-state>
         } @else if (employees().length === 0) {
           <app-state
-            title="No hay empleados que coincidan"
-            message="Ajuste los filtros o registre un nuevo empleado para comenzar."
+            [title]="vista() === 'bajas' ? 'No hay empleados de baja que coincidan' : 'No hay empleados que coincidan'"
+            [message]="vista() === 'bajas' ? 'Aqui aparecen quienes fueron dados de baja, con su fecha y motivo de retiro.' : 'Ajuste los filtros o registre un nuevo empleado para comenzar.'"
           >
             @if (auth.isHr()) {
               <button class="btn btn-primary btn-sm" (click)="openCreate()">Nuevo empleado</button>
@@ -117,8 +132,13 @@ import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../s
                   <th>Departamento</th>
                   <th>Cargo</th>
                   <th class="sortable" (click)="sortBy('hireDate')">Ingreso</th>
-                  <th class="num sortable" (click)="sortBy('baseSalary')">Haber basico</th>
-                  <th>Estado</th>
+                  @if (vista() === 'bajas') {
+                    <th>Retiro</th>
+                    <th>Motivo</th>
+                  } @else {
+                    <th class="num sortable" (click)="sortBy('baseSalary')">Haber basico</th>
+                    <th>Estado</th>
+                  }
                   <th></th>
                 </tr>
               </thead>
@@ -137,8 +157,18 @@ import { BadgeClasePipe, BolivianosPipe, EtiquetaPipe, FechaPipe } from '../../s
                     <td>{{ employee.departmentName ?? '-' }}</td>
                     <td>{{ employee.positionName ?? '-' }}</td>
                     <td class="nowrap">{{ employee.hireDate | fecha }}</td>
-                    <td class="num">{{ employee.baseSalary | bs }}</td>
-                    <td><span [class]="employee.status | badgeClase">{{ employee.status | etiqueta }}</span></td>
+                    @if (vista() === 'bajas') {
+                      <td class="nowrap">{{ employee.terminationDate | fecha }}</td>
+                      <td class="col-motivo">
+                        {{ motivoBaja(employee.terminationReason) }}
+                        @if (employee.terminationNotes) {
+                          <div class="muted text-sm nota-baja" [title]="employee.terminationNotes">{{ employee.terminationNotes }}</div>
+                        }
+                      </td>
+                    } @else {
+                      <td class="num">{{ employee.baseSalary | bs }}</td>
+                      <td><span [class]="employee.status | badgeClase">{{ employee.status | etiqueta }}</span></td>
+                    }
                     <td class="nowrap text-right">
                       <a class="btn btn-ghost btn-sm" [routerLink]="['/empleados', employee.id]">Ver</a>
                       @if (auth.isHr()) {
@@ -289,6 +319,9 @@ export class EmployeeListComponent implements OnInit {
   readonly options = signal<EmployeeOption[]>([]);
   readonly formOpen = signal(false);
   readonly editing = signal<Employee | null>(null);
+  readonly vista = signal<Vista>('activos');
+  readonly conteo = signal<{ activos: number; bajas: number } | null>(null);
+  readonly motivoBaja = etiquetaMotivoBaja;
 
   readonly filters = signal({
     search: '',
@@ -340,6 +373,12 @@ export class EmployeeListComponent implements OnInit {
     this.load();
   }
 
+  cambiarVista(vista: Vista): void {
+    this.vista.set(vista);
+    this.filters.update((f) => ({ ...f, page: 1, status: vista === 'bajas' ? '' : f.status }));
+    this.load();
+  }
+
   resetFilters(): void {
     this.filters.set({
       search: '',
@@ -375,7 +414,10 @@ export class EmployeeListComponent implements OnInit {
 
   load(): void {
     this.loading.set(true);
-    this.api.list<Employee>('/employees', { ...this.filters() }).subscribe({
+    const vista = this.vista();
+    const isActive = vista === 'activos' ? 'true' : vista === 'bajas' ? 'false' : undefined;
+    this.contar();
+    this.api.list<Employee>('/employees', { ...this.filters(), isActive }).subscribe({
       next: (page) => {
         this.employees.set(page.data);
         this.meta.set(page.meta);
@@ -385,6 +427,19 @@ export class EmployeeListComponent implements OnInit {
         this.employees.set([]);
         this.loading.set(false);
       },
+    });
+  }
+
+  /** Cantidad de activos y de baja con los mismos filtros, para las pestanas. */
+  private contar(): void {
+    const { search, departmentId, status, contractType } = this.filters();
+    const base = { search, departmentId, contractType, page: 1, limit: 1 };
+    forkJoin({
+      activos: this.api.list<Employee>('/employees', { ...base, status, isActive: 'true' }),
+      bajas: this.api.list<Employee>('/employees', { ...base, isActive: 'false' }),
+    }).subscribe({
+      next: (r) => this.conteo.set({ activos: r.activos.meta.total, bajas: r.bajas.meta.total }),
+      error: () => this.conteo.set(null),
     });
   }
 

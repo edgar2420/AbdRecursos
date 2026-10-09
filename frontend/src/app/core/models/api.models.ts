@@ -41,6 +41,8 @@ export interface Employee {
   address: string | null;
   hireDate: string;
   terminationDate: string | null;
+  terminationReason: string | null;
+  terminationNotes: string | null;
   contractType: 'INDEFINIDO' | 'PLAZO_FIJO' | 'EVENTUAL' | 'CONSULTORIA';
   baseSalary: number;
   bankName: string | null;

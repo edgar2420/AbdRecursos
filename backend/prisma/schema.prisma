@@ -186,6 +186,9 @@ model Employee {
   photoUrl        String?        @map("photo_url")
   hireDate        DateTime       @map("hire_date")
   terminationDate DateTime?      @map("termination_date")
+  /// Motivo de la baja (codigo de MOTIVOS_BAJA) y notas de RRHH.
+  terminationReason String?    @map("termination_reason")
+  terminationNotes  String?    @map("termination_notes")
   contractType    ContractType   @default(INDEFINIDO) @map("contract_type")
   baseSalary      Decimal        @map("base_salary") @db.Decimal(14, 2)
   bankName        String?        @map("bank_name")
