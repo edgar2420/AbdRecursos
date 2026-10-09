@@ -11,7 +11,7 @@ export const listAttendanceSchema = pageQuerySchema.extend({
 });
 
 export const punchSchema = z.object({
-  employeeId: z.string().uuid().optional(),
+  employeeId: z.string().uuid({ message: 'Indique el empleado' }),
   timestamp: z.coerce.date().optional(),
   latitude: z.coerce.number().min(-90).max(90).optional(),
   longitude: z.coerce.number().min(-180).max(180).optional(),
@@ -39,6 +39,7 @@ export const createJustificationSchema = z.object({
 });
 
 export const listJustificationsSchema = pageQuerySchema.extend({
+  employeeId: z.string().uuid().optional(),
   status: z.enum(['PENDING', 'APPROVED', 'REJECTED']).optional(),
   dateFrom: fechaLocal.optional(),
   dateTo: fechaLocal.optional(),

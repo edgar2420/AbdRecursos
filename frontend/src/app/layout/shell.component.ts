@@ -17,7 +17,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { path: '/dashboard', label: 'Panel', icon: ['M3 3h7v9H3z', 'M14 3h7v5h-7z', 'M14 12h7v9h-7z', 'M3 16h7v5H3z'] },
   { path: '/mi-perfil', label: 'Mi perfil', icon: ['M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z', 'M20 21a8 8 0 0 0-16 0'] },
-  { path: '/asistencia/marcar', label: 'Marcar asistencia', icon: ['M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z', 'M12 7v5l3 2'] },
+  { path: '/mi-asistencia', label: 'Mi asistencia', icon: ['M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z', 'M12 7v5l3 2'] },
   {
     path: '/vacaciones',
     label: 'Vacaciones',

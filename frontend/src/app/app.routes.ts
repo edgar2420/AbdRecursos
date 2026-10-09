@@ -68,10 +68,12 @@ export const routes: Routes = [
           import('./features/payslips/payslip-detail.component').then((m) => m.PayslipDetailComponent),
       },
       {
-        path: 'asistencia/marcar',
+        path: 'mi-asistencia',
         loadComponent: () =>
-          import('./features/attendance/attendance-clock.component').then((m) => m.AttendanceClockComponent),
+          import('./features/attendance/mi-asistencia.component').then((m) => m.MiAsistenciaComponent),
       },
+      // La asistencia se marca en el biometrico; el enlace viejo lleva a la consulta.
+      { path: 'asistencia/marcar', redirectTo: 'mi-asistencia', pathMatch: 'full' },
       {
         path: 'asistencia',
         canActivate: [roleGuard('SUPERVISOR', 'HR', 'ADMIN')],

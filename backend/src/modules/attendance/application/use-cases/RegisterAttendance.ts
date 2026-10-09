@@ -18,6 +18,10 @@ export interface RegisterAttendanceInput {
   notes?: string;
 }
 
+/**
+ * Marcacion manual de RRHH o Administracion para otro empleado (olvido de marcar, falla del reloj).
+ * La asistencia diaria se marca en el biometrico: ya no se marca desde la web.
+ */
 export class RegisterAttendance {
   constructor(
     private readonly attendance: AttendanceRepository,
@@ -28,13 +32,17 @@ export class RegisterAttendance {
   ) {}
 
   async execute(actor: AccessActor, input: RegisterAttendanceInput): Promise<AttendanceRecord> {
-    const employeeId = input.employeeId ?? actor.employeeId;
-    if (!employeeId) throw new ForbiddenError('Su usuario no esta vinculado a un empleado');
+    const employeeId = input.employeeId;
+    if (!employeeId || employeeId === actor.employeeId) {
+      throw new ForbiddenError(
+        employeeId
+          ? 'No puede registrar sus propias marcaciones: pida a otra persona de RRHH que lo haga'
+          : 'La asistencia se marca en el biometrico; RRHH puede agregar una marcacion faltante desde Asistencia',
+      );
+    }
+    this.policy.assertCanManage(actor);
 
-    const isThirdParty = employeeId !== actor.employeeId;
-    if (isThirdParty) this.policy.assertCanManage(actor);
-
-    const timestamp = input.timestamp && this.policy.isPrivileged(actor) ? input.timestamp : new Date();
+    const timestamp = input.timestamp ?? new Date();
 
     const last = await this.attendance.lastRecordOfDay(employeeId, startOfDay(timestamp));
     if (last && last.type === input.type) {
@@ -66,7 +74,7 @@ export class RegisterAttendance {
           )
         : 0;
 
-    if (isThirdParty && input.type === 'CHECK_IN' && lateMinutes > 0 && !input.notes?.trim()) {
+    if (input.type === 'CHECK_IN' && lateMinutes > 0 && !input.notes?.trim()) {
       throw new BusinessRuleError('Debe indicar el motivo de la tardanza');
     }
 
@@ -74,22 +82,20 @@ export class RegisterAttendance {
       employeeId,
       timestamp,
       type: input.type,
-      source: input.source ?? (isThirdParty ? 'MANUAL_HR' : 'WEB'),
+      source: input.source ?? 'MANUAL_HR',
       latitude: input.latitude ?? null,
       longitude: input.longitude ?? null,
       notes: input.notes ?? null,
       lateMinutes,
     });
 
-    if (isThirdParty) {
-      await this.audit.log({
-        userId: actor.userId,
-        action: 'ATTENDANCE_REGISTERED_BY_HR',
-        entity: 'AttendanceRecord',
-        entityId: record.id,
-        changes: { employeeId, type: input.type, timestamp },
-      });
-    }
+    await this.audit.log({
+      userId: actor.userId,
+      action: 'ATTENDANCE_REGISTERED_BY_HR',
+      entity: 'AttendanceRecord',
+      entityId: record.id,
+      changes: { employeeId, type: input.type, timestamp, notes: input.notes ?? null },
+    });
     return record;
   }
 }

@@ -45,14 +45,18 @@ export class ListJustifications {
 
   async execute(
     actor: AccessActor,
-    filters: PageQuery & { status?: JustificationStatus; dateFrom?: Date; dateTo?: Date },
+    filters: PageQuery & { employeeId?: string; status?: JustificationStatus; dateFrom?: Date; dateTo?: Date },
   ): Promise<Paginated<AttendanceJustification>> {
+    const { employeeId, ...resto } = filters;
+    const vacio = { data: [], meta: { total: 0, page: filters.page, limit: filters.limit, totalPages: 1 } };
     const scope = await this.policy.scopeFor(actor);
-    if (scope.all) return this.attendance.listJustifications(filters);
-    if (scope.employeeIds.length === 0) {
-      return { data: [], meta: { total: 0, page: filters.page, limit: filters.limit, totalPages: 1 } };
+    if (employeeId) {
+      if (!scope.all && !scope.employeeIds.includes(employeeId)) return vacio;
+      return this.attendance.listJustifications({ ...resto, employeeIds: [employeeId] });
     }
-    return this.attendance.listJustifications({ ...filters, employeeIds: scope.employeeIds });
+    if (scope.all) return this.attendance.listJustifications(resto);
+    if (scope.employeeIds.length === 0) return vacio;
+    return this.attendance.listJustifications({ ...resto, employeeIds: scope.employeeIds });
   }
 }
 
