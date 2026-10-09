@@ -41,12 +41,12 @@ describe('nomina para el biometrico', () => {
     expect(fechaNomina('3/25/2026')).toEqual(new Date(2026, 2, 25));
     expect(fechaNomina('13/1/2026')).toBeNull();
     expect(fechaNomina(new Date(Date.UTC(2005, 9, 3)))).toEqual(new Date(2005, 9, 3));
-    expect(leerFila(['116', 'S00000', '3911331', 'sc', 'M', 'SARDE LAFUENTE REY SALOMON', 'Regente Farmaceutico', '10/3/2005'])).toEqual({
-      codigo: '116',
-      ci: '3911331',
+    expect(leerFila(['9001', 'X00000', '1234567', 'sc', 'M', 'PEREZ GOMEZ JUAN CARLOS', 'Regente Farmaceutico', '10/3/2005'])).toEqual({
+      codigo: '9001',
+      ci: '1234567',
       ciExtension: 'SC',
       sexo: 'M',
-      nombreCompleto: 'SARDE LAFUENTE REY SALOMON',
+      nombreCompleto: 'PEREZ GOMEZ JUAN CARLOS',
       cargo: 'Regente Farmaceutico',
       ingreso: new Date(2005, 9, 3),
     });
