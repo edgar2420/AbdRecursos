@@ -171,6 +171,10 @@ import { zkbioRoutes } from './modules/integrations/zkbio/infrastructure/zkbio.r
 import { ConsultarBancoHoras, RegistrarAjusteBanco } from './modules/banco-horas/application/BancoHoras';
 import { PrismaBancoHorasRepository } from './modules/banco-horas/infrastructure/PrismaBancoHorasRepository';
 import { bancoHorasRoutes } from './modules/banco-horas/infrastructure/banco-horas.routes';
+import { NominaBiometrico } from './modules/imports/application/NominaBiometrico';
+import { PrismaNominaRepository } from './modules/imports/infrastructure/nomina/PrismaNominaRepository';
+import { leerNomina } from './modules/imports/infrastructure/nomina/leerNomina';
+import { nominaRoutes } from './modules/imports/infrastructure/nomina/nomina.routes';
 import { IclockServer } from './modules/integrations/iclock/infrastructure/IclockServer';
 import { iclockRoutes } from './modules/integrations/iclock/infrastructure/iclock.routes';
 import { RegistradorMarcacionesBiometrico } from './modules/attendance/infrastructure/persistence/RegistradorMarcacionesBiometrico';
@@ -332,6 +336,12 @@ export function buildApiRouter(): Router {
   router.use('/attendance', auth, attendanceRoutes(attendanceController));
   router.use('/schedules', auth, scheduleRoutes(scheduleController));
   router.use('/imports', auth, importRoutes(importController));
+  const nominaRepo = new PrismaNominaRepository();
+  router.use(
+    '/nomina-biometrico',
+    auth,
+    nominaRoutes(new NominaBiometrico(nominaRepo, (ci) => nominaRepo.huella(ci), leerNomina, policy, audit)),
+  );
   router.use('/papeletas', auth, papeletaRoutes(papeletaController));
   router.use('/uploads', auth, uploadRoutes(uploadController));
   router.use('/reports', auth, reportRoutes(reportController));

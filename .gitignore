@@ -9,3 +9,8 @@ frontend/.angular/
 # Certificados TLS de desarrollo: autofirmados, se regeneran con backend/certs/generar.sh
 backend/certs/*.pem
 frontend/certs/*.pem
+
+# Nominas y planillas reales de RRHH (tienen C.I.): nunca al repositorio
+docs/*.xlsx
+docs/*.xls
+docs/*.csv

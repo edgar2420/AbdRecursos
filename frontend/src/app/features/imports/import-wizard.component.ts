@@ -11,6 +11,7 @@ import {
   StateComponent,
 } from '../../shared/components/ui.components';
 import { BadgeClasePipe, EtiquetaPipe, FechaPipe } from '../../shared/pipes/format.pipes';
+import { NominaBiometricoComponent } from './nomina-biometrico.component';
 
 type ImportType = 'EMPLOYEES' | 'ATTENDANCE' | 'SCHEDULES';
 
@@ -26,13 +27,16 @@ type ImportType = 'EMPLOYEES' | 'ATTENDANCE' | 'SCHEDULES';
     FechaPipe,
     EtiquetaPipe,
     BadgeClasePipe,
+    NominaBiometricoComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="page">
-      <app-page-header title="Carga masiva desde Excel" subtitle="Empleados, asistencia historica y horarios">
+      <app-page-header title="Carga masiva desde Excel" subtitle="Nomina del biometrico, empleados, asistencia historica y horarios">
         <button class="btn btn-ghost btn-sm" (click)="downloadTemplate()">Descargar plantilla</button>
       </app-page-header>
+
+      <app-nomina-biometrico />
 
       <app-card heading="1. Subir archivo">
         <div class="upload">

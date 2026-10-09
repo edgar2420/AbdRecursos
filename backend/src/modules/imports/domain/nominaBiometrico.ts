@@ -1,3 +1,5 @@
+import { NOMBRE_A_CORREGIR as NOMBRE_PENDIENTE } from '../../integrations/zkbio/domain/nombres';
+
 /**
  * Reglas para leer la "NOMINA PARA EL BIOMETRICO" que prepara RRHH cada mes.
  * Columnas: N, CODIGO (el del reloj), PER, CARNET DE IDENTIDAD, expedicion, SEXO,
@@ -119,7 +121,7 @@ export function fechaNomina(valor: unknown): Date | null {
 
 /** Convierte una fila cruda (en el orden de la nomina, sin la columna N) en datos validados. */
 export function leerFila(celdas: unknown[]): FilaNomina | null {
-  const [codigo, , ci, ext, sexo, nombre, cargo, ingreso] = celdas.map((c) => (c instanceof Date ? c : String(c ?? '').trim()));
+  const [codigo, , ci, ext, sexo, nombre, cargo, ingreso] = Array.from(celdas, (c) => (c instanceof Date ? c : String(c ?? '').trim()));
   const fecha = fechaNomina(ingreso);
   if (!/^\d+$/.test(String(codigo)) || !/^\d+$/.test(String(ci)) || !nombre || !fecha) return null;
   const s = String(sexo).toUpperCase();
@@ -131,5 +133,161 @@ export function leerFila(celdas: unknown[]): FilaNomina | null {
     nombreCompleto: limpiar(String(nombre)),
     cargo: String(cargo),
     ingreso: fecha,
+  };
+}
+
+
+export type CampoNomina = 'nombre' | 'ci' | 'ingreso' | 'cargo' | 'sexo';
+
+/** Lo que el SGRH tiene hoy de cada ficha (solo lo que la nomina puede tocar). */
+export interface FichaActual {
+  id: string;
+  codigo: string;
+  firstName: string;
+  lastName: string;
+  ciHuella: string | null;
+  ciExtension: string | null;
+  hireDate: Date;
+  gender: string | null;
+  cargo: string | null;
+  isActive: boolean;
+}
+
+export interface CambioCampo {
+  campo: CampoNomina;
+  antes: string | null;
+  despues: string;
+}
+
+export interface DatosNuevos {
+  firstName?: string;
+  lastName?: string;
+  ci?: string;
+  ciHuella?: string;
+  ciExtension?: string | null;
+  hireDate?: Date;
+  gender?: string;
+  cargo?: string;
+}
+
+export interface CambioFicha {
+  employeeId: string;
+  codigo: string;
+  nombre: string;
+  campos: CambioCampo[];
+  datos: DatosNuevos;
+}
+
+export interface PlanNomina {
+  filas: number;
+  cambios: CambioFicha[];
+  resumen: Record<CampoNomina, number>;
+  cargosNuevos: string[];
+  sinFicha: { codigo: string; nombre: string; cargo: string }[];
+  fueraDeNomina: { employeeId: string; codigo: string; nombre: string }[];
+  avisos: string[];
+}
+
+function ddmmaaaa(fecha: Date): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${p(fecha.getDate())}/${p(fecha.getMonth() + 1)}/${fecha.getFullYear()}`;
+}
+
+/**
+ * Compara la nomina con las fichas y arma la lista de cambios, sin tocar nada.
+ * La nomina manda en C.I., nombre, cargo y fecha de ingreso; el sexo solo se completa si falta.
+ */
+export function planificarNomina(
+  filas: FilaNomina[],
+  fichas: FichaActual[],
+  cargosExistentes: string[],
+  huella: (ci: string) => string,
+): PlanNomina {
+  const repetidos = filas.map((f) => f.codigo).filter((c, i, todos) => todos.indexOf(c) !== i);
+  if (repetidos.length) throw new Error(`Codigos repetidos en la nomina: ${[...new Set(repetidos)].join(', ')}`);
+  const ciRepetidas = filas.map((f) => f.ci).filter((c, i, todos) => todos.indexOf(c) !== i);
+  if (ciRepetidas.length) throw new Error(`C.I. repetidas en la nomina: ${[...new Set(ciRepetidas)].join(', ')}`);
+
+  const porCodigo = new Map(fichas.map((f) => [f.codigo, f]));
+  const huellas = new Map(fichas.filter((f) => f.ciHuella).map((f) => [f.ciHuella!, f.codigo]));
+  const cargos = new Map(cargosExistentes.map((c) => [claveCargo(c), c]));
+  const cargosNuevos = new Map<string, string>();
+  const resumen: Record<CampoNomina, number> = { nombre: 0, ci: 0, ingreso: 0, cargo: 0, sexo: 0 };
+  const cambios: CambioFicha[] = [];
+  const avisos: string[] = [];
+
+  for (const f of filas) {
+    const e = porCodigo.get(f.codigo);
+    if (!e) continue;
+    const campos: CambioCampo[] = [];
+    const datos: DatosNuevos = {};
+    const pendiente = e.firstName === NOMBRE_PENDIENTE;
+    const actual = `${e.firstName} ${e.lastName}`;
+
+    if (pendiente || !mismoNombre(actual, f.nombreCompleto)) {
+      const { firstName, lastName } = separarApellidosNombres(
+        f.nombreCompleto,
+        pendiente ? undefined : e.firstName.trim().split(/\s+/).length,
+      );
+      Object.assign(datos, { firstName, lastName });
+      campos.push({ campo: 'nombre', antes: pendiente ? null : actual, despues: `${firstName} ${lastName}` });
+    }
+
+    const h = huella(f.ci);
+    const dueno = huellas.get(h);
+    if (dueno && dueno !== f.codigo) {
+      avisos.push(`${f.codigo} ${f.nombreCompleto}: la C.I. ${f.ci} ya pertenece a la ficha ${dueno}; no se cambio`);
+    } else if (e.ciHuella !== h || e.ciExtension !== f.ciExtension) {
+      Object.assign(datos, { ci: f.ci, ciHuella: h, ciExtension: f.ciExtension });
+      huellas.set(h, f.codigo);
+      campos.push({
+        campo: 'ci',
+        antes: e.ciHuella === h ? 'misma C.I., otra expedicion' : e.ciExtension ? 'otra C.I.' : null,
+        despues: `${f.ci} ${f.ciExtension ?? ''}`.trim(),
+      });
+    }
+
+    if (e.hireDate.getTime() !== f.ingreso.getTime()) {
+      datos.hireDate = f.ingreso;
+      campos.push({ campo: 'ingreso', antes: ddmmaaaa(e.hireDate), despues: ddmmaaaa(f.ingreso) });
+    }
+
+    if (f.sexo && !e.gender) {
+      datos.gender = f.sexo;
+      campos.push({ campo: 'sexo', antes: null, despues: f.sexo });
+    } else if (f.sexo && e.gender !== f.sexo) {
+      avisos.push(`${f.codigo} ${f.nombreCompleto}: sexo ${e.gender} en la ficha y ${f.sexo} en la nomina; se dejo ${e.gender}`);
+    }
+
+    const clave = claveCargo(f.cargo);
+    if (clave && clave !== claveCargo(e.cargo ?? '')) {
+      let nombre = cargos.get(clave);
+      if (!nombre) {
+        nombre = nombreCargo(f.cargo);
+        cargos.set(clave, nombre);
+        cargosNuevos.set(clave, nombre);
+      }
+      datos.cargo = nombre;
+      campos.push({ campo: 'cargo', antes: e.cargo, despues: nombre });
+    }
+
+    if (campos.length) {
+      campos.forEach((c) => resumen[c.campo]++);
+      const nombre = datos.firstName ? `${datos.firstName} ${datos.lastName}` : actual;
+      cambios.push({ employeeId: e.id, codigo: e.codigo, nombre, campos, datos });
+    }
+  }
+
+  const enNomina = new Set(filas.map((f) => f.codigo));
+  return {
+    filas: filas.length,
+    cambios,
+    resumen,
+    cargosNuevos: [...cargosNuevos.values()],
+    sinFicha: filas.filter((f) => !porCodigo.has(f.codigo)).map((f) => ({ codigo: f.codigo, nombre: f.nombreCompleto, cargo: f.cargo })),
+    fueraDeNomina: fichas
+      .filter((e) => e.isActive && !enNomina.has(e.codigo))
+      .map((e) => ({ employeeId: e.id, codigo: e.codigo, nombre: `${e.firstName} ${e.lastName}` })),
+    avisos,
   };
 }
