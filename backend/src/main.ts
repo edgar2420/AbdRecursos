@@ -174,6 +174,11 @@ import { bancoHorasRoutes } from './modules/banco-horas/infrastructure/banco-hor
 import { NominaBiometrico } from './modules/imports/application/NominaBiometrico';
 import { PrismaNominaRepository } from './modules/imports/infrastructure/nomina/PrismaNominaRepository';
 import { PrismaAccesoEmpleado } from './modules/employees/infrastructure/persistence/PrismaAccesoEmpleado';
+import { EventosPostgres, urlParaPg } from './shared/infrastructure/realtime/EventosPostgres';
+import { eventosRoutes } from './shared/infrastructure/realtime/eventos.routes';
+import { CandadoTareas } from './shared/infrastructure/jobs/CandadoTareas';
+import { AuditoriaConEventos } from './shared/application/AuditoriaConEventos';
+import { limpiarLimitesVencidos } from './shared/infrastructure/http/middlewares/PostgresRateLimitStore';
 import { leerNomina } from './modules/imports/infrastructure/nomina/leerNomina';
 import { nominaRoutes } from './modules/imports/infrastructure/nomina/nomina.routes';
 import { IclockServer } from './modules/integrations/iclock/infrastructure/IclockServer';
@@ -183,7 +188,8 @@ import { RegistradorMarcacionesBiometrico } from './modules/attendance/infrastru
 export function buildApiRouter(): Router {
   const tokens = new JwtService();
   const hasher = new BcryptPasswordHasher();
-  const audit = new PrismaAuditLogger();
+  // Cada cambio auditado tambien avisa en tiempo real a las pantallas abiertas.
+  const audit = new AuditoriaConEventos(new PrismaAuditLogger(), eventos);
   const excel = new ExcelService();
   const payslipPdf = new PayslipPdfGenerator();
   const reportPdf = new ReportPdfGenerator();
@@ -230,8 +236,8 @@ export function buildApiRouter(): Router {
     new GetEmployee(employees, policy),
     new CreateEmployee(employees, policy, audit),
     new UpdateEmployee(employees, policy, audit),
-    new DeactivateEmployee(employees, policy, audit, accesoEmpleado),
-    new ReactivateEmployee(employees, policy, audit, accesoEmpleado),
+    new DeactivateEmployee(employees, policy, audit, accesoEmpleado, eventos),
+    new ReactivateEmployee(employees, policy, audit, accesoEmpleado, eventos),
     new GetEmployeeHistory(employees, policy),
     employees,
     catalogs,
@@ -272,10 +278,10 @@ export function buildApiRouter(): Router {
   );
 
   const attendanceController = new AttendanceController(
-    new RegisterAttendance(attendance, schedules, parameters, policy, audit),
+    new RegisterAttendance(attendance, schedules, parameters, policy, audit, eventos),
     new ListAttendance(attendance, policy),
     new GetAttendanceReport(attendance, employees, schedules, parameters, policy),
-    new UpdateAttendanceRecord(attendance, schedules, parameters, policy, audit),
+    new UpdateAttendanceRecord(attendance, schedules, parameters, policy, audit, eventos),
     new JustifyAbsence(attendance, policy, audit),
     new ListJustifications(attendance, policy),
     new ReviewJustification(attendance, policy, audit),
@@ -342,7 +348,7 @@ export function buildApiRouter(): Router {
   router.use(
     '/nomina-biometrico',
     auth,
-    nominaRoutes(new NominaBiometrico(nominaRepo, (ci) => nominaRepo.huella(ci), leerNomina, policy, audit)),
+    nominaRoutes(new NominaBiometrico(nominaRepo, (ci) => nominaRepo.huella(ci), leerNomina, policy, audit, eventos)),
   );
   router.use('/papeletas', auth, papeletaRoutes(papeletaController));
   router.use('/uploads', auth, uploadRoutes(uploadController));
@@ -361,9 +367,10 @@ export function buildApiRouter(): Router {
     auth,
     bancoHorasRoutes(new ConsultarBancoHoras(bancoHoras, policy), new RegistrarAjusteBanco(bancoHoras, policy, audit)),
   );
+  router.use('/eventos', auth, eventosRoutes(eventos));
   router.use('/audit-logs', auth, auditRoutes(new AuditController(new ListAuditLogs(new PrismaAuditLogRepository()))));
 
-  const registrador = new RegistradorMarcacionesBiometrico(schedules, parameters);
+  const registrador = new RegistradorMarcacionesBiometrico(schedules, parameters, eventos);
   zkSync =
     env.ZKBIO_URL && env.ZKBIO_USER && env.ZKBIO_PASSWORD
       ? new ZkBioSync(
@@ -392,20 +399,40 @@ export function buildApiRouter(): Router {
 
 let zkSync: ZkBioSync | null = null;
 let iclock: IclockServer | null = null;
+const eventos = new EventosPostgres(urlParaPg(env.DATABASE_URL));
+const candado = new CandadoTareas();
 
-function iniciarSincronizacionZk(): void {
+/** Corre una tarea periodica en un solo servidor a la vez (el que toma el candado en la base). */
+function tareaPeriodica(nombre: string, cadaMs: number, tarea: () => Promise<void>): void {
+  const correr = async (): Promise<void> => {
+    try {
+      await candado.ejecutar(nombre, Math.max(cadaMs, 60_000), tarea);
+    } catch (error) {
+      logger.warn({ err: error, tarea: nombre }, 'Fallo una tarea en segundo plano');
+    }
+  };
+  setInterval(() => void correr(), cadaMs).unref();
+  void correr();
+}
+
+function iniciarTareas(): void {
+  if (!env.TAREAS_EN_SEGUNDO_PLANO) {
+    logger.info('Tareas en segundo plano desactivadas en este servidor');
+    return;
+  }
+  tareaPeriodica('limpiar-limites-acceso', 15 * 60_000, async () => {
+    await limpiarLimitesVencidos();
+  });
   if (!zkSync) return;
   const sync = zkSync;
-  const correr = async (): Promise<void> => {
+  tareaPeriodica('zkbio-marcaciones', env.ZKBIO_SYNC_MINUTES * 60_000, async () => {
     try {
       const r = await sync.sincronizarMarcaciones();
       if (r && r.nuevas > 0) logger.info({ ...r }, 'Marcaciones de ZKBio Time importadas');
     } catch (error) {
       logger.warn({ err: error }, 'No se pudo sincronizar con ZKBio Time');
     }
-  };
-  setInterval(() => void correr(), env.ZKBIO_SYNC_MINUTES * 60_000).unref();
-  void correr();
+  });
   logger.info({ minutos: env.ZKBIO_SYNC_MINUTES }, 'Sincronizacion automatica con ZKBio Time activa');
 }
 
@@ -428,13 +455,15 @@ async function bootstrap(): Promise<void> {
       { port: env.PORT, env: env.NODE_ENV, docs: `${protocolo}://localhost:${env.PORT}/docs` },
       `SGRH API iniciada por ${protocolo.toUpperCase()}`,
     );
-    iniciarSincronizacionZk();
+    iniciarTareas();
+    void eventos.iniciar();
     iclock?.iniciar();
   });
 
   const shutdown = async (signal: string): Promise<void> => {
     logger.info({ signal }, 'Cerrando la API');
     iclock?.detener();
+    await eventos.detener();
     server.close(async () => {
       await disconnectPrisma();
       process.exit(0);

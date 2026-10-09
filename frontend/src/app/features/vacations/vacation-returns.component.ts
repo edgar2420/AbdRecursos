@@ -1,4 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EventosService } from '../../core/services/eventos.service';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -120,9 +122,14 @@ export class VacationReturnsComponent implements OnInit, OnDestroy {
 
   private detenerRefresco?: () => void;
 
+  private readonly enVivo = inject(EventosService)
+    .en(['vacaciones'])
+    .pipe(takeUntilDestroyed())
+    .subscribe(() => this.cargar());
+
   ngOnInit(): void {
     this.cargar();
-    this.detenerRefresco = autoRefresh(() => this.cargar());
+    this.detenerRefresco = autoRefresh(() => this.cargar(), 180);
   }
 
   ngOnDestroy(): void {

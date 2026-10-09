@@ -1,4 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EventosService } from '../../core/services/eventos.service';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -149,6 +151,11 @@ export class MiAsistenciaComponent implements OnInit {
   readonly fecha = signal(hoyLocal());
   readonly motivo = signal('');
   readonly enlace = signal('');
+
+  private readonly enVivo = inject(EventosService)
+    .en(['marcaciones'])
+    .pipe(takeUntilDestroyed())
+    .subscribe(() => this.cargar());
 
   ngOnInit(): void {
     this.cargar();

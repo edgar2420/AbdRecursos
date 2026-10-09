@@ -140,6 +140,19 @@ export class PrismaAttendanceRepository implements AttendanceRepository {
     return rows.map(toDomain);
   }
 
+  async empleadosConAtraso(from: Date, to: Date, employeeIds?: string[]): Promise<string[]> {
+    const grupos = await prisma.attendanceRecord.groupBy({
+      by: ['employeeId'],
+      where: {
+        type: 'CHECK_IN',
+        lateMinutes: { gt: 0 },
+        timestamp: { gte: startOfDay(from), lte: endOfDay(to) },
+        ...(employeeIds ? { employeeId: { in: employeeIds } } : {}),
+      },
+    });
+    return grupos.map((g) => g.employeeId);
+  }
+
   async lastRecordOfDay(employeeId: string, date: Date): Promise<AttendanceRecord | null> {
     const row = await prisma.attendanceRecord.findFirst({
       where: { employeeId, timestamp: { gte: startOfDay(date), lte: endOfDay(date) } },

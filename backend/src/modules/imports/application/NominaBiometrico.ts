@@ -1,4 +1,5 @@
 import { AuditLoggerPort } from '../../../shared/application/AuditLogger';
+import { PublicadorEventos, sinEventos } from '../../../shared/application/Eventos';
 import { BusinessRuleError } from '../../../shared/domain/errors';
 import { AccessActor, EmployeeAccessPolicy } from '../../employees/domain/services/EmployeeAccessPolicy';
 import { NominaRepository } from '../domain/NominaRepository';
@@ -24,6 +25,7 @@ export class NominaBiometrico {
     private readonly leer: (contenido: Buffer, nombre: string) => Promise<FilaNomina[]>,
     private readonly policy: EmployeeAccessPolicy,
     private readonly audit: AuditLoggerPort,
+    private readonly eventos: PublicadorEventos = sinEventos,
   ) {}
 
   async revisar(actor: AccessActor, archivo: ArchivoNomina): Promise<VistaNomina> {
@@ -50,6 +52,7 @@ export class NominaBiometrico {
         codigos: plan.cambios.map((c) => c.codigo),
       },
     });
+    this.eventos.publicar('empleados');
     return { fichas: plan.cambios.length, cargosNuevos: plan.cargosNuevos.length };
   }
 

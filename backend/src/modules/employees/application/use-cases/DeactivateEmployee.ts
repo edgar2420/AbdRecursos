@@ -1,4 +1,5 @@
 import { AuditLoggerPort } from '../../../../shared/application/AuditLogger';
+import { PublicadorEventos, sinEventos } from '../../../../shared/application/Eventos';
 import { BusinessRuleError, NotFoundError } from '../../../../shared/domain/errors';
 import { Employee } from '../../domain/entities/Employee';
 import { MotivoBaja, notaDeBaja, problemaFechaBaja } from '../../domain/motivosBaja';
@@ -22,6 +23,7 @@ export class DeactivateEmployee {
     private readonly policy: EmployeeAccessPolicy,
     private readonly audit: AuditLoggerPort,
     private readonly acceso: AccesoEmpleadoPort,
+    private readonly eventos: PublicadorEventos = sinEventos,
   ) {}
 
   async execute(
@@ -64,6 +66,7 @@ export class DeactivateEmployee {
       entityId: id,
       changes: { terminationDate, motivo: options.motivo ?? null, notes: notas, usuarioBloqueado: usuarioAfectado },
     });
+    this.eventos.publicar('empleados');
     return { employee, usuarioAfectado };
   }
 }
@@ -75,6 +78,7 @@ export class ReactivateEmployee {
     private readonly policy: EmployeeAccessPolicy,
     private readonly audit: AuditLoggerPort,
     private readonly acceso: AccesoEmpleadoPort,
+    private readonly eventos: PublicadorEventos = sinEventos,
   ) {}
 
   async execute(actor: AccessActor, id: string, options: { notes?: string } = {}): Promise<ResultadoBaja> {
@@ -114,6 +118,7 @@ export class ReactivateEmployee {
         usuarioHabilitado: usuarioAfectado,
       },
     });
+    this.eventos.publicar('empleados');
     return { employee, usuarioAfectado };
   }
 }

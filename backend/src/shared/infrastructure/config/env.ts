@@ -47,6 +47,9 @@ const schema = z.object({
   ICLOCK_SERIALS: z.string().default(''),
   ICLOCK_RELAY_URL: z.preprocess((v) => (v === '' ? undefined : v), z.string().url().optional()),
   ICLOCK_TIMEZONE: z.coerce.number().default(-4),
+
+  // Con varios servidores se puede apagar en algunos; igual hay un candado en la base para no duplicar.
+  TAREAS_EN_SEGUNDO_PLANO: z.enum(['true', 'false']).default('true').transform((v) => v === 'true'),
 });
 
 const parsed = schema.safeParse(process.env);

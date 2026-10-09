@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../../../shared/infrastructure/database/prisma';
+import { PublicadorEventos, sinEventos } from '../../../../shared/application/Eventos';
 import { GetLegalParameters } from '../../../legal-parameters/application/use-cases/GetLegalParameters';
 import { ScheduleRepository } from '../../../schedules/domain/repositories/ScheduleRepository';
 import { AttendanceCalculator } from '../../domain/services/AttendanceCalculator';
@@ -29,6 +30,7 @@ export class RegistradorMarcacionesBiometrico {
   constructor(
     private readonly schedules: ScheduleRepository,
     private readonly parameters: GetLegalParameters,
+    private readonly eventos: PublicadorEventos = sinEventos,
   ) {}
 
   async registrar(marcaciones: MarcacionBiometrica[]): Promise<ResultadoRegistro> {
@@ -100,10 +102,14 @@ export class RegistradorMarcacionesBiometrico {
       };
     });
 
+    // skipDuplicates: si otro servidor guardo la misma marcacion al mismo tiempo, el indice unico la descarta.
+    let guardadas = 0;
     for (let i = 0; i < filas.length; i += 1000) {
-      await prisma.attendanceRecord.createMany({ data: filas.slice(i, i + 1000) });
+      guardadas += (await prisma.attendanceRecord.createMany({ data: filas.slice(i, i + 1000), skipDuplicates: true })).count;
     }
-    resultado.nuevas = filas.length;
+    resultado.nuevas = guardadas;
+    resultado.repetidas += filas.length - guardadas;
+    if (guardadas > 0) this.eventos.publicar('marcaciones');
     return resultado;
   }
 }

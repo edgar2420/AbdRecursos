@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../core/services/auth.service';
 import { IdleService } from '../core/services/idle.service';
+import { EventosService } from '../core/services/eventos.service';
 import { Role } from '../core/models/api.models';
 import { EtiquetaPipe } from '../shared/pipes/format.pipes';
 
@@ -181,9 +182,10 @@ const SIDEBAR_COLLAPSED_KEY = 'sgrh.sidebar.collapsed';
   `,
   styleUrl: './shell.component.scss',
 })
-export class ShellComponent {
+export class ShellComponent implements OnDestroy {
   readonly auth = inject(AuthService);
   private readonly idle = inject(IdleService);
+  private readonly eventos = inject(EventosService);
   readonly menuOpen = signal(false);
   readonly collapsed = signal(leerColapsado());
 
@@ -202,6 +204,11 @@ export class ShellComponent {
 
   constructor() {
     this.idle.iniciar();
+    this.eventos.iniciar();
+  }
+
+  ngOnDestroy(): void {
+    this.eventos.detener();
   }
 
   readonly visibleNav = computed(() => {

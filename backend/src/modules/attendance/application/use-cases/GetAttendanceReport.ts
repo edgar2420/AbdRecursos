@@ -1,6 +1,7 @@
 import { ForbiddenError } from '../../../../shared/domain/errors';
 import { addDays, daysBetween, startOfDay, toDateOnlyString } from '../../../../shared/domain/dates';
 import { round2 } from '../../../../shared/domain/money';
+import { Employee } from '../../../employees/domain/entities/Employee';
 import { EmployeeRepository } from '../../../employees/domain/repositories/EmployeeRepository';
 import { AccessActor, EmployeeAccessPolicy } from '../../../employees/domain/services/EmployeeAccessPolicy';
 import { GetLegalParameters } from '../../../legal-parameters/application/use-cases/GetLegalParameters';
@@ -57,24 +58,35 @@ export class GetAttendanceReport {
     }
 
     const scope = await this.policy.scopeFor(actor);
-    let roster = await this.employees.listAll({
-      isActive: true,
-      ...(input.departmentId ? { departmentId: input.departmentId } : {}),
-      ...(input.search ? { search: input.search } : {}),
-      ...(input.employeeId ? { ids: [input.employeeId] } : {}),
-      ...(scope.all ? {} : { ids: input.employeeId ? [input.employeeId] : scope.employeeIds }),
-    });
     if (!scope.all && input.employeeId && !scope.employeeIds.includes(input.employeeId)) {
       throw new ForbiddenError('No tiene acceso a la asistencia de ese empleado');
     }
-    if (roster.length === 0) return { rows: [], total: 0 };
+    const restringidos = input.employeeId ? [input.employeeId] : scope.all ? undefined : scope.employeeIds;
+    const filtros = {
+      isActive: true,
+      ...(input.departmentId ? { departmentId: input.departmentId } : {}),
+      ...(input.search ? { search: input.search } : {}),
+      ...(restringidos ? { ids: restringidos } : {}),
+    };
 
+    // Solo se calcula a quien hace falta: la paginacion y el filtro de atrasos los resuelve la base.
     const porAtrasos = input.sortBy === 'late';
-    let total = roster.length;
-    if (!porAtrasos && input.page && input.limit) {
-      const start = (input.page - 1) * input.limit;
-      roster = roster.slice(start, start + input.limit);
+    let roster: Employee[];
+    let total: number;
+    if (porAtrasos) {
+      const conAtraso = await this.attendance.empleadosConAtraso(input.from, input.to, restringidos);
+      if (conAtraso.length === 0) return { rows: [], total: 0 };
+      roster = await this.employees.listAll({ ...filtros, ids: conAtraso });
+      total = roster.length;
+    } else if (input.page && input.limit) {
+      const pagina = await this.employees.list({ ...filtros, page: input.page, limit: input.limit });
+      roster = pagina.data;
+      total = pagina.meta.total;
+    } else {
+      roster = await this.employees.listAll(filtros);
+      total = roster.length;
     }
+    if (roster.length === 0) return { rows: [], total };
 
     const employeeIds = roster.map((e) => e.id);
     const [records, assignments, justified, params] = await Promise.all([
@@ -85,6 +97,7 @@ export class GetAttendanceReport {
     ]);
 
     const calculator = new AttendanceCalculator(params);
+    const horarioDe = new Map(assignments.map((a) => [a.employeeId, a]));
     const justifiedSet = new Set(justified.map((j) => `${j.employeeId}:${toDateOnlyString(j.date)}`));
     const recordsByDay = new Map<string, typeof records>();
     for (const record of records) {
@@ -95,7 +108,7 @@ export class GetAttendanceReport {
     }
 
     const rows = roster.map((employee) => {
-      const assignment = assignments.find((a) => a.employeeId === employee.id) ?? null;
+      const assignment = horarioDe.get(employee.id) ?? null;
       const schedule = assignment
         ? {
             startTime: assignment.startTime,

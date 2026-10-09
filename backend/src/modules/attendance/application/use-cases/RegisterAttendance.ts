@@ -1,4 +1,5 @@
 import { AuditLoggerPort } from '../../../../shared/application/AuditLogger';
+import { PublicadorEventos, sinEventos } from '../../../../shared/application/Eventos';
 import { BusinessRuleError, ForbiddenError } from '../../../../shared/domain/errors';
 import { startOfDay } from '../../../../shared/domain/dates';
 import { AccessActor, EmployeeAccessPolicy } from '../../../employees/domain/services/EmployeeAccessPolicy';
@@ -29,6 +30,7 @@ export class RegisterAttendance {
     private readonly parameters: GetLegalParameters,
     private readonly policy: EmployeeAccessPolicy,
     private readonly audit: AuditLoggerPort,
+    private readonly eventos: PublicadorEventos = sinEventos,
   ) {}
 
   async execute(actor: AccessActor, input: RegisterAttendanceInput): Promise<AttendanceRecord> {
@@ -96,6 +98,7 @@ export class RegisterAttendance {
       entityId: record.id,
       changes: { employeeId, type: input.type, timestamp, notes: input.notes ?? null },
     });
+    this.eventos.publicar('marcaciones');
     return record;
   }
 }

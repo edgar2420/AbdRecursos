@@ -235,6 +235,9 @@ model Employee {
   @@index([departmentId])
   @@index([supervisorId])
   @@index([lastName, firstName])
+  /// Busqueda por nombre con ILIKE (%texto%): indices de trigramas.
+  @@index([firstName(ops: raw("gin_trgm_ops"))], type: Gin, map: "employees_first_name_trgm_idx")
+  @@index([lastName(ops: raw("gin_trgm_ops"))], type: Gin, map: "employees_last_name_trgm_idx")
   @@map("employees")
 }
 
@@ -410,7 +413,9 @@ model AttendanceRecord {
 
   createdAt DateTime @default(now()) @map("created_at")
 
-  @@index([employeeId, timestamp])
+  /// La misma marcacion puede llegar por el reloj y por ZKBio Time: la base impide guardarla dos veces.
+  @@unique([employeeId, timestamp], map: "attendance_records_employee_timestamp_key")
+  @@index([timestamp])
   @@map("attendance_records")
 }
 
@@ -654,4 +659,23 @@ model BancoHorasAjuste {
 
   @@index([employeeId])
   @@map("banco_horas_ajustes")
+}
+
+/// Candado de tareas en segundo plano: con varios servidores, solo uno ejecuta cada tarea a la vez.
+model CandadoTarea {
+  nombre String   @id
+  duenio String
+  hasta  DateTime
+
+  @@map("candados_tareas")
+}
+
+/// Intentos de acceso por IP/usuario, compartidos entre servidores (limite anti fuerza bruta).
+model LimiteAcceso {
+  clave    String   @id
+  intentos Int
+  reinicio DateTime
+
+  @@index([reinicio])
+  @@map("limites_acceso")
 }

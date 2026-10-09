@@ -1,4 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EventosService } from '../../core/services/eventos.service';
 import { ZkSyncButtonComponent } from '../../shared/components/zk-sync-button.component';
 import { CommonModule } from '@angular/common';
 import { ApiService, saveBlob } from '../../core/services/api.service';
@@ -271,6 +273,12 @@ export class AttendanceReportComponent implements OnInit {
 
   private searchTimer?: ReturnType<typeof setTimeout>;
 
+  /** Cuando entra una marcacion (reloj o RRHH), la tabla se actualiza sola. */
+  private readonly enVivo = inject(EventosService)
+    .en(['marcaciones', 'empleados'])
+    .pipe(takeUntilDestroyed())
+    .subscribe(() => this.load(true));
+
   ngOnInit(): void {
     this.api.list<CatalogItem>('/employees/departments', { limit: 100 }).subscribe({
       next: (page) => this.departments.set(page.data),
@@ -297,8 +305,8 @@ export class AttendanceReportComponent implements OnInit {
     this.load();
   }
 
-  load(): void {
-    this.loading.set(true);
+  load(silencioso = false): void {
+    if (!silencioso) this.loading.set(true);
     this.api
       .list<AttendanceReportRow>('/attendance/report', {
         from: this.from(),
@@ -316,8 +324,9 @@ export class AttendanceReportComponent implements OnInit {
           this.cargarSaldos(response.data.map((r) => r.employeeId));
         },
         error: (error) => {
-          this.rows.set([]);
           this.loading.set(false);
+          if (silencioso) return;
+          this.rows.set([]);
           this.toast.error('No se pudo generar el reporte', apiErrorMessage(error));
         },
       });

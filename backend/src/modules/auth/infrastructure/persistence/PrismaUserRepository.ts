@@ -3,6 +3,7 @@ import { prisma } from '../../../../shared/infrastructure/database/prisma';
 import { buildMeta, Paginated, PageQuery } from '../../../../shared/domain/pagination';
 import { NewUser, Role, User, UserWithSecret } from '../../domain/entities/User';
 import { UserRepository } from '../../domain/repositories/UserRepository';
+import { codigosCandidatos, normalizeLoginId } from '../../domain/loginId';
 
 type Row = Prisma.UserGetPayload<object>;
 
@@ -21,14 +22,6 @@ function toDomain(row: Row): User {
 
 function toDomainWithSecret(row: Row): UserWithSecret {
   return { ...toDomain(row), passwordHash: row.passwordHash };
-}
-
-function normalizeLoginId(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[\s\-_.]+/g, '');
 }
 
 export class PrismaUserRepository implements UserRepository {
@@ -50,14 +43,13 @@ export class PrismaUserRepository implements UserRepository {
   async findForLogin(username: string): Promise<UserWithSecret | null> {
     const normalized = normalizeLoginId(username);
     if (!normalized) return null;
-    const rows = await prisma.user.findMany({
-      where: { employeeId: { not: null } },
-      include: { employee: { select: { employeeCode: true, lastName: true } } },
+    // Busca por el indice unico del codigo de empleado (prefijos del usuario), no recorre todos los usuarios.
+    const empleados = await prisma.employee.findMany({
+      where: { employeeCode: { in: codigosCandidatos(normalized) }, user: { isNot: null } },
+      select: { employeeCode: true, lastName: true, user: true },
     });
-    const match = rows.find(
-      (row) => row.employee && normalizeLoginId(`${row.employee.employeeCode}${row.employee.lastName}`) === normalized,
-    );
-    return match ? toDomainWithSecret(match) : null;
+    const match = empleados.find((e) => normalizeLoginId(`${e.employeeCode}${e.lastName}`) === normalized);
+    return match?.user ? toDomainWithSecret(match.user) : null;
   }
 
   async list(query: PageQuery & { role?: Role; isActive?: boolean }): Promise<Paginated<User>> {

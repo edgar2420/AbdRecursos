@@ -33,10 +33,12 @@ export function errorHandler(
 
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     if (error.code === 'P2002') {
-      const target = (error.meta?.target as string[] | undefined)?.join(', ') ?? 'registro';
-      res.status(409).json({
-        error: { code: 'CONFLICT', message: `Ya existe un registro con ese ${target}`, requestId },
-      });
+      const campos = (error.meta?.target as string[] | string | undefined) ?? 'registro';
+      const target = Array.isArray(campos) ? campos.join(', ') : campos;
+      const message = target.includes('timestamp')
+        ? 'Ese empleado ya tiene una marcacion a esa misma hora'
+        : `Ya existe un registro con ese ${target}`;
+      res.status(409).json({ error: { code: 'CONFLICT', message, requestId } });
       return;
     }
     if (error.code === 'P2025') {

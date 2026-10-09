@@ -20,6 +20,8 @@ export interface AttendanceRepository {
   createMany(data: NewAttendanceRecord[]): Promise<number>;
   list(filters: AttendanceFilters): Promise<Paginated<AttendanceRecord>>;
   listBetween(from: Date, to: Date, employeeIds?: string[]): Promise<AttendanceRecord[]>;
+  /** Empleados con al menos una entrada con atraso en el rango (lo resuelve la base, no la aplicacion). */
+  empleadosConAtraso(from: Date, to: Date, employeeIds?: string[]): Promise<string[]>;
   lastRecordOfDay(employeeId: string, date: Date): Promise<AttendanceRecord | null>;
   countLateInMonth(employeeIds: string[], year: number, month: number): Promise<number>;
   findById(id: string): Promise<AttendanceRecord | null>;

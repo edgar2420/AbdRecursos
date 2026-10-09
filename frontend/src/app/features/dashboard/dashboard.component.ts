@@ -11,6 +11,8 @@ import { DateRange, DateRangePickerComponent } from '../../shared/components/dat
 import { TrendChartComponent, TrendPoint } from '../../shared/components/trend-chart.component';
 import { SparklineComponent } from '../../shared/components/sparkline.component';
 import { autoRefresh } from '../../shared/utils/auto-refresh';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EventosService } from '../../core/services/eventos.service';
 import { BolivianosPipe, FechaPipe } from '../../shared/pipes/format.pipes';
 import {
   Metrica,
@@ -442,9 +444,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private detenerRefresco?: () => void;
 
 
+  private readonly enVivo = inject(EventosService)
+    .en(['marcaciones', 'empleados', 'vacaciones', 'papeletas'], 1500)
+    .pipe(takeUntilDestroyed())
+    .subscribe(() => this.load(true));
+
   ngOnInit(): void {
     this.load();
-    this.detenerRefresco = autoRefresh(() => this.load(true));
+    // Los avisos en vivo actualizan el panel al instante; el refresco periodico queda solo como respaldo.
+    this.detenerRefresco = autoRefresh(() => this.load(true), 180);
   }
 
   ngOnDestroy(): void {

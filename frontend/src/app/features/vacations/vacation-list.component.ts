@@ -1,4 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EventosService } from '../../core/services/eventos.service';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -318,10 +320,15 @@ export class VacationListComponent implements OnInit, OnDestroy {
   private searchTimer?: ReturnType<typeof setTimeout>;
   private detenerRefresco?: () => void;
 
+  private readonly enVivo = inject(EventosService)
+    .en(['vacaciones'])
+    .pipe(takeUntilDestroyed())
+    .subscribe(() => this.load(true));
+
   ngOnInit(): void {
     this.load();
     this.loadBalance();
-    this.detenerRefresco = autoRefresh(() => this.load(true));
+    this.detenerRefresco = autoRefresh(() => this.load(true), 180);
   }
 
   ngOnDestroy(): void {

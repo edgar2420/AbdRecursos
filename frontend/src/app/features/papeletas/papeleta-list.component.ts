@@ -1,4 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EventosService } from '../../core/services/eventos.service';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -422,6 +424,11 @@ export class PapeletaListComponent implements OnInit, OnDestroy {
 
   private buscador?: ReturnType<typeof setTimeout>;
 
+  private readonly enVivo = inject(EventosService)
+    .en(['papeletas'])
+    .pipe(takeUntilDestroyed())
+    .subscribe(() => this.cargar(true));
+
   ngOnInit(): void {
     this.cargar();
   }
@@ -446,8 +453,8 @@ export class PapeletaListComponent implements OnInit, OnDestroy {
     this.cargar();
   }
 
-  cargar(): void {
-    this.cargando.set(true);
+  cargar(silencioso = false): void {
+    if (!silencioso) this.cargando.set(true);
     this.api.list<Papeleta>('/papeletas', { ...this.filtros() }).subscribe({
       next: (page) => {
         this.papeletas.set(page.data);

@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EventosService } from '../../core/services/eventos.service';
 import { ApiService, saveBlob } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -357,6 +359,11 @@ export class EmployeeListComponent implements OnInit {
   });
 
   private searchTimer?: ReturnType<typeof setTimeout>;
+
+  private readonly enVivo = inject(EventosService)
+    .en(['empleados'])
+    .pipe(takeUntilDestroyed())
+    .subscribe(() => this.load());
 
   ngOnInit(): void {
     this.loadCatalogs();
