@@ -24,6 +24,7 @@ export class PrismaNominaRepository implements NominaRepository {
         gender: true,
         isActive: true,
         position: { select: { name: true } },
+        department: { select: { name: true } },
       },
     });
     return filas
@@ -38,6 +39,7 @@ export class PrismaNominaRepository implements NominaRepository {
         hireDate: f.hireDate,
         gender: f.gender,
         cargo: f.position?.name ?? null,
+        departamento: f.department?.name ?? null,
         isActive: f.isActive,
       }));
   }

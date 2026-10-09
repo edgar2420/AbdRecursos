@@ -20,7 +20,7 @@ interface VistaNomina {
   resumen: Record<Campo, number>;
   cargosNuevos: string[];
   sinFicha: { codigo: string; nombre: string; cargo: string }[];
-  fueraDeNomina: { employeeId: string; codigo: string; nombre: string }[];
+  fueraDeNomina: { employeeId: string; codigo: string; nombre: string; departamento: string | null }[];
   avisos: string[];
 }
 
@@ -151,10 +151,10 @@ const CAMPOS: { campo: Campo; etiqueta: string }[] = [
             @if (v.fueraDeNomina.length) {
               <details>
                 <summary>Fichas activas que no estan en esta nomina ({{ v.fueraDeNomina.length }})</summary>
-                <p class="muted text-sm">Pueden ser de otra sucursal o personal que ya salio. Si salieron, de de baja la ficha.</p>
+                <p class="muted text-sm">La nomina es de Santa Cruz: las de sucursal son normales aqui. Si alguien de Santa Cruz ya salio, de de baja su ficha.</p>
                 <ul>
                   @for (f of v.fueraDeNomina; track f.employeeId) {
-                    <li><a [routerLink]="['/empleados', f.employeeId]">{{ f.codigo }} · {{ f.nombre }}</a></li>
+                    <li><a [routerLink]="['/empleados', f.employeeId]">{{ f.codigo }} · {{ f.nombre }}</a> <span class="muted">· {{ f.departamento ?? 'Sin departamento' }}</span></li>
                   }
                 </ul>
               </details>

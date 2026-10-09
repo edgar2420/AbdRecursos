@@ -145,7 +145,7 @@ describe('nomina para el biometrico', () => {
     it('lista los que no cruzan en los dos sentidos y rechaza codigos repetidos', () => {
       const plan = planificarNomina([fila({ codigo: '99' })], [ficha()], [], huella);
       expect(plan.sinFicha).toEqual([{ codigo: '99', nombre: 'PEREZ GOMEZ ANA MARIA', cargo: 'Tec. Electricista' }]);
-      expect(plan.fueraDeNomina).toEqual([{ employeeId: 'e10', codigo: '10', nombre: 'ANA MARIA PÉREZ GOMEZ' }]);
+      expect(plan.fueraDeNomina).toEqual([{ employeeId: 'e10', codigo: '10', nombre: 'ANA MARIA PÉREZ GOMEZ', departamento: null }]);
       expect(() => planificarNomina([fila(), fila({ ci: '7654321' })], [], [], huella)).toThrow('Codigos repetidos');
     });
   });

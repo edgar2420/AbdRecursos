@@ -150,6 +150,7 @@ export interface FichaActual {
   hireDate: Date;
   gender: string | null;
   cargo: string | null;
+  departamento?: string | null;
   isActive: boolean;
 }
 
@@ -184,7 +185,7 @@ export interface PlanNomina {
   resumen: Record<CampoNomina, number>;
   cargosNuevos: string[];
   sinFicha: { codigo: string; nombre: string; cargo: string }[];
-  fueraDeNomina: { employeeId: string; codigo: string; nombre: string }[];
+  fueraDeNomina: { employeeId: string; codigo: string; nombre: string; departamento: string | null }[];
   avisos: string[];
 }
 
@@ -287,7 +288,8 @@ export function planificarNomina(
     sinFicha: filas.filter((f) => !porCodigo.has(f.codigo)).map((f) => ({ codigo: f.codigo, nombre: f.nombreCompleto, cargo: f.cargo })),
     fueraDeNomina: fichas
       .filter((e) => e.isActive && !enNomina.has(e.codigo))
-      .map((e) => ({ employeeId: e.id, codigo: e.codigo, nombre: `${e.firstName} ${e.lastName}` })),
+      .map((e) => ({ employeeId: e.id, codigo: e.codigo, nombre: `${e.firstName} ${e.lastName}`, departamento: e.departamento ?? null }))
+      .sort((a, b) => (a.departamento ?? '').localeCompare(b.departamento ?? '') || a.codigo.localeCompare(b.codigo, undefined, { numeric: true })),
     avisos,
   };
 }

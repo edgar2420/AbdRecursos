@@ -441,6 +441,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private detenerRefresco?: () => void;
 
+
   ngOnInit(): void {
     this.load();
     this.detenerRefresco = autoRefresh(() => this.load(true));
